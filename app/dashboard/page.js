@@ -6,8 +6,8 @@ import Loader from "@/components/Loader"; // Keep loader for UX
 function Dashboard() {
   const { data: session, status } = useSession();
 
-  if (status === "loading") return <Loader />; // Show loader while checking session
-
+  if (status === "loading") return <Loader />; 
+  
   if (!session || !session.user) {
     return <p className="text-center mt-10 text-red-600">Error: User not found</p>;
   }
