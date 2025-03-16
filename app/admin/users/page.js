@@ -7,7 +7,7 @@ function AddUser() {
   const [name, setName] = useState("");
   const [title, setTitle] = useState("Title");
   const [email, setEmail] = useState("");
-  const [Id_number, setId_number] = useState("");
+  const [idNumber, setidNumber] = useState("");
   const [password, setPassword] = useState(""); 
   const [confirmPassword, setConfirmPassword] = useState("");
   const [gender, setGender] = useState("Gender");
@@ -27,7 +27,7 @@ function AddUser() {
     const res = await fetch("/api/admin/add-user", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, title, email, Id_number, password, phone, gender, role }),
+      body: JSON.stringify({ name, title, email, idNumber, password, phone, gender, role }),
     });
 
     const data = await res.json();
@@ -89,7 +89,7 @@ function AddUser() {
               type="number"
               placeholder="ID Number"
               className="p-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              onChange={(e) => setId_number(e.target.value)}
+              onChange={(e) => setidNumber(e.target.value)}
               required
             />
           </div>

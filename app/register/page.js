@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 function Register() {
+  const router = useRouter();
   const [name, setName] = useState("");
   const [title, setTitle] = useState("Title");
   const [email, setEmail] = useState("");
-  const [Id_number, setId_number] = useState("");
+  const [idNumber, setidNumber] = useState("");
   const [password, setPassword] = useState(""); 
   const [confirmPassword, setConfirmPassword] = useState("");
   const [gender, setGender] = useState("Gender");
@@ -25,12 +27,16 @@ function Register() {
     const res = await fetch("/api/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, title, email, Id_number, password, phone, gender}),
+      body: JSON.stringify({ name, title, email, idNumber, password, phone, gender}),
     });
 
     const data = await res.json();
     if (res.ok) {
       setMessage("User created successfully!");
+      setTimeout(() => {
+        router.push("/login");
+      }, 2000)
+
     } else {
       setMessage(data.error || "An error occurred");
     }
@@ -90,7 +96,7 @@ function Register() {
               type="number"
               placeholder="ID Number"
               className="p-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              onChange={(e) => setId_number(e.target.value)}
+              onChange={(e) => setidNumber(e.target.value)}
               required
             />
 

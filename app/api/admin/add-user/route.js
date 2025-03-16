@@ -15,7 +15,7 @@ export async function POST(req) {
   }
 
   try {
-    const { name, title, email, Id_number, password, phone, gender, role } = await req.json();
+    const { name, title, email, idNumber, password, phone, gender, role } = await req.json();
     await connectDB();
 
     const existingUser = await User.findOne({ email });
@@ -48,7 +48,7 @@ export async function POST(req) {
     }
 
     const hashedPassword = await bcrypt.hash(password || "Password01", 10);
-    const newUser = await User.create({ name, title, email, Id_number, password: hashedPassword, phone, gender, role });
+    const newUser = await User.create({ name, title, email, idNumber, password: hashedPassword, phone, gender, role });
 
     return new Response(
       JSON.stringify({ message: "User created successfully", user: newUser }),
