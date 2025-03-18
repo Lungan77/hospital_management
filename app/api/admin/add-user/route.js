@@ -26,7 +26,7 @@ export async function POST(req) {
       );
     }
 
-    if (!["doctor", "nurse", "receptionist", "admin"].includes(role)) {
+    if (!["doctor", "nurse", "receptionist", "admin", "patient"].includes(role)) {
       return new Response(
         JSON.stringify({ error: "Invalid role" }),
         { status: 400 }

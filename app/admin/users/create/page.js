@@ -118,6 +118,7 @@ function AddUser() {
               <option value="nurse">Nurse</option>
               <option value="receptionist">Receptionist</option>
               <option value="admin">Admin</option>
+              <option value="patient">Patient</option>
             </select>
 
             <input

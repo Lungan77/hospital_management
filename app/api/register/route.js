@@ -40,7 +40,7 @@ export async function POST(req) {
       password: hashedPassword, 
       phone, 
       gender, 
-      role: "admin" 
+      role: "patient" 
     });
 
     return new Response(JSON.stringify({ message: "User created successfully", user: newUser }), { status: 201 });
