@@ -20,17 +20,27 @@ export const authOptions = {
         const isValid = await bcrypt.compare(credentials.password, user.password);
         if (!isValid) throw new Error("Invalid credentials");
 
-        return { id: user._id, name: user.name, email: user.email, role: user.role };
+        // Return the user object with the id as a string
+        return { id: user._id.toString(), name: user.name, email: user.email, role: user.role };
       },
     }),
   ],
   callbacks: {
     async session({ session, token }) {
+      // Ensure that token.id is available and added to the session
+      if (token?.id) {
+        session.user.id = token.id;  // Store the user ID in the session
+      }
       session.user.role = token.role;
       return session;
     },
+    
     async jwt({ token, user }) {
-      if (user) token.role = user.role;
+      if (user) {
+        // Store the user ID in the JWT token when the user logs in
+        token.id = user.id; // Ensure the user ID is added to the token
+        token.role = user.role;
+      }
       return token;
     },
   },

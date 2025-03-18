@@ -21,7 +21,7 @@ export async function isAuthenticated(req, allowedRoles = []) {
     if (allowedRoles.length > 0 && !allowedRoles.includes(session.user.role)) {
       return { error: "Forbidden", status: 403 };
     }
-
+    console.log(session)
     return { session };
   } catch (error) {
     console.error("Auth Error:", error);
