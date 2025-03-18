@@ -1,3 +1,8 @@
+import { connectDB } from "@/lib/mongodb";
+import Appointment from "@/models/Appointment";
+import TimeSlot from "@/models/TimeSlot";
+import { isAuthenticated } from "@/hoc/protectedRoute";
+
 export async function POST(req) {
     const auth = await isAuthenticated(req, ["patient"]);
     if (auth.error) return Response.json({ error: auth.error }, { status: auth.status });
@@ -7,10 +12,11 @@ export async function POST(req) {
       await connectDB();
   
       const timeSlotEntry = await TimeSlot.findOne({ doctorId, date });
+      
       if (!timeSlotEntry || !timeSlotEntry.slots.includes(timeSlot)) {
         return Response.json({ error: "Time slot not available" }, { status: 400 });
       }
-  
+
       // Remove booked slot
       timeSlotEntry.slots = timeSlotEntry.slots.filter((slot) => slot !== timeSlot);
       await timeSlotEntry.save();

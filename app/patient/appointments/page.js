@@ -32,9 +32,12 @@ function BookAppointment() {
       body: JSON.stringify({ doctorId, date }),
     });
 
-    const data = await res.json();
-    setAvailableSlots(data.slots);
-    setMessage(data.slots.length > 0 ? "" : "No available slots for this date.");
+    if (res.ok){
+      const data = await res.json();
+      setAvailableSlots(data.slots);
+    }else{
+      setMessage(data.slots.length > 0 ? "" : "No available slots for this date.");
+    }
   };
 
   const bookAppointment = async () => {

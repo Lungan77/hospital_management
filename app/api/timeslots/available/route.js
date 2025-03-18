@@ -1,3 +1,6 @@
+import { connectDB } from "@/lib/mongodb";
+import TimeSlot from "@/models/TimeSlot";
+
 export async function POST(req) {
     try {
       const { doctorId, date } = await req.json();
