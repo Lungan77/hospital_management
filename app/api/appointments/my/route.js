@@ -1,7 +1,6 @@
 import { connectDB } from "@/lib/mongodb";
 import Appointment from "@/models/Appointment";
 import Vitals from "@/models/Vitals";
-import User from "@/models/User";
 import { isAuthenticated } from "@/hoc/protectedRoute";
 
 export async function GET(req) {
@@ -33,7 +32,7 @@ export async function GET(req) {
           _id: appt._id,
           date: appt.date,
           timeSlot: appt.timeSlot,
-          checkedIn: appt.checked,
+          checkedIn: appt.checkedIn,
           patient: appt.patientId ? appt.patientId.name : "Unknown",
           doctor: appt.doctorId ? `${appt.doctorId.title} ${appt.doctorId.name}` : "Unknown",
           vitals: vitals

@@ -43,7 +43,7 @@ function MyAppointments() {
       <div className="flex justify-between mt-4">
         {/* ✅ Button to add new appointment */}
         <button
-          onClick={() => router.push("/appointments/new")}
+          onClick={() => router.push("/patient/appointments")}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
         >
           + New Appointment
