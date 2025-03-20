@@ -17,7 +17,12 @@ export async function POST(req) {
       return Response.json({ error: "Appointment not found" }, { status: 404 });
     }
 
-    // Check if vitals are already recorded
+    // ❌ Prevent adding vitals if the patient has NOT checked in
+    if (!appointment.checkedIn) {
+      return Response.json({ error: "Patient must be checked in before recording vitals" }, { status: 400 });
+    }
+
+    // Prevent duplicate vitals
     const existingVitals = await Vitals.findOne({ appointmentId });
     if (existingVitals) {
       return Response.json({ error: "Vitals already recorded for this appointment" }, { status: 400 });
