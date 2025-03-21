@@ -17,12 +17,14 @@ export default function Sidebar() {
     ],
     doctor: [
       { label: "Dashboard", href: "/dashboard", icon: <Home className="w-5 h-5" /> },
-      { label: "Appointments", href: "/doctor/appointments", icon: <Calendar className="w-5 h-5" /> },
+      { label: "Time Slots", href: "/doctor/timeslots", icon: <Calendar className="w-5 h-5"/>},
+      { label: "Appointments", href: "/appointments/", icon: <Calendar className="w-5 h-5" /> },
+      { label: "Diagnosis", href: "/diagnosis/", icon: <Calendar className="w-5 h-5" /> },
       { label: "Patients", href: "/doctor/patients", icon: <Stethoscope className="w-5 h-5" /> },
     ],
     receptionist: [
       { label: "Dashboard", href: "/dashboard", icon: <Home className="w-5 h-5" /> },
-      { label: "Check-in", href: "/receptionist/checkin", icon: <ClipboardList className="w-5 h-5" /> },
+      { label: "Check-in", href: "/receptionist/appointments", icon: <ClipboardList className="w-5 h-5" /> },
     ],
     nurse: [
       { label: "Dashboard", href: "/dashboard", icon: <Home className="w-5 h-5" /> },
@@ -30,7 +32,7 @@ export default function Sidebar() {
     ],
     patient: [
       { label: "Dashboard", href: "/dashboard", icon: <Home className="w-5 h-5" /> },
-      { label: "Appointments", href: "/patient/appointments", icon: <Calendar className="w-5 h-5" /> },
+      { label: "Appointments", href: "/appointments", icon: <Calendar className="w-5 h-5" /> },
     ],
   };
 
