@@ -36,6 +36,12 @@ function DiagnosisList() {
       <h1 className="text-2xl font-bold">
         {session?.user.role === "doctor" ? "Diagnoses I've Made" : "My Diagnoses"}
       </h1>
+      <Link 
+          href={'/doctor/diagnosis'} 
+          className="mt-4 block bg-blue-500 text-white p-2 rounded-lg text-center hover:bg-blue-600"
+        >
+          + Add Diagnosis
+      </Link>
       {message && <p className="mt-2 text-red-500">{message}</p>}
 
       {diagnoses.length === 0 ? (
