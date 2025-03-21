@@ -17,13 +17,21 @@ export async function POST(req) {
       return Response.json({ error: "Diagnosis not found" }, { status: 404 });
     }
 
-    // Save prescription
+    // Ensure prescription doesn't already exist
+    if (diagnosis.prescriptionId) {
+      return Response.json({ error: "Prescription already exists for this diagnosis" }, { status: 400 });
+    }
+
+    // Create Prescription
     const prescription = await Prescription.create({
       diagnosisId,
       doctorId: auth.session.user.id,
       medications,
       additionalNotes,
     });
+
+    // Update Diagnosis with Prescription ID
+    await Diagnosis.findByIdAndUpdate(diagnosisId, { prescriptionId: prescription._id });
 
     return Response.json({ message: "Prescription recorded successfully", prescription }, { status: 201 });
   } catch (error) {
