@@ -1,27 +1,35 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import Link from "next/link"; // ✅ Import Link for navigation
+import Link from "next/link"; // ✅ Import Link
 import withAuth from "@/hoc/withAuth";
 
 function DiagnosisList() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [diagnoses, setDiagnoses] = useState([]);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    fetchDiagnoses();
-  }, []);
+    if (status === "authenticated") {
+      fetchDiagnoses();
+    }
+  }, [status]);
 
   const fetchDiagnoses = async () => {
-    const res = await fetch("/api/diagnosis/my");
-    const data = await res.json();
-    if (res.ok) {
-      setDiagnoses(data.diagnoses);
-    } else {
-      setMessage("Failed to fetch diagnoses.");
+    try {
+      const res = await fetch("/api/diagnosis/my");
+      const data = await res.json();
+      if (res.ok) {
+        setDiagnoses(data.diagnoses);
+      } else {
+        setMessage("Failed to fetch diagnoses.");
+      }
+    } catch (error) {
+      setMessage("Error fetching diagnoses.");
     }
   };
+
+  if (status === "loading") return <p>Loading...</p>;
 
   return (
     <div className="p-6">
@@ -41,11 +49,20 @@ function DiagnosisList() {
               <p>Severity: {diag.severity}</p>
               <p>Lab Tests Ordered: {diag.labTestsOrdered || "None"}</p>
               <p>Notes: {diag.notes || "No additional notes"}</p>
-              <p>Date: {new Date(diag.appointmentId.date).toLocaleDateString()} at {diag.appointmentId.timeSlot}</p>
+              <p>
+                Date: {new Date(diag.appointmentId.date).toLocaleDateString()} at {diag.appointmentId.timeSlot}
+              </p>
               {session?.user.role === "doctor" ? (
-                <p>Patient: <span className="font-bold">{diag.appointmentId.patientId.name}</span></p>
+                <p>
+                  Patient:{" "}
+                  <span className="font-bold">
+                    {diag.appointmentId.patientId?.name || "Unknown"}
+                  </span>
+                </p>
               ) : (
-                <p>Doctor: <span className="font-bold">{diag.doctorId.name}</span></p>
+                <p>
+                  Doctor: <span className="font-bold">{diag.doctorId?.name || "Unknown"}</span>
+                </p>
               )}
 
               {/* Prescription Section */}
@@ -53,7 +70,9 @@ function DiagnosisList() {
                 <div className="mt-4 p-3 bg-blue-100 rounded-lg">
                   <h2 className="text-lg font-bold">Prescriptions</h2>
                   {diag.prescriptionId.medications.map((med, index) => (
-                    <p key={index}>{med.name} - {med.dosage}, {med.frequency} for {med.duration}</p>
+                    <p key={index}>
+                      {med.name} - {med.dosage}, {med.frequency} for {med.duration}
+                    </p>
                   ))}
                 </div>
               ) : session?.user.role === "doctor" && (
@@ -71,7 +90,12 @@ function DiagnosisList() {
                   <h2 className="text-lg font-bold">Treatment Plan</h2>
                   <p>Lifestyle: {diag.treatmentPlanId.lifestyleRecommendations || "N/A"}</p>
                   <p>Physiotherapy: {diag.treatmentPlanId.physiotherapy || "N/A"}</p>
-                  <p>Follow-Up: {diag.treatmentPlanId.followUpDate ? new Date(diag.treatmentPlanId.followUpDate).toLocaleDateString() : "N/A"}</p>
+                  <p>
+                    Follow-Up:{" "}
+                    {diag.treatmentPlanId.followUpDate
+                      ? new Date(diag.treatmentPlanId.followUpDate).toLocaleDateString()
+                      : "N/A"}
+                  </p>
                 </div>
               ) : session?.user.role === "doctor" && (
                 <Link 

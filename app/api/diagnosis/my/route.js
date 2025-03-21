@@ -21,7 +21,11 @@ export async function GET(req) {
     }
 
     const diagnoses = await Diagnosis.find(filter)
-      .populate("appointmentId", "date timeSlot patientId")
+      .populate({
+        path: "appointmentId",
+        select: "date timeSlot patientId",
+        populate: { path: "patientId", select: "name" }, // ✅ Ensure Patient Name is populated
+      })
       .populate("doctorId", "name")
       .populate("prescriptionId")
       .populate("treatmentPlanId");
