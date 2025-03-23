@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
-import Loader from "@/components/Loader"; // Import the loader
+import Loader from "@/components/loader"; // Import the loader
 
 export default function Login() {
   const [email, setEmail] = useState("");

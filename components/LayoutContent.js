@@ -1,7 +1,7 @@
 "use client";
 import { usePathname } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
-import Nav from "@/components/Nav";
+import Nav from "@/components/nav";
 
 export default function LayoutContent({ children }) {
   const pathname = usePathname();

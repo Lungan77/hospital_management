@@ -1,7 +1,7 @@
 "use client";
 import { useSession } from "next-auth/react";
 import withAuth from "@/hoc/withAuth";
-import Loader from "@/components/Loader"; // Keep loader for UX
+import Loader from "@/components/loader"; // Keep loader for UX
 
 function Dashboard() {
   const { data: session, status } = useSession();

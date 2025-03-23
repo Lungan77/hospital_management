@@ -2,7 +2,7 @@
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import Loader from "@/components/Loader"; // Import the spinner
+import Loader from "@/components/loader"; // Import the spinner
 
 export default function withAuth(Component, allowedRoles) {
   return function AuthenticatedComponent(props) {
