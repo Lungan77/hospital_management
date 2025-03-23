@@ -36,7 +36,7 @@ function TodayAppointments() {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold">Today's Appointments</h1>
+      <h1 className="text-2xl font-bold">Today&apos;s Appointments</h1>
       {message && <p className="mt-2 text-green-600">{message}</p>}
 
       {appointments.length === 0 ? (
