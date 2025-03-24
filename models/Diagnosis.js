@@ -12,6 +12,7 @@ const DiagnosisSchema = new mongoose.Schema(
     notes: { type: String },
     prescriptionId: { type: mongoose.Schema.Types.ObjectId, ref: "Prescription" }, // ✅ Link to Prescription
     treatmentPlanId: { type: mongoose.Schema.Types.ObjectId, ref: "TreatmentPlan" }, // ✅ Link to Treatment Plan
+    referralId: { type: mongoose.Schema.Types.ObjectId, ref: "Referral" },
   },
   { timestamps: true }
 );

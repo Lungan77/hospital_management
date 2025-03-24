@@ -111,6 +111,23 @@ function DiagnosisList() {
                   + Add Treatment Plan
                 </Link>
               )}
+
+              {diag.referralId ? (
+                <Link 
+                  href={`/referral/${diag._id}`} 
+                  className="mt-4 block bg-gray-500 text-white p-2 rounded-lg text-center hover:bg-gray-600"
+                >
+                  View Referral Details
+                </Link>
+              ) : session?.user.role === "doctor" && (
+                <Link 
+                  href={`/referral/add?diagnosisId=${diag._id}`} 
+                  className="mt-4 block bg-blue-500 text-white p-2 rounded-lg text-center hover:bg-blue-600"
+                >
+                  + Add Referral
+                </Link>
+              )}
+
             </li>
           ))}
         </ul>

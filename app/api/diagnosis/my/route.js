@@ -2,6 +2,7 @@ import { connectDB } from "@/lib/mongodb";
 import Diagnosis from "@/models/Diagnosis";
 import Prescription from "@/models/Prescription";
 import TreatmentPlan from "@/models/TreatmentPlan";
+import Referral from "@/models/Referral"
 import Appointment from "@/models/Appointment";
 import { isAuthenticated } from "@/hoc/protectedRoute";
 
@@ -28,7 +29,8 @@ export async function GET(req) {
       })
       .populate("doctorId", "name")
       .populate("prescriptionId")
-      .populate("treatmentPlanId");
+      .populate("treatmentPlanId")
+      .populate("referralId");
 
     return Response.json({ diagnoses }, { status: 200 });
   } catch (error) {
