@@ -84,7 +84,7 @@ function DiagnosisList() {
                 </div>
               ) : session?.user.role === "doctor" && (
                 <Link 
-                  href={`/prescription/add?diagnosisId=${diag._id}`} 
+                  href={`/prescriptions/add?diagnosisId=${diag._id}`} 
                   className="mt-4 block bg-blue-500 text-white p-2 rounded-lg text-center hover:bg-blue-600"
                 >
                   + Add Prescription
