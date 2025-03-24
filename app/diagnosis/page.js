@@ -1,4 +1,4 @@
-"use client";
+"use client"; 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link"; // ✅ Import Link
@@ -37,10 +37,10 @@ function DiagnosisList() {
         {session?.user.role === "doctor" ? "Diagnoses I've Made" : "My Diagnoses"}
       </h1>
       <Link 
-          href={'/doctor/diagnosis'} 
-          className="mt-4 block bg-blue-500 text-white p-2 rounded-lg text-center hover:bg-blue-600"
-        >
-          + Add Diagnosis
+        href={'/doctor/diagnosis'} 
+        className="mt-4 block bg-blue-500 text-white p-2 rounded-lg text-center hover:bg-blue-600"
+      >
+        + Add Diagnosis
       </Link>
       {message && <p className="mt-2 text-red-500">{message}</p>}
 
@@ -56,13 +56,14 @@ function DiagnosisList() {
               <p>Lab Tests Ordered: {diag.labTestsOrdered || "None"}</p>
               <p>Notes: {diag.notes || "No additional notes"}</p>
               <p>
-                Date: {new Date(diag.appointmentId.date).toLocaleDateString()} at {diag.appointmentId.timeSlot}
+                Date: {diag.appointmentId ? new Date(diag.appointmentId.date).toLocaleDateString() : "N/A"} 
+                at {diag.appointmentId?.timeSlot || "N/A"}
               </p>
               {session?.user.role === "doctor" ? (
                 <p>
                   Patient:{" "}
                   <span className="font-bold">
-                    {diag.appointmentId.patientId?.name || "Unknown"}
+                    {diag.appointmentId?.patientId?.name || "Unknown"}
                   </span>
                 </p>
               ) : (
@@ -127,7 +128,6 @@ function DiagnosisList() {
                   + Add Referral
                 </Link>
               )}
-
             </li>
           ))}
         </ul>

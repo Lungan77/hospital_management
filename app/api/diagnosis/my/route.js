@@ -2,7 +2,8 @@ import { connectDB } from "@/lib/mongodb";
 import Diagnosis from "@/models/Diagnosis";
 import Prescription from "@/models/Prescription";
 import TreatmentPlan from "@/models/TreatmentPlan";
-import Referral from "@/models/Referral"
+import Referral from "@/models/Referral";
+import User from "@/models/User"
 import Appointment from "@/models/Appointment";
 import { isAuthenticated } from "@/hoc/protectedRoute";
 
