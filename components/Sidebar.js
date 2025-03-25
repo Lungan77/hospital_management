@@ -21,6 +21,7 @@ export default function Sidebar() {
       { label: "Appointments", href: "/appointments/", icon: <Calendar className="w-5 h-5" /> },
       { label: "Diagnosis", href: "/diagnosis/", icon: <Calendar className="w-5 h-5" /> },
       { label: "Patients", href: "/doctor/patients", icon: <Stethoscope className="w-5 h-5" /> },
+      { label: "Bills", href: "/bills/my", icon: <Stethoscope className="w-5 h-5" /> },
     ],
     receptionist: [
       { label: "Dashboard", href: "/dashboard", icon: <Home className="w-5 h-5" /> },
@@ -33,6 +34,7 @@ export default function Sidebar() {
     patient: [
       { label: "Dashboard", href: "/dashboard", icon: <Home className="w-5 h-5" /> },
       { label: "Appointments", href: "/appointments", icon: <Calendar className="w-5 h-5" /> },
+      { label: "Bills", href: "/bills/my", icon: <Stethoscope className="w-5 h-5" /> },
     ],
   };
 
