@@ -82,12 +82,16 @@ function MyAppointments() {
               )}
 
               {/* ✅ Button to cancel appointment */}
-              <button
-                onClick={() => cancelAppointment(appt._id)}
-                className="mt-4 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
-              >
-                Cancel Appointment
-              </button>
+              {
+                appt.checkedIn || 
+                <button
+                  onClick={() => cancelAppointment(appt._id)}
+                  className="mt-4 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+                >
+                  Cancel Appointment
+                </button>
+              }
+              
             </li>
           ))}
         </ul>
