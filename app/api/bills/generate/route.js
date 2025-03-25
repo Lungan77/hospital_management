@@ -29,8 +29,14 @@ export async function POST(req) {
       return Response.json({ error: "Patient information is missing in the diagnosis" }, { status: 400 });
     }
 
-    // ✅ Calculate total cost
-    const totalAmount = consultationFee + labTestsFee + medicationFee + otherCharges;
+    // ✅ Convert values to numbers before calculations
+    const consultation = Number(consultationFee) || 0;
+    const labTests = Number(labTestsFee) || 0;
+    const medication = Number(medicationFee) || 0;
+    const others = Number(otherCharges) || 0;
+
+    // ✅ Calculate total amount safely
+    const totalAmount = consultation + labTests + medication + others;
 
     // ✅ Create and save the bill
     const newBill = await Bill.create({
