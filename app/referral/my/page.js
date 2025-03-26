@@ -57,7 +57,10 @@ function MyReferrals() {
               <p>Hospital: <span className="font-bold">{referral.hospitalName}</span></p>
               <p>Reason: {referral.reasonForReferral}</p>
               <p>Notes: {referral.additionalNotes || "None"}</p>
-              <p>Date: {new Date(referral.createdAt).toLocaleDateString()}</p>
+              <p>
+                Date: {diag.appointmentId ? new Date(diag.appointmentId.date).toLocaleDateString() : "N/A"} 
+                at {diag.appointmentId?.timeSlot || "N/A"}
+              </p>
 
               <button 
                 onClick={() => downloadReferral(referral)}
