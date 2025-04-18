@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation"; // For navigation
+import { useRouter } from "next/navigation";
 import withAuth from "@/hoc/withAuth";
+import { Plus, FlaskConical, X } from "lucide-react";
 
 function MyAppointments() {
   const router = useRouter();
@@ -33,68 +34,86 @@ function MyAppointments() {
 
     const data = await res.json();
     setMessage(data.message || data.error);
-    fetchAppointments(); // Refresh appointments after cancellation
+    fetchAppointments();
   };
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold">My Appointments</h1>
-
-      <div className="flex justify-between mt-4">
-        {/* ✅ Button to add new appointment */}
+    <div className="p-6 max-w-5xl mx-auto">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">My Appointments</h1>
         <button
           onClick={() => router.push("/patient/appointments")}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
         >
-          + New Appointment
+          <Plus className="w-5 h-5" />
+          New Appointment
         </button>
       </div>
 
-      {message && <p className="mt-2 text-red-500">{message}</p>}
+      {message && <p className="mb-4 text-red-500 font-semibold">{message}</p>}
 
       {appointments.length === 0 ? (
-        <p>No appointments scheduled.</p>
+        <p className="text-gray-600">No appointments scheduled.</p>
       ) : (
-        <ul className="mt-4 space-y-4">
+        <div className="grid gap-6">
           {appointments.map((appt) => (
-            <li key={appt._id} className="bg-gray-100 p-4 rounded-lg">
-              <p className="text-lg font-semibold">{appt.date} - {appt.timeSlot}</p>
-              <p>Doctor: <span className="font-bold">{appt.doctor}</span></p>
-              <p>Patient: <span className="font-bold">{appt.patient}</span></p>
-              <p>Checked In: <span className={`font-bold ${appt.checkedIn ? "text-green-600" : "text-red-500"}`}>
-                {appt.checkedIn ? "Yes" : "No"}
-              </span></p>
+            <div key={appt._id} className="bg-white shadow-sm rounded-xl p-5 border">
+              <div className="flex justify-between items-start mb-3">
+                <div>
+                  <h2 className="text-xl font-semibold">
+                    {new Date(appt.date).toLocaleDateString()} – {appt.timeSlot}
+                  </h2>
+                  <p className="text-gray-700 mt-1">Doctor: <strong>{appt.doctor}</strong></p>
+                  <p className="text-gray-700">Patient: <strong>{appt.patient}</strong></p>
+                </div>
+                <span
+                  className={`px-3 py-1 rounded-full text-sm font-medium ${
+                    appt.checkedIn ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"
+                  }`}
+                >
+                  {appt.checkedIn ? "Checked In" : "Not Checked In"}
+                </span>
+              </div>
 
               {appt.vitals ? (
-                <div className="mt-2 p-2 bg-white rounded-lg">
-                  <p className="text-md font-semibold">Vitals Recorded:</p>
-                  <p>Blood Pressure: {appt.vitals.bloodPressure}</p>
-                  <p>Temperature: {appt.vitals.temperature}°C</p>
-                  <p>Heart Rate: {appt.vitals.heartRate} bpm</p>
-                  <p>Respiratory Rate: {appt.vitals.respiratoryRate} breaths/min</p>
-                  <p>Oxygen Saturation: {appt.vitals.oxygenSaturation}%</p>
-                  <p>Weight: {appt.vitals.weight} kg</p>
-                  <p>Height: {appt.vitals.height} cm</p>
-                  <p className="font-bold">BMI: {appt.vitals.bmi}</p>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2 text-sm text-gray-700">
+                  <p>Blood Pressure: <strong>{appt.vitals.bloodPressure}</strong></p>
+                  <p>Temperature: <strong>{appt.vitals.temperature}°C</strong></p>
+                  <p>Heart Rate: <strong>{appt.vitals.heartRate} bpm</strong></p>
+                  <p>Respiratory Rate: <strong>{appt.vitals.respiratoryRate} bpm</strong></p>
+                  <p>Oxygen Saturation: <strong>{appt.vitals.oxygenSaturation}%</strong></p>
+                  <p>Weight: <strong>{appt.vitals.weight} kg</strong></p>
+                  <p>Height: <strong>{appt.vitals.height} cm</strong></p>
+                  <p>BMI: <strong>{appt.vitals.bmi}</strong></p>
                 </div>
               ) : (
-                <p className="text-gray-500">Vitals not recorded yet.</p>
+                <p className="text-sm text-gray-500 mt-2">Vitals not recorded yet.</p>
               )}
 
-              {/* ✅ Button to cancel appointment */}
-              {
-                appt.checkedIn || 
-                <button
-                  onClick={() => cancelAppointment(appt._id)}
-                  className="mt-4 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
-                >
-                  Cancel Appointment
-                </button>
-              }
-              
-            </li>
+              <div className="flex gap-3 mt-5">
+                {!appt.checkedIn && (
+                  <button
+                    onClick={() => cancelAppointment(appt._id)}
+                    className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+                  >
+                    <X className="w-4 h-4" />
+                    Cancel
+                  </button>
+                )}
+
+                {appt.checkedIn && (
+                  <button
+                    onClick={() => router.push(`/tests/order/${appt._id}`)}
+                    className="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700"
+                  >
+                    <FlaskConical className="w-4 h-4" />
+                    Book Lab Test
+                  </button>
+                )}
+              </div>
+            </div>
           ))}
-        </ul>
+        </div>
       )}
     </div>
   );
