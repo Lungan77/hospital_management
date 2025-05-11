@@ -1,7 +1,5 @@
+// models/TestOrder.js
 import mongoose from "mongoose";
-
-const testTypes = ["Blood Test", "Urine Test", "X-ray", "CT Scan"];
-const testStatuses = ["Pending Sample Collection", "Collected", "In Progress", "Completed"];
 
 const TestOrderSchema = new mongoose.Schema({
   appointmentId: {
@@ -9,26 +7,17 @@ const TestOrderSchema = new mongoose.Schema({
     ref: "Appointment",
     required: true,
   },
-  patientId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
-  doctorId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
-  tests: [{
-    type: String,
-    enum: testTypes,
-    required: true,
-  }],
-  status: {
-    type: String,
-    enum: testStatuses,
-    default: "Pending Sample Collection",
-  },
+  tests: [
+    {
+      name: { type: String, required: true },
+      sampleType: { type: String },
+      instructions: { type: String },
+      reason: { type: String },
+      priority: { type: String, enum: ["Routine", "Urgent", "STAT"], default: "Routine" },
+      expectedResultDate: { type: Date },
+      status: { type: String, enum: ["Pending Sample Collection", "In Progress", "Completed"], default: "Pending Sample Collection" },
+    },
+  ],
   createdAt: {
     type: Date,
     default: Date.now,

@@ -20,7 +20,7 @@ export default function Sidebar() {
       { label: "Time Slots", href: "/doctor/timeslots", icon: <Calendar className="w-5 h-5"/>},
       { label: "Appointments", href: "/appointments/", icon: <Calendar className="w-5 h-5" /> },
       { label: "Diagnosis", href: "/diagnosis/", icon: <Calendar className="w-5 h-5" /> },
-      { label: "Patients", href: "/doctor/patients", icon: <Stethoscope className="w-5 h-5" /> },
+      { label: "Test Orders", href: "/test/my", icon: <Stethoscope className="w-5 h-5" /> },
       { label: "Bills", href: "/bills/my", icon: <Stethoscope className="w-5 h-5" /> },
     ],
     receptionist: [
@@ -30,6 +30,10 @@ export default function Sidebar() {
     nurse: [
       { label: "Dashboard", href: "/dashboard", icon: <Home className="w-5 h-5" /> },
       { label: "Record Vitals", href: "/nurse/vitals", icon: <Stethoscope className="w-5 h-5" /> },
+    ],
+     labtech: [
+      { label: "Dashboard", href: "/dashboard", icon: <Home className="w-5 h-5" /> },
+      { label: "Test Orders", href: "/tests/collect", icon: <Stethoscope className="w-5 h-5" /> },
     ],
     patient: [
       { label: "Dashboard", href: "/dashboard", icon: <Home className="w-5 h-5" /> },

@@ -8,6 +8,8 @@ const AppointmentSchema = new mongoose.Schema(
     timeSlot: { type: String, required: true },
     checkedIn: { type: Boolean, default: false }, // ✅ Updated: Track check-in status
     checkInTime: { type: Date, default: null }, // ✅ New: Timestamp for check-in
+    checkInToken: {type: String},
+    checkInTokenExpires: { type: Date, default: null },
   },
   { timestamps: true }
 );

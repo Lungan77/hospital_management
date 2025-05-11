@@ -26,7 +26,7 @@ export async function POST(req) {
       );
     }
 
-    if (!["doctor", "nurse", "receptionist", "admin", "patient"].includes(role)) {
+    if (!["doctor", "nurse", "receptionist", "admin", "patient", "labtech"].includes(role)) {
       return new Response(
         JSON.stringify({ error: "Invalid role" }),
         { status: 400 }
@@ -48,8 +48,9 @@ export async function POST(req) {
     }
 
     const hashedPassword = await bcrypt.hash(password || "Password01", 10);
+    console.log(name, title, email, idNumber, hashedPassword, phone, gender, role)
     const newUser = await User.create({ name, title, email, idNumber, password: hashedPassword, phone, gender, role });
-
+    console.log(1)
     return new Response(
       JSON.stringify({ message: "User created successfully", user: newUser }),
       { status: 201 }
