@@ -2,9 +2,11 @@
 
 import { useRef } from "react";
 import { useReactToPrint } from "react-to-print";
+import { useParams } from "next/navigation";
 import BarcodeLabel from "@/components/BarcodeLabel";
 
 export default function PrintSampleBarcodePage() {
+  const { barcode } = useParams();
   const componentRef = useRef();
 
   const handlePrint = useReactToPrint({
@@ -14,7 +16,7 @@ export default function PrintSampleBarcodePage() {
   return (
     <div className="border p-4 bg-white rounded max-w-md mx-auto mt-10">
       <div ref={componentRef}>
-        <BarcodeLabel value="SMP-123456" label="Sample for Blood Test" />
+        <BarcodeLabel value={barcode} label={`Sample Barcode: ${barcode}`} />
       </div>
       <button
         onClick={handlePrint}
