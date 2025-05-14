@@ -31,12 +31,12 @@ function CollectSample() {
 
   const submitSample = async () => {
     if (testIndex === "") return setMessage("Please select a test.");
-    if (!barcode || !sampleType) return setMessage("Barcode and sample type required.");
+    if (!sampleType) return setMessage("Sample type required.");
 
     const res = await fetch("/api/tests/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ testOrderId, testIndex, barcode, sampleType, notes }),
+      body: JSON.stringify({ testOrderId, testIndex, sampleType, notes }),
     });
 
     const data = await res.json();
@@ -67,13 +67,6 @@ function CollectSample() {
             )}
           </select>
 
-          <input
-            type="text"
-            placeholder="Sample Barcode"
-            className="mt-4 p-2 border w-full"
-            value={barcode}
-            onChange={(e) => setBarcode(e.target.value)}
-          />
           <input
             type="text"
             placeholder="Sample Type"
