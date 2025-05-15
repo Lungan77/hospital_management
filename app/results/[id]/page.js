@@ -337,7 +337,7 @@ function TestResultPage({ params }) {
             <dd>{testResult.testOrderId?.appointmentId?.userId?.name || "N/A"}</dd>
           </div>
           <div>
-            <dt className="font-semibold text-gray-900">Doctor's Email</dt>
+            <dt className="font-semibold text-gray-900">Doctor&apos;s Email</dt>
             <dd>{testResult.testOrderId?.appointmentId?.userId?.email || "N/A"}</dd>
           </div>
         </dl>
