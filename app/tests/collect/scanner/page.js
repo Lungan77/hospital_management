@@ -58,18 +58,18 @@ function BarcodeScannerPage() {
   }, [sample]);
 
   return (
-    <div className="p-6 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6 text-center">Scan Sample Barcode</h1>
+    <div className="p-4 sm:p-6 max-w-full sm:max-w-3xl mx-auto">
+      <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-center">Scan Sample Barcode</h1>
 
       {message && <p className="text-center text-red-500 mb-4">{message}</p>}
 
       {!sample && (
-        <div className="bg-black rounded-lg overflow-hidden shadow-lg">
+        <div className="bg-black rounded-lg overflow-hidden shadow-lg max-w-full mx-auto" style={{ maxWidth: 600 }}>
           <BarcodeScannerComponent
-            width={600}
-            height={300}
+            width={window.innerWidth > 600 ? 600 : window.innerWidth * 0.9}
+            height={window.innerWidth > 600 ? 300 : (window.innerWidth * 0.9) / 2}
             onUpdate={handleScan}
-            facingMode="environment" // back camera on mobile
+            facingMode="environment"
           />
           <p className="text-sm text-center text-gray-300 py-2 bg-gray-800">
             Align the barcode within the frame
@@ -78,7 +78,7 @@ function BarcodeScannerPage() {
       )}
 
       {sample && (
-        <div className="mt-6 bg-white p-6 rounded-lg shadow-md">
+        <div className="mt-6 bg-white p-4 sm:p-6 rounded-lg shadow-md max-w-full mx-auto" style={{ maxWidth: 600 }}>
           <div ref={componentRef} className="mb-4 border p-4 rounded bg-gray-50">
             <BarcodeLabel
               value={sample.barcode}
@@ -109,7 +109,6 @@ function BarcodeScannerPage() {
               onClick={() => {
                 setSample(null);
                 setMessage("");
-                // scannedCode reset handled by useEffect
               }}
               className="bg-gray-600 text-white py-2 rounded hover:bg-gray-700"
             >
