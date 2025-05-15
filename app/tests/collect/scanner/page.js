@@ -23,15 +23,6 @@ function BarcodeScannerPage() {
     content: () => componentRef.current,
   });
 
-  // Handle barcode scan
-  const handleScan = async (err, result) => {
-    if (result?.text && result.text !== scannedCode) {
-      const barcode = result.text;
-      setScannedCode(barcode);
-      await fetchSample(barcode);
-    }
-  };
-
   // Fetch sample from server
   const fetchSample = async (barcode) => {
     try {
@@ -51,6 +42,22 @@ function BarcodeScannerPage() {
     }
   };
 
+  // Handle barcode scan synchronously (debounced by checking scannedCode)
+  const handleScan = (err, result) => {
+    if (result?.text && result.text !== scannedCode) {
+      const barcode = result.text;
+      setScannedCode(barcode);
+      fetchSample(barcode);
+    }
+  };
+
+  // Reset scannedCode when sample is reset so you can scan same barcode again if needed
+  useEffect(() => {
+    if (!sample) {
+      setScannedCode("");
+    }
+  }, [sample]);
+
   return (
     <div className="p-6 max-w-2xl mx-auto">
       <h1 className="text-2xl font-bold mb-6 text-center">Scan Sample Barcode</h1>
@@ -63,6 +70,8 @@ function BarcodeScannerPage() {
             width={600}
             height={300}
             onUpdate={handleScan}
+            // Optional: set facingMode to 'environment' for back camera on mobile
+            facingMode="environment"
           />
           <p className="text-sm text-center text-gray-300 py-2 bg-gray-800">
             Align the barcode within the frame
@@ -101,8 +110,8 @@ function BarcodeScannerPage() {
             <button
               onClick={() => {
                 setSample(null);
-                setScannedCode("");
                 setMessage("");
+                // scannedCode reset handled by useEffect
               }}
               className="bg-gray-600 text-white py-2 rounded hover:bg-gray-700"
             >

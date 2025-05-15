@@ -32,6 +32,9 @@ importers:
       bcryptjs:
         specifier: ^3.0.2
         version: 3.0.2
+      html2canvas:
+        specifier: ^1.4.1
+        version: 1.4.1
       html5-qrcode:
         specifier: ^2.3.8
         version: 2.3.8
@@ -3136,8 +3139,7 @@ snapshots:
 
   balanced-match@1.0.2: {}
 
-  base64-arraybuffer@1.0.2:
-    optional: true
+  base64-arraybuffer@1.0.2: {}
 
   bcrypt@5.1.1:
     dependencies:
@@ -3254,7 +3256,6 @@ snapshots:
   css-line-break@2.1.0:
     dependencies:
       utrie: 1.0.2
-    optional: true
 
   damerau-levenshtein@1.0.8: {}
 
@@ -3838,7 +3839,6 @@ snapshots:
     dependencies:
       css-line-break: 2.1.0
       text-segmentation: 1.0.3
-    optional: true
 
   html5-qrcode@2.3.8: {}
 
@@ -4779,7 +4779,6 @@ snapshots:
   text-segmentation@1.0.3:
     dependencies:
       utrie: 1.0.2
-    optional: true
 
   tinyglobby@0.2.12:
     dependencies:
@@ -4868,7 +4867,6 @@ snapshots:
   utrie@1.0.2:
     dependencies:
       base64-arraybuffer: 1.0.2
-    optional: true
 
   uuid@8.3.2: {}
 
