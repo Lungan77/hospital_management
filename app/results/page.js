@@ -63,9 +63,9 @@ export default function TestResultsList() {
                     {new Date(result.recordedAt).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4">
-                    <Link href={`/lab/results/`}>
+                    <Link href={`/results/${result._id}`}>
                       <p className="text-blue-600 hover:text-blue-800 hover:underline transition-colors cursor-pointer">
-                        View
+                        View Details
                       </p>
                     </Link>
                   </td>
