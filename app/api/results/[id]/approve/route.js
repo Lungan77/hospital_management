@@ -28,6 +28,7 @@ export async function POST(req, { params }) {
     // Update the status to 'approved'
     testResult.status = 'Approved';
     testResult.approvedAt = new Date();
+    console.log('Test result approved at:', testResult.approvedAt);
     await testResult.save();
 
     // Send email notification to the doctor
