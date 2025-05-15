@@ -17,7 +17,8 @@ const TestResultSchema = new mongoose.Schema({
   results: [ResultEntrySchema],
   comments: { type: String },
   status: { type: String, enum: ['Completed', 'Approved'], default: 'Completed' },
-  recordedAt: { type: Date, default: Date.now }
+  recordedAt: { type: Date, default: Date.now },
+  approvedAt: { type: Date },
 });
 
 export default mongoose.models.TestResult || mongoose.model('TestResult', TestResultSchema);

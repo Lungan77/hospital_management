@@ -27,10 +27,11 @@ export async function POST(req, { params }) {
 
     // Update the status to 'approved'
     testResult.status = 'Approved';
+    testResult.approvedAt = new Date();
     await testResult.save();
 
     // Send email notification to the doctor
-    const doctor = testResult.testOrderId.appointmentId.userId;
+    const doctor = testResult.testOrderId.appointmentId.doctorId;
 
     // Configure Nodemailer transporter
     const transporter = nodemailer.createTransport({
@@ -43,13 +44,12 @@ export async function POST(req, { params }) {
 
     const mailOptions = {
       from: process.env.GMAIL_USER,
-      to: testResult.testOrderId.appointmentId.doctorId.email,
+      to: doctor.email,
       subject: 'Test Result Approved',
-      text: `Dear Dr. ${testResult.testOrderId.appointmentId.name},\n\nThe test result for your patient has been approved.\n\nBest regards,\nYour Lab Team`,
       html: `
         <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
           <h2 style="color: #2E86C1;">Test Result Approved</h2>
-          <p>Dear Dr. <strong>${testResult.testOrderId.appointmentId.name}</strong>,</p>
+          <p>Dear Dr. <strong>${doctor.name}</strong>,</p>
           <p>We are pleased to inform you that the test result for your patient has been <strong>approved</strong>.</p>
           <p>Please log in to the system to view the full details of the test result.</p>
           <br />
