@@ -42,16 +42,15 @@ function BarcodeScannerPage() {
     }
   };
 
-  // Handle barcode scan synchronously (debounced by checking scannedCode)
-  const handleScan = (err, result) => {
-    if (result?.text && result.text !== scannedCode) {
-      const barcode = result.text;
-      setScannedCode(barcode);
-      fetchSample(barcode);
+  // Handle barcode scan with correct onUpdate signature
+  const handleScan = ({ error, text }) => {
+    if (text && text !== scannedCode) {
+      setScannedCode(text);
+      fetchSample(text);
     }
   };
 
-  // Reset scannedCode when sample is reset so you can scan same barcode again if needed
+  // Reset scannedCode when sample is cleared
   useEffect(() => {
     if (!sample) {
       setScannedCode("");
@@ -70,8 +69,7 @@ function BarcodeScannerPage() {
             width={600}
             height={300}
             onUpdate={handleScan}
-            // Optional: set facingMode to 'environment' for back camera on mobile
-            facingMode="environment"
+            facingMode="environment" // back camera on mobile
           />
           <p className="text-sm text-center text-gray-300 py-2 bg-gray-800">
             Align the barcode within the frame
