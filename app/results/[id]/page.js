@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useEffect, use } from "react";
+import { useSession } from "next-auth/react";
 import withAuth from "@/hoc/withAuth";
 import jsPDF from "jspdf";
+import Link from "next/link"
 
 function TestResultPage({ params }) {
   const unwrappedParams = use(params);
@@ -10,6 +12,7 @@ function TestResultPage({ params }) {
   const [testResult, setTestResult] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { data: session } = useSession();
 
   useEffect(() => {
     async function fetchTestResult() {
@@ -28,6 +31,34 @@ function TestResultPage({ params }) {
     }
     fetchTestResult();
   }, [id]);
+
+  function approveTestResult() {
+    async function approve() {  
+      try {
+        const res = await fetch(`/api/results/${id}/approve`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ status: "approved" }),
+        });
+
+        if (!res.ok) throw new Error("Failed to approve test result");
+        const data = await res.json();
+
+
+        if (data.message) {
+
+          alert(data.message);
+        } else {
+          alert("Test result approved successfully.");
+        }
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+    approve();
+  }
 
   function generatePDF() {
     if (!testResult) return;
@@ -285,6 +316,7 @@ function TestResultPage({ params }) {
             Detailed view of the selected test result.
           </p>
         </div>
+        
         <button
           onClick={generatePDF}
           className="inline-block bg-blue-600 text-white px-5 py-2 rounded-lg shadow hover:bg-blue-700 transition"
@@ -334,11 +366,11 @@ function TestResultPage({ params }) {
           </div>
           <div>
             <dt className="font-semibold text-gray-900">Doctor</dt>
-            <dd>{testResult.testOrderId?.appointmentId?.userId?.name || "N/A"}</dd>
+            <dd>{testResult.testOrderId?.appointmentId?.doctorId?.name || "N/A"}</dd>
           </div>
           <div>
             <dt className="font-semibold text-gray-900">Doctor&apos;s Email</dt>
-            <dd>{testResult.testOrderId?.appointmentId?.userId?.email || "N/A"}</dd>
+            <dd>{testResult.testOrderId?.appointmentId?.doctorId?.email || "N/A"}</dd>
           </div>
         </dl>
       </section>
@@ -400,7 +432,19 @@ function TestResultPage({ params }) {
             {testResult.comments}
           </p>
         </section>
+      
       )}
+      <div>
+        {session?.user?.role === "labtech" && testResult.status !== "Approved" && (
+  
+          <button
+            onClick={approveTestResult}
+            className="inline-block bg-green-600 text-white px-5 py-2 rounded-lg shadow hover:bg-green-700 transition cursor-pointer mt-4"
+          >
+            Approve
+          </button>
+        )}
+      </div>
     </main>
   );
 }

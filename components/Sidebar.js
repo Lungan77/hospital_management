@@ -34,6 +34,9 @@ export default function Sidebar() {
      labtech: [
       { label: "Dashboard", href: "/dashboard", icon: <Home className="w-5 h-5" /> },
       { label: "Test Orders", href: "/tests/collect", icon: <Stethoscope className="w-5 h-5" /> },
+      { label: "Samples", href: "/samples", icon: <Home className="w-5 h-5" /> },
+      { label: "Test Results", href: "/results", icon: <Stethoscope className="w-5 h-5" /> },
+      { label: "Scanner", href: "/tests/collect/scanner", icon: <Stethoscope className="w-5 h-5" /> },
     ],
     patient: [
       { label: "Dashboard", href: "/dashboard", icon: <Home className="w-5 h-5" /> },

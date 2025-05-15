@@ -28,4 +28,4 @@ function Dashboard() {
   );
 }
 
-export default withAuth(Dashboard, ["admin", "doctor", "nurse", "receptionist", "patient"]);
+export default withAuth(Dashboard, ["admin", "doctor", "nurse", "receptionist", "patient", "labtech"]);
