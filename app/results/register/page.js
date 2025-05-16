@@ -80,7 +80,7 @@ export default function RegisterTestResult() {
       const data = await res.json();
       if (res.ok) {
         toast.success("Test result registered successfully");
-        router.push(`/lab/results/${sampleInfo.testOrderId}`);
+        router.push(`/results/${sampleInfo.testOrderId}`);
       } else {
         toast.error(data.message || "Submission failed");
       }

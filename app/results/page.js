@@ -34,6 +34,11 @@ export default function TestResultsList() {
   return (
     <div className="max-w-7xl mx-auto px-6 py-8">
       <h2 className="text-3xl font-semibold text-gray-800 mb-6">🧪 Lab Test Results</h2>
+      <Link href="/results/register">
+        <button className="mb-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"> 
+          Add New Test Result
+        </button>
+      </Link>
       {testResults.length === 0 ? (
         <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 p-4 rounded-md">
           No test results found.

@@ -4,52 +4,52 @@ import { useEffect, useState } from "react";
 import withAuth from "@/hoc/withAuth";
 import Link from "next/link";
 
-function DoctorTestResults() {
-  const [results, setResults] = useState([]);
-  const [filteredResults, setFilteredResults] = useState([]);
+function TestOrdersPage() {
+  const [orders, setOrders] = useState([]);
+  const [filteredOrders, setFilteredOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
   useEffect(() => {
-    fetch("/api/results/doctor")
+    fetch("/api/tests/orders")
       .then((res) => res.json())
       .then((data) => {
-        setResults(data.results || []);
-        setFilteredResults(data.results || []);
+        setOrders(data.data || []);
+        setFilteredOrders(data.data || []);
         setLoading(false);
       })
       .catch(() => setLoading(false));
   }, []);
 
   useEffect(() => {
-    let filtered = results;
+    let filtered = orders;
 
     if (statusFilter) {
-      filtered = filtered.filter((result) => result.status === statusFilter);
+      filtered = filtered.filter((order) => order.status === statusFilter);
     }
 
     if (startDate) {
       const start = new Date(startDate);
       filtered = filtered.filter(
-        (result) => new Date(result.recordedAt) >= start
+        (order) => new Date(order.createdAt) >= start
       );
     }
 
     if (endDate) {
       const end = new Date(endDate);
       filtered = filtered.filter(
-        (result) => new Date(result.recordedAt) <= end
+        (order) => new Date(order.createdAt) <= end
       );
     }
 
-    setFilteredResults(filtered);
-  }, [statusFilter, startDate, endDate, results]);
+    setFilteredOrders(filtered);
+  }, [statusFilter, startDate, endDate, orders]);
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">My Patients&apos; Test Results</h1>
+      <h1 className="text-2xl font-bold mb-4">My Test Orders</h1>
 
       {/* Filters */}
       <div className="mb-4 flex flex-wrap gap-4">
@@ -64,8 +64,8 @@ function DoctorTestResults() {
           >
             <option value="">All</option>
             <option value="pending">Pending</option>
-            <option value="recorded">Recorded</option>
-            <option value="approved">Approved</option>
+            <option value="in-progress">In Progress</option>
+            <option value="completed">Completed</option>
           </select>
         </div>
 
@@ -94,41 +94,43 @@ function DoctorTestResults() {
         </div>
       </div>
 
-      {/* Results Table */}
+      {/* Orders Table */}
       {loading ? (
         <p>Loading...</p>
-      ) : filteredResults.length === 0 ? (
-        <p>No test results found.</p>
+      ) : filteredOrders.length === 0 ? (
+        <p>No test orders found.</p>
       ) : (
         <table className="w-full table-auto border border-gray-300 text-sm">
           <thead className="bg-gray-100">
             <tr>
               <th className="border px-3 py-2">Patient</th>
-              <th className="border px-3 py-2">Test</th>
-              <th className="border px-3 py-2">Recorded By</th>
+              <th className="border px-3 py-2">Appointment</th>
               <th className="border px-3 py-2">Status</th>
-              <th className="border px-3 py-2">Date</th>
+              <th className="border px-3 py-2">Created At</th>
               <th className="border px-3 py-2">Details</th>
             </tr>
           </thead>
           <tbody>
-            {filteredResults.map((result, idx) => (
+            {filteredOrders.map((order, idx) => (
               <tr
                 key={idx}
                 className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}
               >
                 <td className="border px-3 py-2">
-                  {result.testOrderId.appointmentId.patientId?.name}
+                  {order.appointmentId.patientId || "N/A"}
                 </td>
-                <td className="border px-3 py-2">{result.testName}</td>
-                <td className="border px-3 py-2">{result.recordedBy?.name}</td>
-                <td className="border px-3 py-2">{result.status}</td>
                 <td className="border px-3 py-2">
-                  {new Date(result.recordedAt).toLocaleString()}
+                  {order.appointmentId?.date
+                    ? new Date(order.appointmentId.date).toLocaleDateString()
+                    : "N/A"}
+                </td>
+                <td className="border px-3 py-2">{order.tests[0].status}</td>
+                <td className="border px-3 py-2">
+                  {new Date(order.createdAt).toLocaleString()}
                 </td>
                 <td className="border px-3 py-2">
                   <Link
-                    href={`/results/${result._id}`}
+                    href={`/test-orders/${order._id}`}
                     className="text-blue-600 hover:underline"
                   >
                     View
@@ -143,4 +145,4 @@ function DoctorTestResults() {
   );
 }
 
-export default withAuth(DoctorTestResults, ["doctor"]);
+export default withAuth(TestOrdersPage, ["doctor"]);

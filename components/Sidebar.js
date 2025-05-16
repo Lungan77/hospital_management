@@ -20,7 +20,8 @@ export default function Sidebar() {
       { label: "Time Slots", href: "/doctor/timeslots", icon: <Calendar className="w-5 h-5"/>},
       { label: "Appointments", href: "/appointments/", icon: <Calendar className="w-5 h-5" /> },
       { label: "Diagnosis", href: "/diagnosis/", icon: <Calendar className="w-5 h-5" /> },
-      { label: "Test Orders", href: "/test/my", icon: <Stethoscope className="w-5 h-5" /> },
+      { label: "Test Orders", href: "/tests/orders", icon: <Stethoscope className="w-5 h-5" /> },
+      { label: "Test Results", href: "/results/doctor", icon: <Stethoscope className="w-5 h-5" /> },
       { label: "Bills", href: "/bills/my", icon: <Stethoscope className="w-5 h-5" /> },
     ],
     receptionist: [
