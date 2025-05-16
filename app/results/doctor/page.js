@@ -49,7 +49,7 @@ function DoctorTestResults() {
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">My Patients' Test Results</h1>
+      <h1 className="text-2xl font-bold mb-4">My Patients&apos; Test Results</h1>
 
       {/* Filters */}
       <div className="mb-4 flex flex-wrap gap-4">
