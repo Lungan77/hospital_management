@@ -5,42 +5,7 @@ import withAuth from "@/hoc/withAuth";
 import jsPDF from "jspdf";
 import JsBarcode from "jsbarcode";
 
-function SampleItem({ sample, onExport }) {
-  const [showBarcode, setShowBarcode] = useState(false);
-
-  return (
-    <li className="bg-white p-4 rounded shadow">
-      <p><strong>Barcode:</strong> {sample.barcode}</p>
-      <p><strong>Sample Type:</strong> {sample.sampleType}</p>
-      <p><strong>Collected:</strong> {new Date(sample.collectionTime).toLocaleString()}</p>
-      <p><strong>Test Order:</strong> {sample.testOrderId?._id || "N/A"}</p>
-
-      <div className="flex gap-4 mt-4">
-        <button
-          onClick={() => onExport(sample)}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          Export PDF
-        </button>
-        <button
-          onClick={() => setShowBarcode(!showBarcode)}
-          className="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800"
-        >
-          {showBarcode ? "Hide" : "Show"} Barcode
-        </button>
-      </div>
-
-      {showBarcode && (
-        <div className="mt-4 p-2 border rounded bg-gray-50">
-          {/* Display barcode SVG here */}
-          <BarcodeSVG value={sample.barcode} />
-        </div>
-      )}
-    </li>
-  );
-}
-
-// Component to render barcode as SVG using JsBarcode
+// Component to render barcode as SVG
 function BarcodeSVG({ value }) {
   const svgRef = useRef(null);
 
@@ -59,6 +24,49 @@ function BarcodeSVG({ value }) {
   return <svg ref={svgRef} />;
 }
 
+// Sample item with Store + Export options
+function SampleItem({ sample, onExport, onStoreClick }) {
+  const [showBarcode, setShowBarcode] = useState(false);
+
+  return (
+    <li className="bg-white p-4 rounded shadow">
+      <p><strong>Barcode:</strong> {sample.barcode}</p>
+      <p><strong>Sample Type:</strong> {sample.sampleType}</p>
+      <p><strong>Collected:</strong> {new Date(sample.collectionTime).toLocaleString()}</p>
+      <p><strong>Test Order:</strong> {sample.testOrderId?._id || "N/A"}</p>
+
+      <div className="flex gap-4 mt-4">
+        <button
+          onClick={() => onStoreClick(sample)}
+          className="bg-green-600 text-white px-3 py-2 rounded"
+        >
+          Store Sample
+        </button>
+
+        <button
+          onClick={() => onExport(sample)}
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+        >
+          Export PDF
+        </button>
+
+        <button
+          onClick={() => setShowBarcode(!showBarcode)}
+          className="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800"
+        >
+          {showBarcode ? "Hide" : "Show"} Barcode
+        </button>
+      </div>
+
+      {showBarcode && (
+        <div className="mt-4 p-2 border rounded bg-gray-50">
+          <BarcodeSVG value={sample.barcode} />
+        </div>
+      )}
+    </li>
+  );
+}
+
 export default withAuth(function SamplesPage() {
   const [samples, setSamples] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -67,10 +75,27 @@ export default withAuth(function SamplesPage() {
   const [showModal, setShowModal] = useState(false);
   const [sampleToExport, setSampleToExport] = useState(null);
 
-  // Hidden canvas to generate barcode images for PDF
+  const [storageModalOpen, setStorageModalOpen] = useState(false);
+  const [storageUnit, setStorageUnit] = useState("");
+  const [storageShelf, setStorageShelf] = useState("");
+  const [sampleToStore, setSampleToStore] = useState(null);
+
   const canvasRef = useRef(null);
 
-  // Generate barcode image on canvas and return dataURL
+  const fetchSamples = async () => {
+    try {
+      const res = await fetch("/api/samples");
+      const data = await res.json();
+      if (res.ok) {
+        setSamples(data.samples);
+      } else {
+        setMessage(data.error || "Failed to fetch samples.");
+      }
+    } catch {
+      setMessage("Error fetching samples.");
+    }
+  };
+
   const generateBarcodeDataUrl = (barcodeValue) => {
     if (!canvasRef.current) {
       canvasRef.current = document.createElement("canvas");
@@ -90,7 +115,6 @@ export default withAuth(function SamplesPage() {
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
 
-    // Header
     pdf.setFontSize(16);
     pdf.setTextColor("#003366");
     pdf.text("Hospital - Lab Barcode", pageWidth / 2, 40, { align: "center" });
@@ -98,30 +122,23 @@ export default withAuth(function SamplesPage() {
     pdf.setLineWidth(1);
     pdf.line(40, 50, pageWidth - 40, 50);
 
-    // Generate barcode image
     const barcodeImg = generateBarcodeDataUrl(sample.barcode);
-
-    // Barcode image dimensions
     const imgWidth = 300;
     const imgHeight = 80;
     const imgX = (pageWidth - imgWidth) / 2;
     const imgY = 80;
 
-    // Add barcode image to PDF
     pdf.addImage(barcodeImg, "PNG", imgX, imgY, imgWidth, imgHeight);
 
-    // Details below barcode
     pdf.setFontSize(12);
     pdf.setTextColor("#000");
     pdf.text(`Barcode: ${sample.barcode}`, pageWidth / 2, imgY + imgHeight + 30, { align: "center" });
     pdf.text(`Sample Type: ${sample.sampleType}`, pageWidth / 2, imgY + imgHeight + 50, { align: "center" });
     pdf.text(`Collected: ${new Date(sample.collectionTime).toLocaleString()}`, pageWidth / 2, imgY + imgHeight + 70, { align: "center" });
 
-    // Footer with page number
     pdf.setFontSize(10);
     pdf.setTextColor("#666");
-    const footerText = `Page 1 of 1`;
-    pdf.text(footerText, pageWidth - 60, pageHeight - 30);
+    pdf.text("Page 1 of 1", pageWidth - 60, pageHeight - 30);
 
     return pdf.output("dataurlstring");
   };
@@ -133,27 +150,48 @@ export default withAuth(function SamplesPage() {
     setShowModal(true);
   };
 
+  const handleStoreClick = (sample) => {
+    setSampleToStore(sample);
+    setStorageUnit("");
+    setStorageShelf("");
+    setStorageModalOpen(true);
+  };
+
+  const submitStorage = async () => {
+    if (!sampleToStore || !storageUnit || !storageShelf) {
+      alert("Please enter both unit and shelf.");
+      return;
+    }
+
+    try {
+      console.log(sampleToStore._id)
+      const res = await fetch(`/api/samples/store/${sampleToStore._id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ unit: storageUnit, shelf: storageShelf }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setMessage("Sample stored successfully.");
+        fetchSamples(); // Refresh list
+      } else {
+        alert(data.error || "Failed to store sample.");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Error storing sample.");
+    } finally {
+      setStorageModalOpen(false);
+    }
+  };
+
   useEffect(() => {
     fetchSamples();
   }, []);
 
-  const fetchSamples = async () => {
-    try {
-      const res = await fetch("/api/samples");
-      const data = await res.json();
-      if (res.ok) {
-        setSamples(data.samples);
-      } else {
-        setMessage(data.error || "Failed to fetch samples.");
-      }
-    } catch {
-      setMessage("Error fetching samples.");
-    }
-  };
-
   const filteredSamples = samples.filter((sample) =>
     [sample.barcode, sample.sampleType].some((val) =>
-      val.toLowerCase().includes(searchTerm.toLowerCase())
+      (val || "").toLowerCase().includes(searchTerm.toLowerCase())
     )
   );
 
@@ -161,7 +199,6 @@ export default withAuth(function SamplesPage() {
     <div className="p-6 max-w-4xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">Registered Test Samples</h1>
 
-      {/* Search */}
       <div className="flex gap-2 mb-4">
         <input
           type="text"
@@ -180,7 +217,7 @@ export default withAuth(function SamplesPage() {
         )}
       </div>
 
-      {message && <p className="text-red-500 mb-4">{message}</p>}
+      {message && <p className="text-green-600 mb-4">{message}</p>}
 
       {filteredSamples.length === 0 ? (
         <p>No samples found.</p>
@@ -191,6 +228,7 @@ export default withAuth(function SamplesPage() {
               key={sample._id}
               sample={sample}
               onExport={handleExportPDF}
+              onStoreClick={handleStoreClick}
             />
           ))}
         </ul>
@@ -210,14 +248,11 @@ export default withAuth(function SamplesPage() {
                 ×
               </button>
             </div>
+
             <div className="flex-1 overflow-auto p-4">
-              <iframe
-                src={pdfDataUrl}
-                title="PDF Preview"
-                className="w-full h-full"
-                frameBorder="0"
-              />
+              <iframe src={pdfDataUrl} className="w-full h-full" title="PDF Preview" />
             </div>
+
             <div className="flex justify-end gap-4 p-4 border-t">
               <a
                 href={pdfDataUrl}
@@ -231,6 +266,45 @@ export default withAuth(function SamplesPage() {
                 className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
               >
                 Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Storage Modal */}
+      {storageModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white p-6 rounded shadow-lg w-full max-w-sm">
+            <h2 className="text-xl font-bold mb-4">Store Sample</h2>
+
+            <input
+              type="text"
+              placeholder="Storage Unit"
+              value={storageUnit}
+              onChange={(e) => setStorageUnit(e.target.value)}
+              className="w-full mb-2 px-3 py-2 border rounded"
+            />
+            <input
+              type="text"
+              placeholder="Shelf"
+              value={storageShelf}
+              onChange={(e) => setStorageShelf(e.target.value)}
+              className="w-full mb-4 px-3 py-2 border rounded"
+            />
+
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setStorageModalOpen(false)}
+                className="bg-gray-500 text-white px-4 py-2 rounded"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={submitStorage}
+                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+              >
+                Save
               </button>
             </div>
           </div>
