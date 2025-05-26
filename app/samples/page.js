@@ -29,37 +29,53 @@ function SampleItem({ sample, onExport, onStoreClick }) {
   const [showBarcode, setShowBarcode] = useState(false);
 
   return (
-    <li className="bg-white p-4 rounded shadow">
-      <p><strong>Barcode:</strong> {sample.barcode}</p>
-      <p><strong>Sample Type:</strong> {sample.sampleType}</p>
-      <p><strong>Collected:</strong> {new Date(sample.collectionTime).toLocaleString()}</p>
-      <p><strong>Test Order:</strong> {sample.testOrderId?._id || "N/A"}</p>
+    <li className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 transition hover:shadow-2xl">
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center gap-2">
+          <span className="inline-block bg-blue-100 text-blue-700 text-xs font-semibold px-2 py-1 rounded">
+            {sample.sampleType}
+          </span>
+          <span className="text-gray-400 text-xs">#{sample.barcode}</span>
+        </div>
+        <div className="text-gray-700 text-sm">
+          <strong>Collected:</strong> {new Date(sample.collectionTime).toLocaleString()}
+        </div>
+        <div className="text-gray-500 text-xs">
+          <strong>Test Order:</strong> {sample.testOrderId?._id || "N/A"}
+        </div>
+      </div>
 
-      <div className="flex gap-4 mt-4">
-        <button
-          onClick={() => onStoreClick(sample)}
-          className="bg-green-600 text-white px-3 py-2 rounded"
-        >
-          Store Sample
-        </button>
+      <div className="flex flex-wrap gap-3 mt-6">
+        {/* Conditionally render storage info or Store button */}
+        {sample.storage?.currentLocation?.unit && sample.storage?.currentLocation?.shelf ? (
+          <div className="text-sm bg-green-50 border border-green-200 text-green-800 px-4 py-2 rounded-lg shadow">
+            <strong>Stored at:</strong> {sample.storage.currentLocation.unit} / {sample.storage.currentLocation.shelf}
+          </div>
+        ) : (
+          <button
+            onClick={() => onStoreClick(sample)}
+            className="bg-green-600 text-white px-4 py-2 rounded-lg shadow hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400 transition"
+          >
+            Store Sample
+          </button>
+        )}
 
         <button
           onClick={() => onExport(sample)}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
         >
           Export PDF
         </button>
 
         <button
           onClick={() => setShowBarcode(!showBarcode)}
-          className="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800"
+          className="bg-gray-700 text-white px-4 py-2 rounded-lg shadow hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-400 transition"
         >
           {showBarcode ? "Hide" : "Show"} Barcode
         </button>
       </div>
-
       {showBarcode && (
-        <div className="mt-4 p-2 border rounded bg-gray-50">
+        <div className="mt-6 p-4 border rounded-lg bg-gray-50 flex justify-center">
           <BarcodeSVG value={sample.barcode} />
         </div>
       )}
@@ -164,7 +180,6 @@ export default withAuth(function SamplesPage() {
     }
 
     try {
-      console.log(sampleToStore._id)
       const res = await fetch(`/api/samples/store/${sampleToStore._id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -178,7 +193,6 @@ export default withAuth(function SamplesPage() {
         alert(data.error || "Failed to store sample.");
       }
     } catch (error) {
-      console.error("Error:", error);
       alert("Error storing sample.");
     } finally {
       setStorageModalOpen(false);
@@ -196,33 +210,39 @@ export default withAuth(function SamplesPage() {
   );
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Registered Test Samples</h1>
+    <div className="p-8 max-w-5xl mx-auto">
+      <h1 className="text-3xl font-extrabold mb-6 text-blue-900 tracking-tight">
+        Registered Test Samples
+      </h1>
 
-      <div className="flex gap-2 mb-4">
+      <div className="flex gap-2 mb-6">
         <input
           type="text"
           placeholder="Search by barcode or type..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="flex-1 px-3 py-2 border rounded"
+          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300 transition"
         />
         {searchTerm && (
           <button
             onClick={() => setSearchTerm("")}
-            className="px-3 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
+            className="px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition"
           >
             Clear
           </button>
         )}
       </div>
 
-      {message && <p className="text-green-600 mb-4">{message}</p>}
+      {message && (
+        <div className="mb-4 px-4 py-2 bg-green-50 border border-green-200 text-green-700 rounded-lg">
+          {message}
+        </div>
+      )}
 
       {filteredSamples.length === 0 ? (
-        <p>No samples found.</p>
+        <div className="text-gray-500 text-center py-12">No samples found.</div>
       ) : (
-        <ul className="space-y-6">
+        <ul className="space-y-8">
           {filteredSamples.map((sample) => (
             <SampleItem
               key={sample._id}
@@ -236,34 +256,34 @@ export default withAuth(function SamplesPage() {
 
       {/* PDF Preview Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded shadow-lg w-full max-w-3xl max-h-[90vh] flex flex-col">
-            <div className="flex justify-between items-center p-4 border-b">
-              <h2 className="text-lg font-semibold">PDF Preview</h2>
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col border-2 border-blue-200">
+            <div className="flex justify-between items-center p-6 border-b border-blue-100">
+              <h2 className="text-xl font-bold text-blue-900">PDF Preview</h2>
               <button
                 onClick={() => setShowModal(false)}
-                className="text-gray-700 hover:text-gray-900 font-bold text-xl leading-none"
+                className="text-gray-700 hover:text-blue-700 font-bold text-2xl leading-none focus:outline-none"
                 aria-label="Close modal"
               >
                 ×
               </button>
             </div>
 
-            <div className="flex-1 overflow-auto p-4">
-              <iframe src={pdfDataUrl} className="w-full h-full" title="PDF Preview" />
+            <div className="flex-1 overflow-auto p-6 bg-gray-50">
+              <iframe src={pdfDataUrl} className="w-full h-[60vh] rounded-lg border" title="PDF Preview" />
             </div>
 
-            <div className="flex justify-end gap-4 p-4 border-t">
+            <div className="flex justify-end gap-4 p-6 border-t border-blue-100">
               <a
                 href={pdfDataUrl}
                 download={`Barcode_${sampleToExport?.barcode}.pdf`}
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                className="bg-blue-600 text-white px-5 py-2 rounded-lg shadow hover:bg-blue-700 transition"
               >
                 Download PDF
               </a>
               <button
                 onClick={() => setShowModal(false)}
-                className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
+                className="bg-gray-400 text-white px-5 py-2 rounded-lg hover:bg-gray-500 transition"
               >
                 Close
               </button>
@@ -274,35 +294,35 @@ export default withAuth(function SamplesPage() {
 
       {/* Storage Modal */}
       {storageModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white p-6 rounded shadow-lg w-full max-w-sm">
-            <h2 className="text-xl font-bold mb-4">Store Sample</h2>
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+          <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-sm border-2 border-green-200">
+            <h2 className="text-2xl font-bold mb-6 text-green-800">Store Sample</h2>
 
             <input
               type="text"
               placeholder="Storage Unit"
               value={storageUnit}
               onChange={(e) => setStorageUnit(e.target.value)}
-              className="w-full mb-2 px-3 py-2 border rounded"
+              className="w-full mb-3 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-300 transition"
             />
             <input
               type="text"
               placeholder="Shelf"
               value={storageShelf}
               onChange={(e) => setStorageShelf(e.target.value)}
-              className="w-full mb-4 px-3 py-2 border rounded"
+              className="w-full mb-6 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-300 transition"
             />
 
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end gap-3">
               <button
                 onClick={() => setStorageModalOpen(false)}
-                className="bg-gray-500 text-white px-4 py-2 rounded"
+                className="bg-gray-400 text-white px-4 py-2 rounded-lg hover:bg-gray-500 transition"
               >
                 Cancel
               </button>
               <button
                 onClick={submitStorage}
-                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
               >
                 Save
               </button>

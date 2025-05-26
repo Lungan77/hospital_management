@@ -148,6 +148,38 @@ function BarcodeScannerPage() {
               🖨️ Print Barcode
             </button>
 
+            {/* Show storage info if available */}
+            {sample.storage && (
+              <div className="p-3 bg-green-50 border rounded text-sm">
+                <p><strong>Stored At:</strong> {sample.storage.location}</p>
+                <p><strong>Timestamp:</strong> {new Date(sample.storage.timestamp).toLocaleString()}</p>
+                <p><strong>Technician:</strong> {sample.storage.technicianName}</p>
+              </div>
+            )}
+
+            {/* Show appropriate button based on test result */}
+            {sample.result ? (
+              <button
+                className="bg-green-600 text-white py-2 rounded hover:bg-green-700"
+                onClick={() => {
+                  // Navigate to or display test results
+                  window.location.href = `/lab/results/${sample._id}`;
+                }}
+              >
+                📋 View Test Results
+              </button>
+            ) : (
+              <button
+                className="bg-yellow-600 text-white py-2 rounded hover:bg-yellow-700"
+                onClick={() => {
+                  // Navigate to results capture page
+                  window.location.href = `/lab/capture/${sample._id}`;
+                }}
+              >
+                🧪 Capture Results
+              </button>
+            )}
+
             <button
               onClick={() => {
                 setSample(null);
