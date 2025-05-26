@@ -5,15 +5,12 @@ import { usePathname } from "next/navigation";
 import {
   Home,
   Calendar,
-  Stethoscope,
   ClipboardList,
   LogOut,
-  FileText,
   Users,
   DollarSign,
   UserCheck,
   UserPlus,
-  FileMedical,
   User,
   File,
   Activity,
@@ -21,6 +18,7 @@ import {
   ScanLine,
   HeartPulse,
   Receipt,
+  FileMedical,
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -41,7 +39,7 @@ export default function Sidebar() {
       { label: "Diagnosis", href: "/diagnosis/", icon: <FileMedical className="w-5 h-5" /> },
       { label: "Test Orders", href: "/tests/orders", icon: <FlaskConical className="w-5 h-5" /> },
       { label: "Test Results", href: "/results/doctor", icon: <File className="w-5 h-5" /> },
-      { label: "Bills", href: "/bills/my", icon: <Receipt className="w-5 h-5" /> },
+      { label: "Diagnosis", href: "/diagnosis/", icon: <ClipboardList className="w-5 h-5" /> },
       { label: "Patients", href: "/patient/list", icon: <User className="w-5 h-5" /> },
     ],
     receptionist: [
