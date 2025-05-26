@@ -2,6 +2,7 @@ import { connectDB } from "@/lib/mongodb";
 import TestOrder from "@/models/TestOrder";
 import Appointment from "@/models/Appointment";
 import TestResult from "@/models/TestResult";
+import Sample from "@/models/Sample";
 import User from "@/models/User";
 
 export async function GET(req, context) {
