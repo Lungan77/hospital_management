@@ -39,7 +39,7 @@ export default function PatientListPage() {
     });
 
     return (
-        <div className="p-8 max-w-4xl mx-auto bg-white rounded-lg shadow-lg mt-10">
+        <div className="p-8 bg-white rounded-lg shadow-lg mt-10">
             <h1 className="text-3xl font-extrabold mb-8 text-center text-blue-700 tracking-tight">
                 Patient List
             </h1>

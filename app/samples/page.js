@@ -210,7 +210,7 @@ export default withAuth(function SamplesPage() {
   );
 
   return (
-    <div className="p-8 max-w-5xl mx-auto">
+    <div className="p-8">
       <h1 className="text-3xl font-extrabold mb-6 text-blue-900 tracking-tight">
         Registered Test Samples
       </h1>

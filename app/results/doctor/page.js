@@ -48,7 +48,7 @@ function DoctorTestResults() {
   }, [statusFilter, startDate, endDate, results]);
 
   return (
-    <div className="p-8 max-w-7xl mx-auto bg-white rounded-xl shadow-lg mt-8">
+    <div className="p-8 bg-white rounded-xl shadow-lg mt-8">
       <h1 className="text-3xl font-extrabold mb-6 text-blue-800 flex items-center gap-2">
         <svg className="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 17v-2a4 4 0 014-4h3m4 0a9 9 0 11-18 0 9 9 0 0118 0z" />

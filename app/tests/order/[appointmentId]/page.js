@@ -99,7 +99,7 @@ function OrderMedicalTest() {
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto bg-white rounded-lg shadow">
+    <div className="p-6 bg-white rounded-lg shadow">
       <h1 className="text-2xl font-bold mb-4">Order Medical Test</h1>
 
       {message && <p className="text-red-500">{message}</p>}

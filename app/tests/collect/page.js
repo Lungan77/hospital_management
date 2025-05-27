@@ -32,7 +32,7 @@ function RegisterSamples() {
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="p-6">
       <h1 className="text-2xl font-bold mb-4">Register Test Samples</h1>
       {message && <p className="text-green-600 mb-4">{message}</p>}
 

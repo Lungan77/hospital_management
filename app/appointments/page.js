@@ -38,7 +38,7 @@ function MyAppointments() {
   };
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
+    <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">My Appointments</h1>
         <button

@@ -80,7 +80,7 @@ export default function RegisterTestResult() {
       const data = await res.json();
       if (res.ok) {
         toast.success("Test result registered successfully");
-        router.push(`/results/${sampleInfo.testOrderId}`);
+        router.push(`/results`);
       } else {
         toast.error(data.message || "Submission failed");
       }
@@ -92,7 +92,7 @@ export default function RegisterTestResult() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto p-6">
+    <div className="p-8">
       <h2 className="text-2xl font-bold text-blue-800 mb-6">Register Test Results</h2>
 
       <div className="mb-4">

@@ -61,7 +61,7 @@ function TestOrdersPage() {
   }, [statusFilter, startDate, endDate, orders]);
 
   return (
-    <div className="p-8 max-w-6xl mx-auto bg-white rounded-xl shadow-lg mt-8">
+    <div className="p-8 mx-auto bg-white rounded-xl shadow-lg mt-8">
       <h1 className="text-3xl font-extrabold mb-6 text-gray-800 flex items-center gap-2">
         <svg className="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M9 17v-2a4 4 0 0 1 4-4h6M9 17a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v6a4 4 0 0 1-4 4H9z" /></svg>
         My Test Orders
