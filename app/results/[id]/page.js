@@ -58,10 +58,232 @@ function TestResultPage({ params }) {
     approve();
   }
 
+  
   function generatePDF() {
-    // ... unchanged ...
-    // (keep your existing PDF logic here)
-  }
+    if (!testResult) return;
+  
+    const doc = new jsPDF({
+      unit: "pt",
+      format: "a4",
+    });
+  
+    const margin = 40;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const contentWidth = pageWidth - 2 * margin;
+  
+    // Colors
+    const colors = {
+      title: "#2c3e50",
+      subtitle: "#34495e",
+      boxBg: "#ecf0f1",
+      boxBorder: "#bdc3c7",
+      headerBg: "#3498db",
+      headerText: "#fff",
+      rowAltBg: "#f4f6f8",
+      text: "#34495e",
+    };
+  
+    // Fonts and sizes
+    const fonts = {
+      titleSize: 22,
+      sectionTitleSize: 14,
+      normalSize: 11,
+      smallSize: 10,
+    };
+  
+    let cursorY = margin;
+  
+    // Add page footer with page numbers
+    function addFooter(pageNum, totalPages) {
+      doc.setFontSize(9);
+      doc.setTextColor("#888");
+      const footerText = `Page ${pageNum} of ${totalPages}`;
+      const textWidth = doc.getTextWidth(footerText);
+      doc.text(footerText, pageWidth - margin - textWidth, pageHeight - 10);
+    }
+  
+    // Title
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(fonts.titleSize);
+    doc.setTextColor(colors.title);
+    doc.text("Test Result Details", margin, cursorY);
+    cursorY += 30;
+  
+    // Function to draw info box with title and lines of text
+    function drawInfoBox(title, lines) {
+      const boxHeight = 18 + lines.length * 18;
+      // Background
+      doc.setFillColor(colors.boxBg);
+      doc.setDrawColor(colors.boxBorder);
+      doc.rect(margin - 4, cursorY - 14, contentWidth + 8, boxHeight, "FD");
+  
+      // Title
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(fonts.sectionTitleSize);
+      doc.setTextColor(colors.subtitle);
+      doc.text(title, margin, cursorY);
+  
+      // Text lines
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(fonts.normalSize);
+      doc.setTextColor(colors.text);
+  
+      let lineY = cursorY + 18;
+      lines.forEach((line) => {
+        const splitLine = doc.splitTextToSize(line, contentWidth);
+        splitLine.forEach((text) => {
+          doc.text(text, margin, lineY);
+          lineY += 16;
+        });
+      });
+  
+      cursorY += boxHeight + 15;
+    }
+  
+    // Test Information box
+    drawInfoBox("Test Information", [
+      `Test Name: ${testResult.testName || "N/A"}`,
+      `Status: ${testResult.status || "N/A"}`,
+      `Recorded By: ${testResult.recordedBy?.name || "N/A"}`,
+      `Recorded At: ${
+        testResult.recordedAt
+          ? new Date(testResult.recordedAt).toLocaleString()
+          : "N/A"
+      }`,
+    ]);
+  
+    // Appointment Details box
+    drawInfoBox("Appointment Details", [
+      `Appointment ID: ${
+        testResult.testOrderId?.appointmentId?._id || "N/A"
+      }`,
+      `Patient: ${testResult.testOrderId?.appointmentId?.patientId?.name || "N/A"}`,
+      `Doctor: ${testResult.testOrderId?.appointmentId?.userId?.name || "N/A"}`,
+      `Doctor's Email: ${
+        testResult.testOrderId?.appointmentId?.userId?.email || "N/A"
+      }`,
+    ]);
+  
+    // Test Results Title
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(fonts.sectionTitleSize);
+    doc.setTextColor(colors.title);
+    doc.text("Test Results", margin, cursorY);
+    cursorY += 18;
+  
+    // Table setup
+    const headers = [
+      "Parameter",
+      "Value",
+      "Unit",
+      "Reference Range",
+      "Interpretation",
+    ];
+    const colWidths = [120, 50, 50, 110, 110]; // total ~440pt
+    const tableX = margin;
+    const rowHeight = 18;
+  
+    // Draw header background
+    doc.setFillColor(colors.headerBg);
+    doc.rect(tableX, cursorY - 14, colWidths.reduce((a, b) => a + b), rowHeight, "F");
+  
+    // Header text
+    doc.setFontSize(fonts.normalSize);
+    doc.setTextColor(colors.headerText);
+    let x = tableX + 4;
+    headers.forEach((header, i) => {
+      doc.text(header, x, cursorY);
+      x += colWidths[i];
+    });
+    cursorY += rowHeight;
+  
+    // Draw table rows
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(fonts.smallSize);
+    doc.setTextColor(colors.text);
+  
+    function checkPageSpace(heightNeeded) {
+      if (cursorY + heightNeeded > pageHeight - margin) {
+        doc.addPage();
+        cursorY = margin;
+        // redraw header on new page
+        doc.setFillColor(colors.headerBg);
+        doc.rect(tableX, cursorY - 14, colWidths.reduce((a, b) => a + b), rowHeight, "F");
+        doc.setFontSize(fonts.normalSize);
+        doc.setTextColor(colors.headerText);
+        let x = tableX + 4;
+        headers.forEach((header, i) => {
+          doc.text(header, x, cursorY);
+          x += colWidths[i];
+        });
+        cursorY += rowHeight;
+        addFooter(doc.internal.getNumberOfPages(), doc.internal.getNumberOfPages());
+      }
+    }
+  
+    testResult.results.forEach((entry, idx) => {
+      checkPageSpace(rowHeight);
+  
+      // Alternate background
+      if (idx % 2 === 0) {
+        doc.setFillColor(colors.rowAltBg);
+        doc.rect(tableX, cursorY - 14, colWidths.reduce((a, b) => a + b), rowHeight, "F");
+      }
+  
+      const rowTexts = [
+        entry.parameter || "-",
+        entry.value !== undefined && entry.value !== null ? entry.value.toString() : "-",
+        entry.unit || "-",
+        entry.referenceRange || "-",
+        entry.interpretation || "-",
+      ];
+  
+      x = tableX + 4;
+      rowTexts.forEach((text, i) => {
+        // Wrap text in the cell if too long
+        const splitText = doc.splitTextToSize(text, colWidths[i] - 8);
+        doc.text(splitText, x, cursorY);
+        x += colWidths[i];
+      });
+  
+      cursorY += rowHeight;
+    });
+  
+    // Comments section
+    if (testResult.comments) {
+      cursorY += 20;
+      const commentsTitleHeight = 18;
+      checkPageSpace(commentsTitleHeight + 50);
+  
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(fonts.sectionTitleSize);
+      doc.setTextColor(colors.title);
+      doc.text("Comments", margin, cursorY);
+      cursorY += 20;
+  
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(fonts.normalSize);
+      doc.setTextColor(colors.text);
+  
+      const splitComments = doc.splitTextToSize(testResult.comments, contentWidth);
+      splitComments.forEach((line) => {
+        checkPageSpace(16);
+        doc.text(line, margin, cursorY);
+        cursorY += 16;
+      });
+    }
+  
+    // Add footer on every page
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      addFooter(i, pageCount);
+    }
+  
+    // Save PDF
+    doc.save(`TestResult-${testResult.testName || "unknown"}.pdf`);
+  } 
 
   if (loading)
     return (

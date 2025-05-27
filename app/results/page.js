@@ -68,10 +68,14 @@ export default function TestResultsList() {
                     {new Date(result.recordedAt).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4">
-                    <Link href={`/results/${result._id}`}>
-                      <p className="text-blue-600 hover:text-blue-800 hover:underline transition-colors cursor-pointer">
-                        View Details
-                      </p>
+                    <Link href={`/results/${result._id}`} class="inline-block px-3 py-1 bg-pink-600 text-white rounded hover:bg-blue-700 transition">
+                       Details
+                    </Link>
+                    <Link
+                      href={`/results/feedback/${result._id}`}
+                      className="inline-block px-3 py-1 ml-3 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                    >
+                        Feedback
                     </Link>
                   </td>
                 </tr>
