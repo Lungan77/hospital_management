@@ -11,7 +11,10 @@ export async function GET(req, { params }) {
     await connectDB();
 
     const barcode = params.barcode;
-    const sample = await Sample.findOne({ barcode }).lean();
+    const sample = await Sample.findOne({ barcode })
+        .populate("storage.history.storedBy", "name email")
+        .lean();
+        
     if (!sample) {
       return Response.json({ error: "Sample not found." }, { status: 404 });
     }

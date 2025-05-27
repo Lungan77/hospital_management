@@ -149,13 +149,23 @@ function BarcodeScannerPage() {
             </button>
 
             {/* Show storage info if available */}
-            {sample.storage && (
-              <div className="p-3 bg-green-50 border rounded text-sm">
-                <p><strong>Stored At:</strong> {sample.storage.location}</p>
-                <p><strong>Timestamp:</strong> {new Date(sample.storage.timestamp).toLocaleString()}</p>
-                <p><strong>Technician:</strong> {sample.storage.technicianName}</p>
+            {sample.storage?.history?.length > 0 && (
+              <div className="p-3 bg-green-50 border rounded text-sm space-y-2">
+                {sample.storage.history.map((entry, index) => (
+                  <div key={index}>
+                    <p><strong>Stored At:</strong> {entry.unit}, {entry.shelf}</p>
+                    <p><strong>Timestamp:</strong> {new Date(entry.storedAt).toLocaleString()}</p>
+                    <p>
+                      <strong>Technician:</strong>{" "}
+                      {entry.storedBy?.name
+                        ? `${entry.storedBy.name} (${entry.storedBy.email})`
+                        : "Unknown"}
+                    </p>
+                  </div>
+                ))}
               </div>
             )}
+
 
             {/* Show appropriate button based on test result */}
             {sample.result ? (
