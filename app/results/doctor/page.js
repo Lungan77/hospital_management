@@ -122,7 +122,7 @@ function DoctorTestResults() {
                 <th className="px-4 py-3 text-left font-semibold">Recorded By</th>
                 <th className="px-4 py-3 text-left font-semibold">Status</th>
                 <th className="px-4 py-3 text-left font-semibold">Date</th>
-                <th className="px-4 py-3 text-left font-semibold">Details</th>
+                <th className="px-4 py-3 text-left font-semibold">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -158,7 +158,13 @@ function DoctorTestResults() {
                       href={`/results/${result._id}`}
                       className="inline-block px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
                     >
-                      View
+                      View 
+                    </Link>
+                    <Link
+                      href={`/results/feedback/${result._id}`}
+                      className="inline-block px-3 py-1 ml-3 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                    >
+                       Feedback
                     </Link>
                   </td>
                 </tr>

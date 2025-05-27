@@ -53,7 +53,7 @@ function FeedbackPage() {
       }
 
       setSuccess("Feedback submitted successfully.");
-      router.push("/dashboard"); // or anywhere you'd like to redirect
+      router.push(`/results/feedback/${resultId}`); // or anywhere you'd like to redirect
     } catch (err) {
       console.error(err);
       setError("Something went wrong.");
