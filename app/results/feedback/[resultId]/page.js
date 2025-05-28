@@ -120,4 +120,4 @@ function FeedbackPage() {
   );
 }
 
-export default withAuth(FeedbackPage, ["doctor", "admin"]);
+export default withAuth(FeedbackPage, ["doctor", "labtech"]);
