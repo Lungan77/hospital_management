@@ -43,6 +43,8 @@ function RegisterSamples() {
           {orders.map((order) => (
             <li key={order._id} className="bg-gray-100 p-4 rounded shadow">
               <p className="font-semibold">Appointment Date: {new Date(order.appointmentId.date).toLocaleDateString()}</p>
+              <p className="text-sm text-gray-600">Patient: {order.appointmentId.patientId.name}</p>
+              <p className="text-sm text-gray-600">Doctor: {order.appointmentId.doctorId.name}</p>
               <ul className="mt-2 space-y-2">
                 {order.tests
                   .filter((t) => t.status === "Pending Sample Collection")
@@ -70,4 +72,4 @@ function RegisterSamples() {
   );
 }
 
-export default withAuth(RegisterSamples, ["labtech"]);
+export default withAuth(RegisterSamples, ["labtech", "nurse"]);

@@ -107,7 +107,6 @@ function OrderMedicalTest() {
       {appointment && (
         <div className="bg-gray-100 p-4 mb-6 rounded">
           <p><strong>Patient:</strong> {appointment.patientId.name}</p>
-          <p><strong>Doctor:</strong> {appointment.doctorId.name}</p>
           <p><strong>Date:</strong> {new Date(appointment.date).toLocaleDateString()}</p>
         </div>
       )}
