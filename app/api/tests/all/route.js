@@ -1,5 +1,6 @@
 import { connectDB } from "@/lib/mongodb";
 import TestOrder from "@/models/TestOrder";
+import Appointment from "@/models/Appointment";
 import { NextResponse } from "next/server";
 import User from "@/models/User";
 import { isAuthenticated } from "@/hoc/protectedRoute";
