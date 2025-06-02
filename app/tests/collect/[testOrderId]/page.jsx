@@ -38,7 +38,7 @@ function CollectSample() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ testOrderId, testIndex, sampleType, notes }),
     });
-
+ 
     const data = await res.json();
     setMessage(data.message || data.error);
     if (res.ok) router.push("/tests/collect");

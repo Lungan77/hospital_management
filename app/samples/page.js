@@ -43,6 +43,14 @@ function SampleItem({ sample, onExport, onStoreClick }) {
         <div className="text-gray-500 text-xs">
           <strong>Test Order:</strong> {sample.testOrderId?._id || "N/A"}
         </div>
+        <div className="text-gray-500 text-xs">
+          <strong>Collected By:</strong> {sample.collectedBy?.name || "Unknown"}
+        </div>
+        {sample.notes && (
+          <div className="text-gray-500 text-xs">
+            <strong>Notes:</strong> {sample.notes}
+          </div>
+        )}
       </div>
 
       <div className="flex flex-wrap gap-3 mt-6">

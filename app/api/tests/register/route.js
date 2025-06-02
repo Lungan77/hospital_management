@@ -5,7 +5,7 @@ import { isAuthenticated } from "@/hoc/protectedRoute";
 import { nanoid } from "nanoid"; // Optional short unique ID
 
 export async function POST(req) {
-  const auth = await isAuthenticated(req, ["labtech"]);
+  const auth = await isAuthenticated(req, ["labtech", "nurse"]);
   if (auth.error) return Response.json({ error: auth.error }, { status: auth.status });
 
   try {
