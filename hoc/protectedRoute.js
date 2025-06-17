@@ -3,14 +3,13 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 /**
  * Checks if the user is authenticated and has the required role.
- * @param {Request} req - The request object needed for getServerSession
  * @param {Array} allowedRoles - Roles allowed to access the resource
  * @returns {Object} Session object or API response with error
  */
-export async function isAuthenticated(req, allowedRoles = []) {
+export async function isAuthenticated(allowedRoles = []) {
   try {
-    // ✅ Fixed: Pass req to getServerSession for proper cookie access
-    const session = await getServerSession(req, authOptions);
+    // ✅ Fixed: Remove req parameter - getServerSession implicitly accesses request context in App Router
+    const session = await getServerSession(authOptions);
 
     // ✅ Check if the user is logged in
     if (!session) {
