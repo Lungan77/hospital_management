@@ -5,7 +5,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"; // Import NextAuth config
 
 export async function POST(req) {
-  const session = await getServerSession(authOptions);
+  // ✅ Fixed: Pass req to getServerSession for proper cookie access
+  const session = await getServerSession(req, authOptions);
 
   if (!session || session.user.role !== "admin") {
     return new Response(

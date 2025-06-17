@@ -3,14 +3,14 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 /**
  * Checks if the user is authenticated and has the required role.
- * @param {Request} req - The request object (not needed for getServerSession)
+ * @param {Request} req - The request object needed for getServerSession
  * @param {Array} allowedRoles - Roles allowed to access the resource
  * @returns {Object} Session object or API response with error
  */
 export async function isAuthenticated(req, allowedRoles = []) {
   try {
-    // ✅ Corrected: `getServerSession()` does not need `req` in Next.js App Router
-    const session = await getServerSession(authOptions);
+    // ✅ Fixed: Pass req to getServerSession for proper cookie access
+    const session = await getServerSession(req, authOptions);
 
     // ✅ Check if the user is logged in
     if (!session) {
