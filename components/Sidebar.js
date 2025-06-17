@@ -20,6 +20,7 @@ import {
   ScanLine,
   Activity,
   FolderKanban,
+  ChevronRight,
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -29,81 +30,120 @@ export default function Sidebar() {
 
   const menuItems = {
     admin: [
-      { label: "Dashboard", href: "/dashboard", icon: <Home className="w-5 h-5" /> },
-      { label: "Users", href: "/admin/users", icon: <Users className="w-5 h-5" /> },
-      { label: "Billing", href: "/admin/billing", icon: <CreditCard className="w-5 h-5" /> },
+      { label: "Dashboard", href: "/dashboard", icon: <Home className="w-5 h-5" />, color: "text-blue-500" },
+      { label: "Users", href: "/admin/users", icon: <Users className="w-5 h-5" />, color: "text-green-500" },
+      { label: "Billing", href: "/admin/billing", icon: <CreditCard className="w-5 h-5" />, color: "text-purple-500" },
     ],
     doctor: [
-      { label: "Dashboard", href: "/dashboard", icon: <Home className="w-5 h-5" /> },
-      { label: "Time Slots", href: "/doctor/timeslots", icon: <Calendar className="w-5 h-5" /> },
-      { label: "Appointments", href: "/appointments/", icon: <ClipboardList className="w-5 h-5" /> },
-      { label: "Diagnosis", href: "/diagnosis/", icon: <ClipboardCheck className="w-5 h-5" /> },
-      { label: "Test Orders", href: "/tests/orders", icon: <FilePlus className="w-5 h-5" /> },
-      { label: "Test Results", href: "/results/doctor", icon: <FileSearch className="w-5 h-5" /> },
-      { label: "Bills", href: "/bills/my", icon: <CreditCard className="w-5 h-5" /> },
-      { label: "Patients", href: "/patient/list", icon: <Users className="w-5 h-5" /> },
+      { label: "Dashboard", href: "/dashboard", icon: <Home className="w-5 h-5" />, color: "text-blue-500" },
+      { label: "Time Slots", href: "/doctor/timeslots", icon: <Calendar className="w-5 h-5" />, color: "text-indigo-500" },
+      { label: "Appointments", href: "/appointments/", icon: <ClipboardList className="w-5 h-5" />, color: "text-emerald-500" },
+      { label: "Diagnosis", href: "/diagnosis/", icon: <ClipboardCheck className="w-5 h-5" />, color: "text-orange-500" },
+      { label: "Test Orders", href: "/tests/orders", icon: <FilePlus className="w-5 h-5" />, color: "text-cyan-500" },
+      { label: "Test Results", href: "/results/doctor", icon: <FileSearch className="w-5 h-5" />, color: "text-pink-500" },
+      { label: "Bills", href: "/bills/my", icon: <CreditCard className="w-5 h-5" />, color: "text-yellow-500" },
+      { label: "Patients", href: "/patient/list", icon: <Users className="w-5 h-5" />, color: "text-teal-500" },
     ],
     receptionist: [
-      { label: "Dashboard", href: "/dashboard", icon: <Home className="w-5 h-5" /> },
-      { label: "Check-in", href: "/receptionist/appointments", icon: <ClipboardCheck className="w-5 h-5" /> },
+      { label: "Dashboard", href: "/dashboard", icon: <Home className="w-5 h-5" />, color: "text-blue-500" },
+      { label: "Check-in", href: "/receptionist/appointments", icon: <ClipboardCheck className="w-5 h-5" />, color: "text-green-500" },
     ],
     nurse: [
-      { label: "Dashboard", href: "/dashboard", icon: <Home className="w-5 h-5" /> },
-      { label: "Record Vitals", href: "/nurse/vitals", icon: <HeartPulse className="w-5 h-5" /> },
+      { label: "Dashboard", href: "/dashboard", icon: <Home className="w-5 h-5" />, color: "text-blue-500" },
+      { label: "Record Vitals", href: "/nurse/vitals", icon: <HeartPulse className="w-5 h-5" />, color: "text-red-500" },
     ],
     labtech: [
-      { label: "Dashboard", href: "/dashboard", icon: <Home className="w-5 h-5" /> },
-      { label: "Test Orders", href: "/tests/collect", icon: <FlaskConical className="w-5 h-5" /> },
-      { label: "Samples", href: "/samples", icon: <FolderKanban className="w-5 h-5" /> },
-      { label: "Test Results", href: "/results", icon: <FileSearch className="w-5 h-5" /> },
-      { label: "Scanner", href: "/tests/collect/scanner", icon: <ScanLine className="w-5 h-5" /> },
-      { label: "Analysis", href: "/tests/turnaround", icon: <Activity className="w-5 h-5" /> },
+      { label: "Dashboard", href: "/dashboard", icon: <Home className="w-5 h-5" />, color: "text-blue-500" },
+      { label: "Test Orders", href: "/tests/collect", icon: <FlaskConical className="w-5 h-5" />, color: "text-purple-500" },
+      { label: "Samples", href: "/samples", icon: <FolderKanban className="w-5 h-5" />, color: "text-indigo-500" },
+      { label: "Test Results", href: "/results", icon: <FileSearch className="w-5 h-5" />, color: "text-emerald-500" },
+      { label: "Scanner", href: "/tests/collect/scanner", icon: <ScanLine className="w-5 h-5" />, color: "text-orange-500" },
+      { label: "Analysis", href: "/tests/turnaround", icon: <Activity className="w-5 h-5" />, color: "text-cyan-500" },
     ],
     patient: [
-      { label: "Dashboard", href: "/dashboard", icon: <Home className="w-5 h-5" /> },
-      { label: "Appointments", href: "/appointments", icon: <Calendar className="w-5 h-5" /> },
-      { label: "Diagnosis", href: "/diagnosis/", icon: <ClipboardCheck className="w-5 h-5" /> },
-      { label: "Bills", href: "/bills/my", icon: <CreditCard className="w-5 h-5" /> },
+      { label: "Dashboard", href: "/dashboard", icon: <Home className="w-5 h-5" />, color: "text-blue-500" },
+      { label: "Appointments", href: "/appointments", icon: <Calendar className="w-5 h-5" />, color: "text-green-500" },
+      { label: "Diagnosis", href: "/diagnosis/", icon: <ClipboardCheck className="w-5 h-5" />, color: "text-purple-500" },
+      { label: "Bills", href: "/bills/my", icon: <CreditCard className="w-5 h-5" />, color: "text-orange-500" },
     ],
   };
 
   const role = session?.user?.role;
 
   return (
-    <aside className="sticky bottom-0 top-0 w-64 bg-gray-900 text-white h-screen p-0 shadow-xl flex flex-col">
-      <div className="flex items-center gap-3 px-6 py-6 border-b border-gray-800">
-        <Stethoscope className="w-8 h-8 text-blue-400" />
-        <h2 className="text-2xl font-bold tracking-tight">Hospital System</h2>
+    <aside className="sticky bottom-0 top-0 w-72 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white h-screen shadow-2xl flex flex-col border-r border-slate-700">
+      {/* Header */}
+      <div className="flex items-center gap-3 px-6 py-8 border-b border-slate-700 bg-gradient-to-r from-blue-600 to-blue-700">
+        <div className="p-2 bg-white/10 rounded-xl backdrop-blur-sm">
+          <Stethoscope className="w-8 h-8 text-blue-300" />
+        </div>
+        <div>
+          <h2 className="text-xl font-bold tracking-tight text-white">HealthCare</h2>
+          <p className="text-xs text-blue-200 font-medium">Management System</p>
+        </div>
       </div>
+
+      {/* User Info */}
+      {session && (
+        <div className="px-6 py-4 bg-slate-800/50 border-b border-slate-700">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+              {session.user.name?.charAt(0).toUpperCase()}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-white truncate">{session.user.name}</p>
+              <p className="text-xs text-slate-400 capitalize">{session.user.role}</p>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Navigation */}
       <nav className="flex-1 px-4 py-6 overflow-y-auto">
         {role && menuItems[role] ? (
-          <ul className="space-y-1">
-            {menuItems[role].map((item) => (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  className={`flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition-colors ${
-                    pathname === item.href
-                      ? "bg-blue-600 text-white shadow"
-                      : "text-gray-200 hover:bg-gray-700 hover:text-white"
-                  }`}
-                >
-                  {item.icon}
-                  <span>{item.label}</span>
-                </Link>
-              </li>
-            ))}
+          <ul className="space-y-2">
+            {menuItems[role].map((item) => {
+              const isActive = pathname === item.href;
+              return (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    className={`group flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
+                      isActive
+                        ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-500/25 transform scale-[1.02]"
+                        : "text-slate-300 hover:bg-slate-700/50 hover:text-white hover:transform hover:scale-[1.01]"
+                    }`}
+                  >
+                    <span className={`${isActive ? "text-blue-200" : item.color} transition-colors`}>
+                      {item.icon}
+                    </span>
+                    <span className="flex-1">{item.label}</span>
+                    {isActive && (
+                      <ChevronRight className="w-4 h-4 text-blue-200" />
+                    )}
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         ) : (
-          <span className="text-gray-400">No menu available</span>
+          <div className="text-center py-8">
+            <div className="w-16 h-16 bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-3">
+              <Users className="w-8 h-8 text-slate-400" />
+            </div>
+            <p className="text-slate-400 text-sm">No menu available</p>
+          </div>
         )}
       </nav>
-      <div className="px-4 pb-6">
+
+      {/* Logout Button */}
+      <div className="p-4 border-t border-slate-700 bg-slate-800/30">
         <button
           onClick={logout}
-          className="flex items-center gap-2 px-3 py-2 bg-red-600 w-full rounded-lg font-semibold hover:bg-red-700 transition-colors shadow"
+          className="group flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-red-600 to-red-700 w-full rounded-xl font-semibold hover:from-red-700 hover:to-red-800 transition-all duration-200 shadow-lg hover:shadow-red-500/25 hover:transform hover:scale-[1.02]"
         >
-          <LogOut className="w-5 h-5" /> Logout
+          <LogOut className="w-5 h-5 text-red-200" />
+          <span className="text-white">Logout</span>
         </button>
       </div>
     </aside>
