@@ -182,7 +182,7 @@ function Dashboard() {
             </div>
             <div className="hidden md:flex items-center gap-4">
               <div className="text-right">
-                <p className="text-sm text-gray-500">Today's Date</p>
+                <p className="text-sm text-gray-500">Today&apos;s Date</p>
                 <p className="text-lg font-semibold text-gray-800">
                   {new Date().toLocaleDateString('en-US', { 
                     weekday: 'long', 
