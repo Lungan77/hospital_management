@@ -72,7 +72,7 @@ function TodayAppointments() {
                 <Calendar className="w-10 h-10 text-white" />
               </div>
               <div>
-                <h1 className="text-5xl font-bold text-gray-900 mb-2">Today's Appointments</h1>
+                <h1 className="text-5xl font-bold text-gray-900 mb-2">Today&apos;s Appointments</h1>
                 <p className="text-gray-600 text-xl">Manage patient check-ins and appointment flow</p>
               </div>
             </div>
