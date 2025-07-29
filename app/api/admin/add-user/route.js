@@ -1,19 +1,11 @@
 import { connectDB } from "@/lib/mongodb";
 import User from "@/models/User";
 import bcrypt from "bcryptjs";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"; // Import NextAuth config
+import { isAuthenticated } from "@/hoc/protectedRoute";
 
 export async function POST(req) {
-  // ✅ Fixed: Pass req to getServerSession for proper cookie access
-  const session = await getServerSession(req, authOptions);
-
-  if (!session || session.user.role !== "admin") {
-    return new Response(
-      JSON.stringify({ error: "Unauthorized" }),
-      { status: 403 }
-    );
-  }
+  const auth = await isAuthenticated(req, ["admin"]);
+  if (auth.error) return Response.json({ error: auth.error }, { status: auth.status });
 
   try {
     const { name, title, email, idNumber, password, phone, gender, role } = await req.json();
@@ -49,14 +41,14 @@ export async function POST(req) {
     }
 
     const hashedPassword = await bcrypt.hash(password || "Password01", 10);
-    console.log(name, title, email, idNumber, hashedPassword, phone, gender, role)
     const newUser = await User.create({ name, title, email, idNumber, password: hashedPassword, phone, gender, role });
-    console.log(1)
+    
     return new Response(
       JSON.stringify({ message: "User created successfully", user: newUser }),
       { status: 201 }
     );
   } catch (error) {
+    console.error("Error creating user:", error);
     return new Response(
       JSON.stringify({ error: "Internal Server Error" }),
       { status: 500 }

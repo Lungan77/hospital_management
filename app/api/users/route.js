@@ -1,13 +1,10 @@
 import { connectDB } from "@/lib/mongodb";
 import User from "@/models/User";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { isAuthenticated } from "@/hoc/protectedRoute";
 
 export async function GET(req) {
-  const session = await getServerSession(req, authOptions);
-  if (!session || session.user.role !== "admin") {
-    return Response.json({ error: "Unauthorized" }, { status: 403 });
-  }
+  const auth = await isAuthenticated(req, ["admin"]);
+  if (auth.error) return Response.json({ error: auth.error }, { status: auth.status });
 
   try {
     await connectDB();
