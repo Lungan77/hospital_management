@@ -89,6 +89,10 @@ export default function Home() {
                 <Link href="/login" className="inline-flex items-center justify-center gap-2 px-8 py-4 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold text-lg hover:border-blue-600 hover:text-blue-600 transition-all duration-200">
                   Sign In
                 </Link>
+                <Link href="/emergency/report" className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl font-semibold text-lg hover:from-red-700 hover:to-red-800 transition-all duration-200 shadow-lg hover:shadow-red-500/25 transform hover:scale-105">
+                  Emergency Report
+                  <ArrowRight className="w-5 h-5" />
+                </Link>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 pt-8">

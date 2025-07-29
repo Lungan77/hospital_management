@@ -21,6 +21,7 @@ import {
   Activity,
   FolderKanban,
   ChevronRight,
+  Truck,
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -33,7 +34,6 @@ export default function Sidebar() {
       { label: "Dashboard", href: "/dashboard", icon: <Home className="w-5 h-5" />, color: "text-blue-500" },
       { label: "Users", href: "/admin/users", icon: <Users className="w-5 h-5" />, color: "text-green-500" },
       { label: "Billing", href: "/admin/billing", icon: <CreditCard className="w-5 h-5" />, color: "text-purple-500" },
-      { label: "Emergency Dispatch", href: "/emergency/dispatch", icon: <Activity className="w-5 h-5" />, color: "text-red-500" },
     ],
     doctor: [
       { label: "Dashboard", href: "/dashboard", icon: <Home className="w-5 h-5" />, color: "text-blue-500" },
@@ -44,19 +44,14 @@ export default function Sidebar() {
       { label: "Test Results", href: "/results/doctor", icon: <FileSearch className="w-5 h-5" />, color: "text-pink-500" },
       { label: "Bills", href: "/bills/my", icon: <CreditCard className="w-5 h-5" />, color: "text-yellow-500" },
       { label: "Patients", href: "/patient/list", icon: <Users className="w-5 h-5" />, color: "text-teal-500" },
-      { label: "ER Portal", href: "/emergency/er", icon: <Activity className="w-5 h-5" />, color: "text-red-500" },
-      { label: "Paramedic", href: "/emergency/paramedic", icon: <Truck className="w-5 h-5" />, color: "text-orange-500" },
     ],
     receptionist: [
       { label: "Dashboard", href: "/dashboard", icon: <Home className="w-5 h-5" />, color: "text-blue-500" },
       { label: "Check-in", href: "/receptionist/appointments", icon: <ClipboardCheck className="w-5 h-5" />, color: "text-green-500" },
-      { label: "Emergency Dispatch", href: "/emergency/dispatch", icon: <Activity className="w-5 h-5" />, color: "text-red-500" },
     ],
     nurse: [
       { label: "Dashboard", href: "/dashboard", icon: <Home className="w-5 h-5" />, color: "text-blue-500" },
       { label: "Record Vitals", href: "/nurse/vitals", icon: <HeartPulse className="w-5 h-5" />, color: "text-red-500" },
-      { label: "ER Portal", href: "/emergency/er", icon: <Activity className="w-5 h-5" />, color: "text-red-500" },
-      { label: "Paramedic", href: "/emergency/paramedic", icon: <Truck className="w-5 h-5" />, color: "text-orange-500" },
     ],
     labtech: [
       { label: "Dashboard", href: "/dashboard", icon: <Home className="w-5 h-5" />, color: "text-blue-500" },
