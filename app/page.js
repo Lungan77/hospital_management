@@ -177,7 +177,7 @@ export default function Home() {
                     <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
                   ))}
                 </div>
-                <p className="text-gray-700 text-lg mb-6 italic">&apos;{testimonial.content}&apos;</p>
+                <p className="text-gray-700 text-lg mb-6 italic">&quot;{testimonial.content}&quot;</p>
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
                     {testimonial.name.charAt(0)}
