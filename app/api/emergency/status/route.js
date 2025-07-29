@@ -4,7 +4,7 @@ import Ambulance from "@/models/Ambulance";
 import { isAuthenticated } from "@/hoc/protectedRoute";
 
 export async function PUT(req) {
-  const auth = await isAuthenticated(req, ["admin", "receptionist", "nurse", "doctor"]);
+  const auth = await isAuthenticated(req, ["admin", "receptionist", "dispatcher", "nurse", "doctor"]);
   if (auth.error) return Response.json({ error: auth.error }, { status: auth.status });
 
   try {
