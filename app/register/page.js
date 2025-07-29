@@ -248,9 +248,10 @@ function Register() {
               <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-xl border border-blue-200">
                 <input type="checkbox" className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" required />
                 <span className="text-sm text-blue-800">
-                  I agree to the <a href="/terms" className="font-semibold hover:underline">Terms of Service</a> and <a href="/privacy" className=\"font-semibold hover:underline">Privacy Policy</a>
+                  I agree to the <a href="/terms" className="font-semibold hover:underline">Terms of Service</a> and <a href="/privacy" className="font-semibold hover:underline">Privacy Policy</a>
                 </span>
               </div>
+
 
               <button
                 type="submit"
