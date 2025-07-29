@@ -3,7 +3,7 @@ import Emergency from "@/models/Emergency";
 import { isAuthenticated } from "@/hoc/protectedRoute";
 
 export async function GET(req) {
-  const auth = await isAuthenticated(req, ["admin", "receptionist"]);
+  const auth = await isAuthenticated(req, ["admin", "receptionist", "dispatcher"]);
   if (auth.error) return Response.json({ error: auth.error }, { status: auth.status });
 
   try {
