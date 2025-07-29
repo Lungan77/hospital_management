@@ -119,6 +119,7 @@ export default function UsersTable() {
                   <option value="receptionist">Receptionist</option>
                   <option value="patient">Patient</option>
                   <option value="labtech">Lab Technician</option>
+                  <option value="dispatcher">Dispatcher</option>
                 </select>
               </div>
             </div>
