@@ -35,7 +35,8 @@ export default function UsersTable() {
       nurse: "from-pink-500 to-pink-600",
       receptionist: "from-yellow-500 to-yellow-600",
       patient: "from-green-500 to-green-600",
-      labtech: "from-cyan-500 to-cyan-600"
+      labtech: "from-cyan-500 to-cyan-600",
+      dispatcher: "from-red-500 to-red-600"
     };
     return colors[role] || "from-gray-500 to-gray-600";
   };
@@ -47,7 +48,8 @@ export default function UsersTable() {
       nurse: "bg-pink-100 text-pink-700 border-pink-200",
       receptionist: "bg-yellow-100 text-yellow-700 border-yellow-200",
       patient: "bg-green-100 text-green-700 border-green-200",
-      labtech: "bg-cyan-100 text-cyan-700 border-cyan-200"
+      labtech: "bg-cyan-100 text-cyan-700 border-cyan-200",
+      dispatcher: "bg-red-100 text-red-700 border-red-200"
     };
     return colors[role] || "bg-gray-100 text-gray-700 border-gray-200";
   };
@@ -119,7 +121,6 @@ export default function UsersTable() {
                   <option value="receptionist">Receptionist</option>
                   <option value="patient">Patient</option>
                   <option value="labtech">Lab Technician</option>
-                  <option value="dispatcher">Dispatcher</option>
                 </select>
               </div>
             </div>

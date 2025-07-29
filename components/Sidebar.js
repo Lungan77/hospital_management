@@ -61,6 +61,12 @@ export default function Sidebar() {
       { label: "Scanner", href: "/tests/collect/scanner", icon: <ScanLine className="w-5 h-5" />, color: "text-orange-500" },
       { label: "Analysis", href: "/tests/turnaround", icon: <Activity className="w-5 h-5" />, color: "text-cyan-500" },
     ],
+    dispatcher: [
+      { label: "Dashboard", href: "/dashboard", icon: <Home className="w-5 h-5" />, color: "text-blue-500" },
+      { label: "Emergency Dispatch", href: "/emergency/dispatch", icon: <Truck className="w-5 h-5" />, color: "text-red-500" },
+      { label: "Ambulance Fleet", href: "/emergency/ambulances", icon: <Activity className="w-5 h-5" />, color: "text-orange-500" },
+      { label: "Response Reports", href: "/emergency/reports", icon: <FileText className="w-5 h-5" />, color: "text-purple-500" },
+    ],
     patient: [
       { label: "Dashboard", href: "/dashboard", icon: <Home className="w-5 h-5" />, color: "text-blue-500" },
       { label: "Appointments", href: "/appointments", icon: <Calendar className="w-5 h-5" />, color: "text-green-500" },
