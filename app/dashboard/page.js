@@ -249,6 +249,9 @@ function Dashboard() {
                   <div className="mt-3 h-1 bg-gray-200 rounded-full overflow-hidden">
                     <div className={`h-full bg-gradient-to-r ${roleCard.color} rounded-full transition-all duration-1000`} style={{ width: '75%' }}></div>
                   </div>
+                )
+                )
+                }
                 </div>
               ))}
             </div>
