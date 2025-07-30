@@ -76,6 +76,59 @@ const EmergencySchema = new mongoose.Schema(
       administeredBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" }
     }],
     
+    // Enhanced Medical Documentation
+    symptoms: { type: String },
+    medicalHistory: { type: String },
+    allergies: { type: String },
+    currentMedications: { type: String },
+    
+    // Incident Documentation
+    incidentPhotos: [{
+      filename: { type: String },
+      url: { type: String },
+      uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+      uploadedAt: { type: Date, default: Date.now },
+      description: { type: String }
+    }],
+    
+    medicalReports: [{
+      filename: { type: String },
+      url: { type: String },
+      type: { type: String, enum: ["ECG", "Photo", "Document", "Other"] },
+      uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+      uploadedAt: { type: Date, default: Date.now },
+      description: { type: String }
+    }],
+    
+    // Transport Information
+    transportProgress: {
+      started: { type: Boolean, default: false },
+      startTime: { type: Date },
+      estimatedArrival: { type: Date },
+      currentLocation: {
+        latitude: { type: Number },
+        longitude: { type: Number },
+        lastUpdated: { type: Date }
+      },
+      route: [{
+        latitude: { type: Number },
+        longitude: { type: Number },
+        timestamp: { type: Date, default: Date.now }
+      }]
+    },
+    
+    // Handover Information
+    handover: {
+      completed: { type: Boolean, default: false },
+      handoverTime: { type: Date },
+      paramedicSummary: { type: String },
+      treatmentSummary: { type: String },
+      patientConditionOnArrival: { type: String },
+      receivingStaff: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+      receivingStaffSignature: { type: String },
+      handoverNotes: { type: String }
+    },
+    
     // Hospital Information
     destinationHospital: { type: String },
     hospitalNotified: { type: Boolean, default: false },
