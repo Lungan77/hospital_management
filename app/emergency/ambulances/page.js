@@ -1,4 +1,3 @@
-"use client";
 import { useEffect, useState } from "react";
 import withAuth from "@/hoc/withAuth";
 import { 

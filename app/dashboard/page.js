@@ -235,7 +235,7 @@ function Dashboard() {
             {/* Enhanced Statistics Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
               {roleCard.stats.map((stat, index) => (
-                <div key={index} className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:transform hover:scale-105 group">
+                {(session?.user.role === "dispatcher" ? emergencyStats : stats).map((stat, index) => (
                   <div className="flex items-center justify-between mb-4">
                     <div className={`p-3 rounded-xl bg-gradient-to-r ${roleCard.color} text-white group-hover:scale-110 transition-transform`}>
                       {stat.icon}

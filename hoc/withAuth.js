@@ -16,7 +16,7 @@ export default function withAuth(Component, allowedRoles) {
       } else if (!allowedRoles.includes(session.user.role)) {
         router.push("/unauthorized"); // Redirect if role is not allowed
       }
-    }, [session, status]);
+    }, [session, status, router]);
 
     if (status === "loading") return <Loader />; // Show spinner while checking auth
 
