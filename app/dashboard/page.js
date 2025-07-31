@@ -1,4 +1,5 @@
 "use client";
+
 import { useSession } from "next-auth/react";
 import withAuth from "@/hoc/withAuth";
 import Loader from "@/components/loader";
@@ -231,13 +232,12 @@ function Dashboard() {
                 </div>
               </div>
             </div>
-
             {/* Enhanced Statistics Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
               {roleCard.stats.map((stat, index) => (
-                {(session?.user.role === "dispatcher" ? emergencyStats : stats).map((stat, index) => (
+                <div key={index} className="p-6 bg-white rounded-2xl shadow-md border border-gray-100">
                   <div className="flex items-center justify-between mb-4">
-                    <div className={`p-3 rounded-xl bg-gradient-to-r ${roleCard.color} text-white group-hover:scale-110 transition-transform`}>
+                    <div className={`p-3 rounded-xl bg-gradient-to-r ${roleCard.color} text-white`}>
                       {stat.icon}
                     </div>
                     <div className="text-right">
@@ -247,11 +247,11 @@ function Dashboard() {
                   </div>
                   <p className="text-gray-600 font-medium">{stat.label}</p>
                   <div className="mt-3 h-1 bg-gray-200 rounded-full overflow-hidden">
-                    <div className={`h-full bg-gradient-to-r ${roleCard.color} rounded-full transition-all duration-1000`} style={{ width: '75%' }}></div>
+                    <div
+                      className={`h-full bg-gradient-to-r ${roleCard.color} rounded-full transition-all duration-1000`}
+                      style={{ width: "75%" }}
+                    ></div>
                   </div>
-                )
-                )
-                }
                 </div>
               ))}
             </div>
