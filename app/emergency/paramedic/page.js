@@ -549,7 +549,7 @@ function ParamedicInterface() {
                       className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-4 rounded-xl font-semibold text-lg hover:from-green-700 hover:to-green-800 transition-all duration-200 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Flag className="w-6 h-6" />
-                      Mark "On Scene"
+                      Mark &quot;On Scene&quot;
                     </button>
                   </div>
                 </div>
