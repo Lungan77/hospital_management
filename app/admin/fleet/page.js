@@ -25,7 +25,8 @@ import {
   BarChart3,
   TrendingUp,
   Shield,
-  Zap
+  Zap,
+  X
 } from "lucide-react";
 
 function FleetManagement() {
