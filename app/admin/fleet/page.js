@@ -25,7 +25,8 @@ import {
   BarChart3,
   TrendingUp,
   Shield,
-  Zap
+  Zap,
+  X
 } from "lucide-react";
 
 function FleetManagement() {
@@ -197,6 +198,12 @@ function FleetManagement() {
             </div>
           </div>
         </div>
+
+        {/* Crew Assignment Section */}
+        <CrewAssignmentSection 
+          ambulances={ambulances}
+          onCrewAssigned={fetchAmbulances}
+        />
 
         {/* Filters and Search */}
         <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-8">
@@ -641,6 +648,38 @@ function FleetManagement() {
   );
 }
 
+// Crew Assignment Section Component
+function CrewAssignmentSection({ ambulances, onCrewAssigned }) {
+  return (
+    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-8">
+      <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+        <Users className="w-6 h-6" />
+        Crew Assignment Overview
+      </h3>
+      <div className="grid md:grid-cols-3 gap-4">
+        <div className="p-4 bg-green-50 rounded-xl border border-green-200">
+          <div className="text-2xl font-bold text-green-600">
+            {ambulances.filter(a => a.crew?.length >= 2).length}
+          </div>
+          <div className="text-sm text-green-600">Fully Staffed</div>
+        </div>
+        <div className="p-4 bg-yellow-50 rounded-xl border border-yellow-200">
+          <div className="text-2xl font-bold text-yellow-600">
+            {ambulances.filter(a => a.crew?.length === 1).length}
+          </div>
+          <div className="text-sm text-yellow-600">Partially Staffed</div>
+        </div>
+        <div className="p-4 bg-red-50 rounded-xl border border-red-200">
+          <div className="text-2xl font-bold text-red-600">
+            {ambulances.filter(a => !a.crew || a.crew.length === 0).length}
+          </div>
+          <div className="text-sm text-red-600">No Crew</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Ambulance Details Modal Component
 function AmbulanceDetailsModal({ ambulance, onClose, onUpdate }) {
   const [activeTab, setActiveTab] = useState("overview");
@@ -652,6 +691,19 @@ function AmbulanceDetailsModal({ ambulance, onClose, onUpdate }) {
     { id: "maintenance", label: "Maintenance", icon: <Wrench className="w-4 h-4" /> },
     { id: "history", label: "History", icon: <Clock className="w-4 h-4" /> }
   ];
+
+  const getStatusColor = (status) => {
+    const colors = {
+      "Available": "bg-green-100 text-green-700 border-green-200",
+      "Dispatched": "bg-blue-100 text-blue-700 border-blue-200",
+      "En Route": "bg-purple-100 text-purple-700 border-purple-200",
+      "On Scene": "bg-orange-100 text-orange-700 border-orange-200",
+      "Transporting": "bg-cyan-100 text-cyan-700 border-cyan-200",
+      "Out of Service": "bg-red-100 text-red-700 border-red-200",
+      "Maintenance": "bg-yellow-100 text-yellow-700 border-yellow-200"
+    };
+    return colors[status] || "bg-gray-100 text-gray-700 border-gray-200";
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
