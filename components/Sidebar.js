@@ -22,6 +22,7 @@ import {
   FolderKanban,
   ChevronRight,
   Truck,
+  Wrench,
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -33,6 +34,9 @@ export default function Sidebar() {
     admin: [
       { label: "Dashboard", href: "/dashboard", icon: <Home className="w-5 h-5" />, color: "text-blue-500" },
       { label: "Users", href: "/admin/users", icon: <Users className="w-5 h-5" />, color: "text-green-500" },
+      { label: "Fleet Management", href: "/admin/fleet", icon: <Truck className="w-5 h-5" />, color: "text-blue-500" },
+      { label: "Fleet Tracking", href: "/fleet/tracking", icon: <Activity className="w-5 h-5" />, color: "text-green-500" },
+      { label: "Maintenance", href: "/fleet/maintenance", icon: <Wrench className="w-5 h-5" />, color: "text-yellow-500" },
       { label: "Billing", href: "/admin/billing", icon: <CreditCard className="w-5 h-5" />, color: "text-purple-500" },
     ],
     doctor: [
@@ -65,6 +69,9 @@ export default function Sidebar() {
       { label: "Dashboard", href: "/dashboard", icon: <Home className="w-5 h-5" />, color: "text-blue-500" },
       { label: "Emergency Dispatch", href: "/emergency/dispatch", icon: <Truck className="w-5 h-5" />, color: "text-red-500" },
       { label: "Ambulance Fleet", href: "/emergency/ambulances", icon: <Activity className="w-5 h-5" />, color: "text-orange-500" },
+      { label: "Fleet Management", href: "/admin/fleet", icon: <Truck className="w-5 h-5" />, color: "text-blue-500" },
+      { label: "Fleet Tracking", href: "/fleet/tracking", icon: <Activity className="w-5 h-5" />, color: "text-green-500" },
+      { label: "Maintenance", href: "/fleet/maintenance", icon: <Wrench className="w-5 h-5" />, color: "text-yellow-500" },
       { label: "Response Reports", href: "/emergency/reports", icon: <FileText className="w-5 h-5" />, color: "text-purple-500" },
     ],
     patient: [
