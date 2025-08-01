@@ -25,8 +25,7 @@ import {
   BarChart3,
   TrendingUp,
   Shield,
-  Zap,
-  X
+  Zap
 } from "lucide-react";
 
 function FleetManagement() {
@@ -198,12 +197,6 @@ function FleetManagement() {
             </div>
           </div>
         </div>
-
-        {/* Crew Assignment Section */}
-        <CrewAssignmentSection 
-          ambulances={ambulances}
-          onCrewAssigned={fetchAmbulances}
-        />
 
         {/* Filters and Search */}
         <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-8">
@@ -648,38 +641,6 @@ function FleetManagement() {
   );
 }
 
-// Crew Assignment Section Component
-function CrewAssignmentSection({ ambulances, onCrewAssigned }) {
-  return (
-    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-8">
-      <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-        <Users className="w-6 h-6" />
-        Crew Assignment Overview
-      </h3>
-      <div className="grid md:grid-cols-3 gap-4">
-        <div className="p-4 bg-green-50 rounded-xl border border-green-200">
-          <div className="text-2xl font-bold text-green-600">
-            {ambulances.filter(a => a.crew?.length >= 2).length}
-          </div>
-          <div className="text-sm text-green-600">Fully Staffed</div>
-        </div>
-        <div className="p-4 bg-yellow-50 rounded-xl border border-yellow-200">
-          <div className="text-2xl font-bold text-yellow-600">
-            {ambulances.filter(a => a.crew?.length === 1).length}
-          </div>
-          <div className="text-sm text-yellow-600">Partially Staffed</div>
-        </div>
-        <div className="p-4 bg-red-50 rounded-xl border border-red-200">
-          <div className="text-2xl font-bold text-red-600">
-            {ambulances.filter(a => !a.crew || a.crew.length === 0).length}
-          </div>
-          <div className="text-sm text-red-600">No Crew</div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // Ambulance Details Modal Component
 function AmbulanceDetailsModal({ ambulance, onClose, onUpdate }) {
   const [activeTab, setActiveTab] = useState("overview");
@@ -691,19 +652,6 @@ function AmbulanceDetailsModal({ ambulance, onClose, onUpdate }) {
     { id: "maintenance", label: "Maintenance", icon: <Wrench className="w-4 h-4" /> },
     { id: "history", label: "History", icon: <Clock className="w-4 h-4" /> }
   ];
-
-  const getStatusColor = (status) => {
-    const colors = {
-      "Available": "bg-green-100 text-green-700 border-green-200",
-      "Dispatched": "bg-blue-100 text-blue-700 border-blue-200",
-      "En Route": "bg-purple-100 text-purple-700 border-purple-200",
-      "On Scene": "bg-orange-100 text-orange-700 border-orange-200",
-      "Transporting": "bg-cyan-100 text-cyan-700 border-cyan-200",
-      "Out of Service": "bg-red-100 text-red-700 border-red-200",
-      "Maintenance": "bg-yellow-100 text-yellow-700 border-yellow-200"
-    };
-    return colors[status] || "bg-gray-100 text-gray-700 border-gray-200";
-  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -1128,6 +1076,151 @@ function AddAmbulanceModal({ onClose, onAdd }) {
             </button>
           </div>
         </form>
+      </div>
+    </div>
+  );
+}
+
+// Crew Assignment Component
+function CrewAssignmentSection({ ambulances, onCrewAssigned }) {
+  const [availableCrew, setAvailableCrew] = useState({ drivers: [], paramedics: [] });
+  const [selectedAmbulance, setSelectedAmbulance] = useState("");
+  const [selectedDriver, setSelectedDriver] = useState("");
+  const [selectedParamedic, setSelectedParamedic] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    fetchAvailableCrew();
+  }, []);
+
+  const fetchAvailableCrew = async () => {
+    try {
+      const res = await fetch("/api/ambulances/crew/available");
+      const data = await res.json();
+      if (res.ok) {
+        setAvailableCrew(data);
+      }
+    } catch (error) {
+      console.error("Error fetching available crew");
+    }
+  };
+
+  const assignCrew = async () => {
+    if (!selectedAmbulance) {
+      setMessage("Please select an ambulance");
+      return;
+    }
+
+    if (!selectedDriver && !selectedParamedic) {
+      setMessage("Please select at least one crew member");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch("/api/ambulances/crew/assign", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ambulanceId: selectedAmbulance,
+          driverId: selectedDriver || null,
+          paramedicId: selectedParamedic || null
+        }),
+      });
+
+      const data = await res.json();
+      setMessage(data.message || data.error);
+      
+      if (res.ok) {
+        setSelectedAmbulance("");
+        setSelectedDriver("");
+        setSelectedParamedic("");
+        fetchAvailableCrew();
+        onCrewAssigned();
+      }
+    } catch (error) {
+      setMessage("Error assigning crew");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6 border-2 border-blue-200">
+      <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+        <Users className="w-6 h-6 text-blue-600" />
+        Crew Assignment
+      </h3>
+      
+      {message && (
+        <div className={`mb-4 p-4 rounded-xl ${
+          message.includes("successfully") 
+            ? "bg-green-100 text-green-700 border border-green-200" 
+            : "bg-red-100 text-red-700 border border-red-200"
+        }`}>
+          <p className="font-medium">{message}</p>
+        </div>
+      )}
+
+      <div className="grid md:grid-cols-4 gap-4 mb-6">
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">Select Ambulance</label>
+          <select
+            value={selectedAmbulance}
+            onChange={(e) => setSelectedAmbulance(e.target.value)}
+            className="w-full p-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">Choose ambulance</option>
+            {ambulances.map((ambulance) => (
+              <option key={ambulance._id} value={ambulance._id}>
+                {ambulance.callSign} - {ambulance.vehicleNumber}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">Select Driver</label>
+          <select
+            value={selectedDriver}
+            onChange={(e) => setSelectedDriver(e.target.value)}
+            className="w-full p-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">Choose driver</option>
+            {availableCrew.drivers.map((driver) => (
+              <option key={driver._id} value={driver._id}>
+                {driver.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">Select Paramedic</label>
+          <select
+            value={selectedParamedic}
+            onChange={(e) => setSelectedParamedic(e.target.value)}
+            className="w-full p-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">Choose paramedic</option>
+            {availableCrew.paramedics.map((paramedic) => (
+              <option key={paramedic._id} value={paramedic._id}>
+                {paramedic.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex items-end">
+          <button
+            onClick={assignCrew}
+            disabled={loading}
+            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200 disabled:opacity-50"
+          >
+            {loading ? "Assigning..." : "Assign Crew"}
+          </button>
+        </div>
       </div>
     </div>
   );

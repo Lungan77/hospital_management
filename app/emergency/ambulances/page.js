@@ -238,13 +238,16 @@ function AmbulanceFleet() {
                     <div className="space-y-2">
                       {ambulance.crew.map((member, index) => (
                         <div key={index} className="flex justify-between items-center text-sm">
-                          <span className="font-medium">{member.memberId?.name || "Unknown"}</span>
+                          <span className="font-medium">{member.memberId?.name || "Unassigned"}</span>
                           <span className="text-gray-500">{member.role}</span>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-gray-500 text-sm">No crew assigned</p>
+                    <div className="text-center py-4">
+                      <p className="text-gray-500 text-sm mb-2">No crew assigned</p>
+                      <p className="text-xs text-gray-400">Contact fleet management</p>
+                    </div>
                   )}
                 </div>
 
