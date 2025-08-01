@@ -56,6 +56,7 @@ export default function FleetMap({
   zoom = 12
 }) {
   const [mapCenter, setMapCenter] = useState(center);
+  const [mapKey, setMapKey] = useState(0);
 
   useEffect(() => {
     // If ambulances are available, center map on fleet
@@ -69,6 +70,7 @@ export default function FleetMap({
         const avgLat = validLocations.reduce((sum, a) => sum + a.currentLocation.latitude, 0) / validLocations.length;
         const avgLng = validLocations.reduce((sum, a) => sum + a.currentLocation.longitude, 0) / validLocations.length;
         setMapCenter([avgLat, avgLng]);
+        setMapKey(prev => prev + 1); // Force map re-initialization
       }
     }
   }, [ambulances]);
@@ -82,6 +84,7 @@ export default function FleetMap({
   return (
     <div className="w-full h-96 rounded-2xl overflow-hidden border-2 border-gray-200 shadow-lg">
       <MapContainer
+        key={mapKey}
         center={mapCenter}
         zoom={zoom}
         style={{ height: "100%", width: "100%" }}
