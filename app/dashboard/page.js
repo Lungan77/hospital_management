@@ -133,6 +133,42 @@ const roleCards = [
       { label: "Quality Control", href: "/tests/turnaround", icon: <BarChart3 className="w-4 h-4" /> }
     ]
   },
+  {
+    role: "driver",
+    title: "Emergency Vehicle Operations",
+    description: "Operate emergency vehicles safely and efficiently during emergency responses.",
+    icon: <Users className="w-8 h-8" />,
+    color: "from-orange-500 to-orange-600",
+    bgPattern: "bg-gradient-to-br from-orange-50 to-orange-100",
+    stats: [
+      { label: "Responses Today", value: "8", icon: <Calendar className="w-4 h-4" />, change: "+2" },
+      { label: "Miles Driven", value: "156", icon: <TrendingUp className="w-4 h-4" />, change: "+24" },
+      { label: "Safety Score", value: "98%", icon: <CheckCircle className="w-4 h-4" />, change: "+1%" }
+    ],
+    quickActions: [
+      { label: "Vehicle Check", href: "/driver/vehicle-check", icon: <CheckCircle className="w-4 h-4" /> },
+      { label: "Current Assignment", href: "/driver/assignment", icon: <Calendar className="w-4 h-4" /> },
+      { label: "Route History", href: "/driver/routes", icon: <BarChart3 className="w-4 h-4" /> }
+    ]
+  },
+  {
+    role: "paramedic",
+    title: "Emergency Medical Services",
+    description: "Provide advanced life support and emergency medical care in the field.",
+    icon: <HeartPulse className="w-8 h-8" />,
+    color: "from-red-500 to-red-600",
+    bgPattern: "bg-gradient-to-br from-red-50 to-red-100",
+    stats: [
+      { label: "Patients Treated", value: "12", icon: <Users className="w-4 h-4" />, change: "+3" },
+      { label: "Active Calls", value: "2", icon: <AlertCircle className="w-4 h-4" />, change: "0" },
+      { label: "Response Time", value: "8 min", icon: <Clock className="w-4 h-4" />, change: "-2 min" }
+    ],
+    quickActions: [
+      { label: "Current Assignment", href: "/emergency/paramedic", icon: <Activity className="w-4 h-4" /> },
+      { label: "Medical Protocols", href: "/paramedic/protocols", icon: <FileText className="w-4 h-4" /> },
+      { label: "Equipment Check", href: "/paramedic/equipment", icon: <CheckCircle className="w-4 h-4" /> }
+    ]
+  },
 ];
 
 function Dashboard() {
@@ -339,4 +375,4 @@ function Dashboard() {
   );
 }
 
-export default withAuth(Dashboard, ["admin", "doctor", "nurse", "receptionist", "patient", "labtech", "dispatcher"]);
+export default withAuth(Dashboard, ["admin", "doctor", "nurse", "receptionist", "patient", "labtech", "dispatcher", "driver", "paramedic"]);

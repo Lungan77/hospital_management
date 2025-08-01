@@ -36,6 +36,8 @@ export default function UsersTable() {
       receptionist: "from-yellow-500 to-yellow-600",
       patient: "from-green-500 to-green-600",
       labtech: "from-cyan-500 to-cyan-600",
+      driver: "from-orange-500 to-orange-600",
+      paramedic: "from-red-500 to-red-600"
       dispatcher: "from-red-500 to-red-600"
     };
     return colors[role] || "from-gray-500 to-gray-600";
@@ -49,6 +51,8 @@ export default function UsersTable() {
       receptionist: "bg-yellow-100 text-yellow-700 border-yellow-200",
       patient: "bg-green-100 text-green-700 border-green-200",
       labtech: "bg-cyan-100 text-cyan-700 border-cyan-200",
+      driver: "bg-orange-100 text-orange-700 border-orange-200",
+      paramedic: "bg-red-100 text-red-700 border-red-200"
       dispatcher: "bg-red-100 text-red-700 border-red-200"
     };
     return colors[role] || "bg-gray-100 text-gray-700 border-gray-200";

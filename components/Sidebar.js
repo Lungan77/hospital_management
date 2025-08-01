@@ -49,6 +49,19 @@ export default function Sidebar() {
       { label: "Bills", href: "/bills/my", icon: <CreditCard className="w-5 h-5" />, color: "text-yellow-500" },
       { label: "Patients", href: "/patient/list", icon: <Users className="w-5 h-5" />, color: "text-teal-500" },
     ],
+    driver: [
+      { label: "Dashboard", href: "/dashboard", icon: <Home className="w-5 h-5" />, color: "text-blue-500" },
+      { label: "Current Assignment", href: "/driver/assignment", icon: <Truck className="w-5 h-5" />, color: "text-orange-500" },
+      { label: "Vehicle Check", href: "/driver/vehicle-check", icon: <ClipboardCheck className="w-5 h-5" />, color: "text-green-500" },
+      { label: "Route History", href: "/driver/routes", icon: <Activity className="w-5 h-5" />, color: "text-purple-500" },
+    ],
+    paramedic: [
+      { label: "Dashboard", href: "/dashboard", icon: <Home className="w-5 h-5" />, color: "text-blue-500" },
+      { label: "Emergency Response", href: "/emergency/paramedic", icon: <HeartPulse className="w-5 h-5" />, color: "text-red-500" },
+      { label: "Medical Protocols", href: "/paramedic/protocols", icon: <FileText className="w-5 h-5" />, color: "text-purple-500" },
+      { label: "Equipment Check", href: "/paramedic/equipment", icon: <ClipboardCheck className="w-5 h-5" />, color: "text-green-500" },
+      { label: "Patient Records", href: "/paramedic/patients", icon: <Users className="w-5 h-5" />, color: "text-blue-500" },
+    ],
     receptionist: [
       { label: "Dashboard", href: "/dashboard", icon: <Home className="w-5 h-5" />, color: "text-blue-500" },
       { label: "Check-in", href: "/receptionist/appointments", icon: <ClipboardCheck className="w-5 h-5" />, color: "text-green-500" },

@@ -15,7 +15,7 @@ const UserSchema = new mongoose.Schema(
     gender: { type: String, enum: ["Male", "Female", "Other"], required: true },
     role: { 
       type: String, 
-      enum: ["admin", "doctor", "nurse", "receptionist", "patient", "labtech", "dispatcher"], 
+      enum: ["admin", "doctor", "nurse", "receptionist", "patient", "labtech", "dispatcher", "driver", "paramedic"], 
       required: true 
     },
     password: { type: String, required: true }, 

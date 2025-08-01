@@ -241,6 +241,8 @@ function AddUser() {
                       <option value="admin">Admin</option>
                       <option value="patient">Patient</option>
                       <option value="labtech">Lab Technician</option>
+                      <option value="driver">Driver</option>
+                      <option value="paramedic">Paramedic</option>
                       <option value="dispatcher">Dispatcher</option>
                     </select>
                   </div>
