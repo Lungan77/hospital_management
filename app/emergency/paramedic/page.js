@@ -2,6 +2,10 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import withAuth from "@/hoc/withAuth";
+import dynamic from "next/dynamic";
+import VitalsForm from "@/components/VitalsForm";
+import TreatmentForm from "@/components/TreatmentForm";
+import FileUpload from "@/components/FileUpload";
 import { 
   Truck, 
   MapPin, 
@@ -9,45 +13,35 @@ import {
   User, 
   Activity, 
   Heart,
-  Thermometer,
-  Droplets,
-  Zap,
-  Pill,
   FileText,
   CheckCircle,
   AlertTriangle,
   Navigation,
   Phone,
-  Camera,
-  Upload,
   Play,
-  Pause,
   Flag,
   Route,
-  Timer,
-  Signature
+  Signature,
+  MapPin as LocationIcon
 } from "lucide-react";
+
+// Dynamic import for map component to avoid SSR issues
+const LiveMap = dynamic(() => import("@/components/LiveMap"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-96 bg-gray-200 rounded-2xl flex items-center justify-center">
+      <div className="text-center text-gray-600">
+        <MapPin className="w-12 h-12 mx-auto mb-2" />
+        <p>Loading map...</p>
+      </div>
+    </div>
+  )
+});
 
 function ParamedicInterface() {
   const { data: session } = useSession();
   const [currentAssignment, setCurrentAssignment] = useState(null);
   const [activeTab, setActiveTab] = useState("overview");
-  const [vitals, setVitals] = useState({
-    bloodPressure: "",
-    heartRate: "",
-    respiratoryRate: "",
-    temperature: "",
-    oxygenSaturation: "",
-    glucoseLevel: "",
-    painScale: ""
-  });
-  const [treatment, setTreatment] = useState({
-    treatment: "",
-    medication: "",
-    dosage: "",
-    route: "",
-    response: ""
-  });
   const [medicalInfo, setMedicalInfo] = useState({
     symptoms: "",
     medicalHistory: "",
@@ -63,6 +57,8 @@ function ParamedicInterface() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [uploadingFile, setUploadingFile] = useState(false);
+  const [incidentCoordinates, setIncidentCoordinates] = useState(null);
+  const [ambulanceCoordinates, setAmbulanceCoordinates] = useState(null);
 
   useEffect(() => {
     fetchCurrentAssignment();
@@ -70,6 +66,21 @@ function ParamedicInterface() {
     const interval = setInterval(fetchCurrentAssignment, 30000);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    // Simulate getting coordinates from address (in real app, use geocoding API)
+    if (currentAssignment?.address) {
+      // Mock coordinates for demonstration - in real app, geocode the address
+      setIncidentCoordinates([-26.2041, 28.0473]); // Johannesburg coordinates as example
+    }
+    
+    // Get ambulance location (current user location)
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        setAmbulanceCoordinates([position.coords.latitude, position.coords.longitude]);
+      });
+    }
+  }, [currentAssignment]);
 
   const fetchCurrentAssignment = async () => {
     try {
@@ -126,7 +137,7 @@ function ParamedicInterface() {
     }
   };
 
-  const recordVitals = async () => {
+  const recordVitals = async (vitalsData) => {
     const requiredFields = Object.values(vitals);
     if (requiredFields.some(field => !field)) {
       setMessage("Please fill in all vital signs");
@@ -139,7 +150,7 @@ function ParamedicInterface() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           emergencyId: currentAssignment._id,
-          ...vitals
+          ...vitalsData
         }),
       });
 
@@ -147,15 +158,6 @@ function ParamedicInterface() {
       setMessage(data.message || data.error);
       
       if (res.ok) {
-        setVitals({
-          bloodPressure: "",
-          heartRate: "",
-          respiratoryRate: "",
-          temperature: "",
-          oxygenSaturation: "",
-          glucoseLevel: "",
-          painScale: ""
-        });
         fetchCurrentAssignment();
       }
     } catch (error) {
@@ -163,8 +165,8 @@ function ParamedicInterface() {
     }
   };
 
-  const recordTreatment = async () => {
-    if (!treatment.treatment) {
+  const recordTreatment = async (treatmentData) => {
+    if (!treatmentData.treatmentGiven?.length && !treatmentData.medications?.length) {
       setMessage("Please enter treatment details");
       return;
     }
@@ -175,7 +177,11 @@ function ParamedicInterface() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           emergencyId: currentAssignment._id,
-          ...treatment
+          treatment: treatmentData.treatmentGiven.join(", "),
+          medication: treatmentData.medications.map(m => `${m.name} ${m.dosage} ${m.route}`).join("; "),
+          dosage: treatmentData.medications.map(m => m.dosage).join(", "),
+          route: treatmentData.medications.map(m => m.route).join(", "),
+          response: treatmentData.patientResponse
         }),
       });
 
@@ -183,13 +189,6 @@ function ParamedicInterface() {
       setMessage(data.message || data.error);
       
       if (res.ok) {
-        setTreatment({
-          treatment: "",
-          medication: "",
-          dosage: "",
-          route: "",
-          response: ""
-        });
         fetchCurrentAssignment();
       }
     } catch (error) {
@@ -265,41 +264,6 @@ function ParamedicInterface() {
     }
   };
 
-  const handleFileUpload = async (file, type) => {
-    if (!file) return;
-
-    setUploadingFile(true);
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("emergencyId", currentAssignment._id);
-    formData.append("type", type);
-
-    try {
-      const res = await fetch("/api/emergency/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await res.json();
-      setMessage(data.message || data.error);
-      
-      if (res.ok) {
-        fetchCurrentAssignment();
-      }
-    } catch (error) {
-      setMessage("Error uploading file");
-    } finally {
-      setUploadingFile(false);
-    }
-  };
-
-  const openNavigation = () => {
-    if (currentAssignment?.address) {
-      const address = encodeURIComponent(currentAssignment.address);
-      window.open(`https://www.google.com/maps/dir/?api=1&destination=${address}`, '_blank');
-    }
-  };
-
   const handleVitalChange = (field, value) => {
     setVitals(prev => ({ ...prev, [field]: value }));
   };
@@ -314,6 +278,11 @@ function ParamedicInterface() {
 
   const handleHandoverChange = (field, value) => {
     setHandoverData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleFileUploadComplete = (results) => {
+    setMessage(`${results.filter(r => r.success).length} files uploaded successfully`);
+    fetchCurrentAssignment();
   };
 
   if (loading) {
@@ -351,7 +320,7 @@ function ParamedicInterface() {
     { id: "overview", label: "Overview", icon: <Activity className="w-4 h-4" /> },
     { id: "navigation", label: "Navigation", icon: <Navigation className="w-4 h-4" /> },
     { id: "vitals", label: "Vitals", icon: <Heart className="w-4 h-4" /> },
-    { id: "treatment", label: "Treatment", icon: <Pill className="w-4 h-4" /> },
+    { id: "treatment", label: "Treatment", icon: <FileText className="w-4 h-4" /> },
     { id: "medical", label: "Medical Info", icon: <FileText className="w-4 h-4" /> },
     { id: "transport", label: "Transport", icon: <Route className="w-4 h-4" /> },
     { id: "handover", label: "Handover", icon: <Flag className="w-4 h-4" /> }
@@ -510,7 +479,7 @@ function ParamedicInterface() {
           {activeTab === "navigation" && (
             <div className="p-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
-                <Navigation className="w-8 h-8 text-blue-600" />
+                <LocationIcon className="w-8 h-8 text-blue-600" />
                 Navigation to Incident
               </h2>
               
@@ -520,7 +489,7 @@ function ParamedicInterface() {
                     <h3 className="font-bold text-blue-900 mb-4">Destination</h3>
                     <div className="space-y-3">
                       <div className="flex items-start gap-3">
-                        <MapPin className="w-5 h-5 text-blue-600 mt-1" />
+                        <LocationIcon className="w-5 h-5 text-blue-600 mt-1" />
                         <div>
                           <p className="font-semibold text-blue-900">Incident Location</p>
                           <p className="text-blue-800">{currentAssignment.address}</p>
@@ -536,7 +505,7 @@ function ParamedicInterface() {
                   
                   <div className="space-y-4">
                     <button
-                      onClick={openNavigation}
+                      onClick={() => {}}
                       className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4 rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 flex items-center justify-center gap-3"
                     >
                       <Navigation className="w-6 h-6" />
@@ -554,15 +523,17 @@ function ParamedicInterface() {
                   </div>
                 </div>
                 
-                <div className="p-6 bg-gray-50 rounded-2xl border border-gray-200">
-                  <h3 className="font-bold text-gray-900 mb-4">Live Map</h3>
-                  <div className="bg-gray-200 rounded-xl h-64 flex items-center justify-center">
-                    <div className="text-center text-gray-600">
-                      <MapPin className="w-12 h-12 mx-auto mb-2" />
-                      <p>Interactive map would be displayed here</p>
-                      <p className="text-sm">Integration with Google Maps API</p>
-                    </div>
-                  </div>
+                <div className="space-y-4">
+                  <h3 className="font-bold text-gray-900">Live Map</h3>
+                  <LiveMap
+                    incidentLocation={incidentCoordinates}
+                    ambulanceLocation={ambulanceCoordinates}
+                    emergency={currentAssignment}
+                    onNavigate={() => setMessage("Navigation opened in new tab")}
+                  />
+                  <p className="text-sm text-gray-600 text-center">
+                    Red marker: Incident location | Blue marker: Your location
+                  </p>
                 </div>
               </div>
             </div>
@@ -575,62 +546,7 @@ function ParamedicInterface() {
                 <Heart className="w-8 h-8 text-pink-600" />
                 Record Vital Signs
               </h2>
-
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                {[
-                  { key: "bloodPressure", label: "Blood Pressure", icon: <Heart className="w-5 h-5" />, unit: "mmHg", placeholder: "120/80", color: "red" },
-                  { key: "heartRate", label: "Heart Rate", icon: <Activity className="w-5 h-5" />, unit: "bpm", placeholder: "72", color: "pink" },
-                  { key: "respiratoryRate", label: "Respiratory Rate", icon: <Activity className="w-5 h-5" />, unit: "/min", placeholder: "16", color: "blue" },
-                  { key: "temperature", label: "Temperature", icon: <Thermometer className="w-5 h-5" />, unit: "°C", placeholder: "36.5", color: "orange" },
-                  { key: "oxygenSaturation", label: "Oxygen Saturation", icon: <Droplets className="w-5 h-5" />, unit: "%", placeholder: "98", color: "cyan" },
-                  { key: "glucoseLevel", label: "Glucose Level", icon: <Zap className="w-5 h-5" />, unit: "mg/dL", placeholder: "100", color: "yellow" },
-                ].map((vital) => (
-                  <div key={vital.key}>
-                    <label className="block text-sm font-semibold text-gray-700 mb-3">
-                      {vital.label}
-                    </label>
-                    <div className="relative">
-                      <div className={`absolute left-4 top-1/2 transform -translate-y-1/2 p-2 bg-${vital.color}-100 rounded-lg`}>
-                        <span className={`text-${vital.color}-600`}>{vital.icon}</span>
-                      </div>
-                      <input
-                        type="text"
-                        placeholder={vital.placeholder}
-                        value={vitals[vital.key]}
-                        onChange={(e) => handleVitalChange(vital.key, e.target.value)}
-                        className="w-full pl-16 pr-16 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
-                      />
-                      <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium">
-                        {vital.unit}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                
-                <div className="lg:col-span-3">
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">Pain Scale (0-10)</label>
-                  <input
-                    type="range"
-                    min="0"
-                    max="10"
-                    value={vitals.painScale}
-                    onChange={(e) => handleVitalChange('painScale', e.target.value)}
-                    className="w-full"
-                  />
-                  <div className="flex justify-between text-sm text-gray-500 mt-1">
-                    <span>No Pain (0)</span>
-                    <span className="font-semibold">{vitals.painScale || 0}</span>
-                    <span>Severe Pain (10)</span>
-                  </div>
-                </div>
-              </div>
-              
-              <button
-                onClick={recordVitals}
-                className="w-full bg-gradient-to-r from-pink-600 to-pink-700 text-white py-4 rounded-xl font-semibold text-lg hover:from-pink-700 hover:to-pink-800 transition-all duration-200"
-              >
-                Record Vital Signs
-              </button>
+              <VitalsForm onSubmit={recordVitals} loading={loading} />
             </div>
           )}
 
@@ -638,79 +554,10 @@ function ParamedicInterface() {
           {activeTab === "treatment" && (
             <div className="p-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-8 flex items-center gap-3">
-                <Pill className="w-8 h-8 text-purple-600" />
+                <FileText className="w-8 h-8 text-purple-600" />
                 Record Treatment
               </h2>
-
-              <div className="grid md:grid-cols-2 gap-6 mb-6">
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Treatment/Intervention</label>
-                  <textarea
-                    placeholder="Describe treatment provided..."
-                    value={treatment.treatment}
-                    onChange={(e) => handleTreatmentChange('treatment', e.target.value)}
-                    className="w-full p-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 resize-none"
-                    rows="3"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Medication</label>
-                  <input
-                    type="text"
-                    placeholder="Medication name"
-                    value={treatment.medication}
-                    onChange={(e) => handleTreatmentChange('medication', e.target.value)}
-                    className="w-full p-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Dosage</label>
-                  <input
-                    type="text"
-                    placeholder="Dosage amount"
-                    value={treatment.dosage}
-                    onChange={(e) => handleTreatmentChange('dosage', e.target.value)}
-                    className="w-full p-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Route</label>
-                  <select
-                    value={treatment.route}
-                    onChange={(e) => handleTreatmentChange('route', e.target.value)}
-                    className="w-full p-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                  >
-                    <option value="">Select route</option>
-                    <option value="Oral">Oral</option>
-                    <option value="IV">Intravenous</option>
-                    <option value="IM">Intramuscular</option>
-                    <option value="Sublingual">Sublingual</option>
-                    <option value="Topical">Topical</option>
-                    <option value="Inhalation">Inhalation</option>
-                  </select>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Patient Response</label>
-                  <textarea
-                    placeholder="Patient's response to treatment..."
-                    value={treatment.response}
-                    onChange={(e) => handleTreatmentChange('response', e.target.value)}
-                    className="w-full p-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 resize-none"
-                    rows="2"
-                  />
-                </div>
-              </div>
-              
-              <button
-                onClick={recordTreatment}
-                className="w-full bg-gradient-to-r from-purple-600 to-purple-700 text-white py-4 rounded-xl font-semibold text-lg hover:from-purple-700 hover:to-purple-800 transition-all duration-200"
-              >
-                Record Treatment
-              </button>
+              <TreatmentForm onSubmit={recordTreatment} loading={loading} />
             </div>
           )}
 
@@ -773,37 +620,10 @@ function ParamedicInterface() {
               </div>
 
               {/* File Upload Section */}
-              <div className="grid md:grid-cols-2 gap-8 mb-8">
-                <div className="p-6 bg-blue-50 rounded-2xl border border-blue-200">
-                  <h3 className="font-bold text-blue-900 mb-4 flex items-center gap-2">
-                    <Camera className="w-5 h-5" />
-                    Incident Photos
-                  </h3>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => handleFileUpload(e.target.files[0], "photo")}
-                    className="w-full p-3 border-2 border-blue-200 rounded-xl bg-white"
-                    disabled={uploadingFile}
-                  />
-                  <p className="text-blue-700 text-sm mt-2">Upload incident or patient photos</p>
-                </div>
-                
-                <div className="p-6 bg-purple-50 rounded-2xl border border-purple-200">
-                  <h3 className="font-bold text-purple-900 mb-4 flex items-center gap-2">
-                    <Upload className="w-5 h-5" />
-                    Medical Reports
-                  </h3>
-                  <input
-                    type="file"
-                    accept=".pdf,.doc,.docx,.jpg,.png"
-                    onChange={(e) => handleFileUpload(e.target.files[0], "document")}
-                    className="w-full p-3 border-2 border-purple-200 rounded-xl bg-white"
-                    disabled={uploadingFile}
-                  />
-                  <p className="text-purple-700 text-sm mt-2">Upload ECG, documents, or reports</p>
-                </div>
-              </div>
+              <FileUpload 
+                emergencyId={currentAssignment._id}
+                onUploadComplete={handleFileUploadComplete}
+              />
               
               <button
                 onClick={updateMedicalInfo}
@@ -984,13 +804,33 @@ function ParamedicInterface() {
               <button
                 onClick={completeHandover}
                 disabled={currentAssignment.status !== "Transporting"}
-                className="w-full bg-gradient-to-r from-orange-600 to-orange-700 text-white py-4 rounded-xl font-semibold text-lg hover:from-orange-700 hover:to-orange-800 transition-all duration-200 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-gradient-to-r from-orange-600 to-orange-700 text-white py-4 rounded-xl font-semibold text-lg hover:from-orange-700 hover:to-orange-800 transition-all duration-200 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
               >
                 <Flag className="w-6 h-6" />
                 Complete Handover
               </button>
             </div>
           )}
+        </div>
+
+        {/* Quick Actions Bar */}
+        <div className="mt-8 bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+          <h3 className="font-bold text-gray-900 mb-4">Quick Actions</h3>
+          <div className="flex flex-wrap gap-3">
+            {currentAssignment.status === "En Route" && (
+              <button
+                onClick={() => updateStatus("On Scene")}
+                className="flex items-center gap-2 bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors"
+              >
+                <Flag className="w-4 h-4" />
+                Mark "On Scene"
+              </button>
+            )}
+            <button className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+              <Phone className="w-4 h-4" />
+              Contact Dispatch
+            </button>
+          </div>
         </div>
 
         {/* Previous Records */}

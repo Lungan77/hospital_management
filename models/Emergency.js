@@ -63,6 +63,8 @@ const EmergencySchema = new mongoose.Schema(
       oxygenSaturation: { type: Number },
       glucoseLevel: { type: Number },
       painScale: { type: Number, min: 0, max: 10 },
+      consciousnessLevel: { type: String, enum: ["Alert", "Verbal", "Pain", "Unresponsive"] },
+      symptoms: { type: String },
       recordedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" }
     }],
     

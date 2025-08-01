@@ -16,7 +16,9 @@ export async function POST(req) {
       temperature, 
       oxygenSaturation, 
       glucoseLevel, 
-      painScale 
+      painScale,
+      consciousnessLevel,
+      symptoms
     } = await req.json();
 
     const emergency = await Emergency.findById(emergencyId);
@@ -34,6 +36,8 @@ export async function POST(req) {
       oxygenSaturation: parseInt(oxygenSaturation),
       glucoseLevel: parseInt(glucoseLevel),
       painScale: parseInt(painScale),
+      consciousnessLevel,
+      symptoms,
       recordedBy: auth.session.user.id
     };
 
