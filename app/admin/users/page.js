@@ -37,7 +37,7 @@ export default function UsersTable() {
       patient: "from-green-500 to-green-600",
       labtech: "from-cyan-500 to-cyan-600",
       driver: "from-orange-500 to-orange-600",
-      paramedic: "from-red-500 to-red-600"
+      paramedic: "from-red-500 to-red-600",
       dispatcher: "from-red-500 to-red-600"
     };
     return colors[role] || "from-gray-500 to-gray-600";
