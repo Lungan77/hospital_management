@@ -901,4 +901,4 @@ function ParamedicInterface() {
   );
 }
 
-export default withAuth(ParamedicInterface, ["nurse", "doctor", "dispatcher"]);
+export default withAuth(ParamedicInterface, ["nurse", "doctor", "dispatcher", "paramedic"]);
