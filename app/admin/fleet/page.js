@@ -744,6 +744,16 @@ function AmbulanceDetailsModal({ ambulance, onClose, onUpdate }) {
                       <span className="text-gray-600">Base Station:</span>
                       <span className="font-semibold">{ambulance.baseStation}</span>
                     </div>
+                    <button 
+                      onClick={() => {
+                        setSelectedAmbulance(ambulance);
+                        setShowAssignModal(true);
+                      }}
+                      className="flex items-center justify-center gap-2 bg-purple-50 text-purple-600 py-2 px-4 rounded-lg text-sm font-semibold hover:bg-purple-100 transition-colors"
+                    >
+                      <Users className="w-4 h-4" />
+                      Assign Crew
+                    </button>
                   </div>
                 </div>
               </div>
