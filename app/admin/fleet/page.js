@@ -38,6 +38,8 @@ function FleetManagement() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedAmbulance, setSelectedAmbulance] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [availableCrew, setAvailableCrew] = useState({ drivers: [], paramedics: [] });
 
   useEffect(() => {
     fetchAmbulances();
@@ -512,6 +514,25 @@ function FleetManagement() {
                       <button className="flex items-center justify-center gap-1 bg-gray-50 text-gray-600 py-2 px-2 rounded-lg text-xs font-semibold hover:bg-gray-100 transition-colors">
                         <Settings className="w-3 h-3" />
                         Config
+                      </button>
+                      <button
+                        onClick={async () => {
+                          setSelectedAmbulance(ambulance);
+                          setShowAssignModal(true);
+                          try {
+                            const res = await fetch("/api/ambulances/crew/available");
+                            const data = await res.json();
+                            if (res.ok) {
+                              setAvailableCrew(data);
+                            }
+                          } catch {
+                            setAvailableCrew({ drivers: [], paramedics: [] });
+                          }
+                        }}
+                        className="flex items-center justify-center gap-2 bg-indigo-50 text-indigo-600 py-2 px-3 rounded-lg text-xs font-semibold hover:bg-indigo-100 transition-colors"
+                      >
+                        <Users className="w-3 h-3" />
+                        Assign Crew
                       </button>
                     </div>
 
