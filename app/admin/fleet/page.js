@@ -659,6 +659,37 @@ function FleetManagement() {
           onAdd={fetchAmbulances}
         />
       )}
+      {showAssignModal && selectedAmbulance && (
+        <AssignCrewModal
+          ambulance={selectedAmbulance}
+          availableCrew={availableCrew}
+          onClose={() => {
+            setShowAssignModal(false);
+            setSelectedAmbulance(null);
+          }}
+          onAssign={async (ambulanceId, driverId, paramedicId) => {
+            try {
+              const res = await fetch("/api/ambulances/crew/assign", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ ambulanceId, driverId, paramedicId }),
+              });
+      
+              const data = await res.json();
+              if (res.ok) {
+                await fetchAmbulances();
+                setShowAssignModal(false);
+                setSelectedAmbulance(null);
+              } else {
+                alert(data.error || "Failed to assign crew");
+              }
+            } catch (err) {
+              alert("Network error assigning crew");
+            }
+          }}
+        />
+      )}
+
     </div>
   );
 }
