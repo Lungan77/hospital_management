@@ -802,10 +802,12 @@ function AmbulanceDetailsModal({ ambulance, onClose, onUpdate }) {
                         setShowAssignModal(true);
                       }}
                       className="flex items-center justify-center gap-2 bg-purple-50 text-purple-600 py-2 px-4 rounded-lg text-sm font-semibold hover:bg-purple-100 transition-colors"
-                    >
-                      <Users className="w-4 h-4" />
-                      Assign Crew
-                    </button>
+                   <Link href="/fleet/tracking" className="flex-1">
+                     <button className="w-full bg-blue-50 text-blue-600 py-2 px-4 rounded-lg text-sm font-semibold hover:bg-blue-100 transition-colors flex items-center justify-center gap-2">
+                       <MapPin className="w-4 h-4" />
+                       Track
+                     </button>
+                   </Link>
                   </div>
                 </div>
               </div>

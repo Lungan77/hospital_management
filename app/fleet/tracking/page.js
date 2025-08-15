@@ -94,14 +94,13 @@ function FleetTracking() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(async (position) => {
         try {
-          // Find ambulance assigned to current user (if they are a driver)
-          const res = await fetch("/api/driver/location", {
+          const res = await fetch("/api/ambulances/location/update", {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               latitude: position.coords.latitude,
               longitude: position.coords.longitude,
-              address: "Current Location" // In real app, reverse geocode this
+              address: "Current Location"
             }),
           });
           
@@ -117,6 +116,9 @@ function FleetTracking() {
 
   // Auto-update driver location every 30 seconds if user is a driver
   useEffect(() => {
+    // Only update location if user is driver or paramedic
+    updateDriverLocation(); // Initial update
+    
     const interval = setInterval(() => {
       updateDriverLocation();
     }, 30000);
