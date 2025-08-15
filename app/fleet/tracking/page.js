@@ -51,11 +51,8 @@ function FleetTracking() {
       const res = await fetch("/api/ambulances");
       const data = await res.json();
       if (res.ok) {
-        // Filter ambulances that have location data
-        const ambulancesWithLocation = data.ambulances.filter(ambulance => 
-          ambulance.currentLocation?.latitude && ambulance.currentLocation?.longitude
-        );
-        setAmbulances(ambulancesWithLocation);
+        setAmbulances(data.ambulances);
+        console.log("Fetched ambulances:", data.ambulances.length);
       }
     } catch (error) {
       console.error("Error fetching ambulance locations");

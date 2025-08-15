@@ -68,10 +68,13 @@ export default function FleetMap({
         !isNaN(a.currentLocation.longitude)
       );
       
+      console.log("Valid ambulance locations:", validLocations.length);
+      
       if (validLocations.length > 0) {
         // Calculate center of all ambulances
         const avgLat = validLocations.reduce((sum, a) => sum + a.currentLocation.latitude, 0) / validLocations.length;
         const avgLng = validLocations.reduce((sum, a) => sum + a.currentLocation.longitude, 0) / validLocations.length;
+        console.log("Map center calculated:", [avgLat, avgLng]);
         setMapCenter([avgLat, avgLng]);
         setMapKey(prev => prev + 1); // Force map re-initialization
       }
@@ -101,15 +104,20 @@ export default function FleetMap({
         
         {/* Ambulance Markers */}
         {ambulances.map((ambulance) => {
+          console.log("Processing ambulance:", ambulance.callSign, ambulance.currentLocation);
+          
           if (!ambulance.currentLocation?.latitude || 
               !ambulance.currentLocation?.longitude ||
               isNaN(ambulance.currentLocation.latitude) ||
               isNaN(ambulance.currentLocation.longitude)) {
+            console.log("Skipping ambulance due to invalid location:", ambulance.callSign);
             return null;
           }
           
           const position = [ambulance.currentLocation.latitude, ambulance.currentLocation.longitude];
           const icon = createAmbulanceIcon(ambulance.status);
+          
+          console.log("Adding marker for:", ambulance.callSign, "at position:", position);
           
           return (
             <Marker 

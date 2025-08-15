@@ -456,7 +456,7 @@ function FleetManagement() {
                       <Users className="w-4 h-4" />
                       Assign Crew
                     </button>
-                    <Link href="/fleet/tracking" className="flex-1">
+                    <Link href="/fleet/tracking">
                       <button className="w-full bg-blue-50 text-blue-600 py-2 px-4 rounded-lg text-sm font-semibold hover:bg-blue-100 transition-colors flex items-center justify-center gap-2">
                         <MapPin className="w-4 h-4" />
                         Track
