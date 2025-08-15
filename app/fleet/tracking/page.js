@@ -323,7 +323,16 @@ function FleetTracking() {
                         <Radio className="w-4 h-4" />
                         Contact
                       </button>
-                      <button className="bg-green-50 text-green-600 py-2 px-4 rounded-lg text-sm font-semibold hover:bg-green-100 transition-colors flex items-center justify-center gap-2">
+                      <button 
+                        onClick={() => {
+                          if (selectedAmbulance.currentLocation?.latitude && selectedAmbulance.currentLocation?.longitude) {
+                            const lat = selectedAmbulance.currentLocation.latitude;
+                            const lng = selectedAmbulance.currentLocation.longitude;
+                            window.open(`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`, '_blank');
+                          }
+                        }}
+                        className="bg-green-50 text-green-600 py-2 px-4 rounded-lg text-sm font-semibold hover:bg-green-100 transition-colors flex items-center justify-center gap-2"
+                      >
                         <Navigation className="w-4 h-4" />
                         Navigate
                       </button>
