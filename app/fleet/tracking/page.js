@@ -106,9 +106,8 @@ function FleetTracking() {
 
   const updateDriverLocation = async () => {
     if (typeof window !== 'undefined' && navigator.geolocation) {
-      console.log("Fleet tracking: Requesting location...");
       navigator.geolocation.getCurrentPosition(async (position) => {
-        console.log("Fleet tracking: Got position:", position.coords.latitude, position.coords.longitude);
+        console.log("Getting current position:", position.coords);
         try {
           const res = await fetch("/api/driver/location", {
             method: "PUT",
@@ -121,34 +120,32 @@ function FleetTracking() {
           });
           
           const data = await res.json();
-          console.log("Fleet tracking location update response:", data);
+          console.log("Location update response:", data);
           
           if (res.ok) {
-            setMessage(`Location updated: ${data.message}`);
+            console.log("Fleet tracking location updated:", data.message);
             // Refresh the map data
             setTimeout(() => {
               fetchAmbulanceLocations();
-            }, 500);
+            }, 1000);
           } else {
-            console.error("Location update failed:", res.status, data);
-            setMessage(`Location update failed: ${data.error || 'Unknown error'}`);
+            console.log("Location update failed:", res.status, data);
           }
         } catch (error) {
           console.error("Error updating fleet tracking location:", error);
-          setMessage("Error updating location - check network connection");
         }
       }, (error) => {
         console.error("Fleet tracking geolocation error:", error);
         // Show user-friendly message
-        setMessage(`Location access error: ${error.message}. Please enable location permissions.`);
+        setMessage("Location access denied. Please enable location permissions for real-time tracking.");
       }, {
         enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 5000
+        timeout: 15000,
+        maximumAge: 10000
       });
     } else {
       console.error("Geolocation not available for fleet tracking");
-      setMessage("Geolocation not supported. Please use a modern browser with location services.");
+      setMessage("Geolocation not supported by this browser.");
     }
   };
 
@@ -249,6 +246,15 @@ function FleetTracking() {
               </div>
               
               <div className="p-6">
+                <div className="mb-4 p-4 bg-blue-50 rounded-xl border border-blue-200">
+                  <p className="text-blue-800 text-sm">
+                    <strong>Live Tracking:</strong> {ambulances.length} ambulances total, 
+                    {ambulances.filter(a => a.currentLocation?.latitude && a.currentLocation?.longitude && !isNaN(a.currentLocation.latitude) && !isNaN(a.currentLocation.longitude)).length} with GPS data
+                  </p>
+                  <p className="text-blue-700 text-xs mt-1">
+                    Last update: {lastUpdate.toLocaleTimeString()} | Auto-refresh every 3 seconds
+                  </p>
+                </div>
                 <FleetMap 
                   ambulances={ambulances}
                   onAmbulanceSelect={setSelectedAmbulance}

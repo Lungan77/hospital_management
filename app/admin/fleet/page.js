@@ -468,10 +468,12 @@ function FleetManagement() {
                       <Phone className="w-4 h-4" />
                       Contact
                     </button>
-                    <button className="bg-yellow-50 text-yellow-600 py-2 px-4 rounded-lg text-sm font-semibold hover:bg-yellow-100 transition-colors flex items-center justify-center gap-2">
-                      <Settings className="w-4 h-4" />
-                      Manage
-                    </button>
+                    <Link href="/fleet/maintenance" className="flex-1">
+                      <button className="w-full bg-yellow-50 text-yellow-600 py-2 px-4 rounded-lg text-sm font-semibold hover:bg-yellow-100 transition-colors flex items-center justify-center gap-2">
+                        <Settings className="w-4 h-4" />
+                        Manage
+                      </button>
+                    </Link>
                   </div>
                 </div>
               </div>
