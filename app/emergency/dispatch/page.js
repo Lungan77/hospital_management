@@ -238,7 +238,11 @@ function DispatchDashboard() {
                         className={`p-6 border-2 rounded-2xl cursor-pointer transition-all duration-200 hover:shadow-lg ${
                           selectedEmergency?._id === emergency._id
                             ? "border-red-500 bg-red-50 shadow-lg"
-                            : "border-gray-200 hover:border-red-300"
+                            : status === "Cancelled" 
+                              ? "bg-red-50 text-red-600 hover:bg-red-100 border border-red-200"
+                              : status === "Completed"
+                              ? "bg-green-50 text-green-600 hover:bg-green-100 border border-green-200"
+                              : "bg-purple-50 text-purple-600 hover:bg-purple-100 border border-purple-200"
                         }`}
                       >
                         <div className="flex justify-between items-start mb-4">

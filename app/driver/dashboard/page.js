@@ -50,8 +50,10 @@ function DriverDashboard() {
   }, []);
 
   const updateLocation = () => {
+    console.log("Driver updating location...");
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(async (position) => {
+        console.log("Driver position obtained:", position.coords.latitude, position.coords.longitude);
         try {
           const res = await fetch("/api/driver/location", {
             method: "PUT",
@@ -59,24 +61,32 @@ function DriverDashboard() {
             body: JSON.stringify({
               latitude: position.coords.latitude,
               longitude: position.coords.longitude,
-              address: `Driver Location: ${position.coords.latitude.toFixed(4)}, ${position.coords.longitude.toFixed(4)}`
+              address: `Live Driver Location: ${position.coords.latitude.toFixed(4)}, ${position.coords.longitude.toFixed(4)}`,
+              timestamp: new Date().toISOString()
             }),
           });
           
           const data = await res.json();
-          if (res.ok && data.updated !== false) {
-            console.log("Driver location updated successfully");
+          if (res.ok) {
+            console.log("✅ Driver location updated successfully:", data.message);
+            if (data.ambulance) {
+              console.log("📍 Ambulance location updated:", data.ambulance.callSign, data.ambulance.currentLocation);
+            }
+          } else {
+            console.log("❌ Driver location update failed:", data.error);
           }
         } catch (error) {
-          console.error("Error updating location");
+          console.error("❌ Error updating driver location:", error);
         }
       }, (error) => {
-        console.error("Geolocation error:", error);
+        console.error("❌ Driver geolocation error:", error);
       }, {
         enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 60000
+        timeout: 15000,
+        maximumAge: 30000
       });
+    } else {
+      console.log("❌ Geolocation not available for driver");
     }
   };
 

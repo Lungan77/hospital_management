@@ -47,7 +47,13 @@ export async function POST(req) {
     if (emergency.ambulanceId) {
       await Ambulance.findByIdAndUpdate(emergency.ambulanceId, {
         status: "Available",
-        currentEmergency: null
+        currentEmergency: null,
+        currentLocation: {
+          latitude: null,
+          longitude: null,
+          address: "Base Station",
+          lastUpdated: new Date()
+        }
       });
     }
 

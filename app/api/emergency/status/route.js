@@ -31,11 +31,29 @@ export async function PUT(req) {
         break;
       case "Completed":
         emergency.completedAt = new Date();
-        // Update ambulance status back to available
+        // Reset ambulance status and assignment
         if (emergency.ambulanceId) {
           await Ambulance.findByIdAndUpdate(emergency.ambulanceId, {
             status: "Available",
-            currentEmergency: null
+            currentEmergency: null,
+            currentLocation: {
+              ...emergency.ambulanceId.currentLocation,
+              lastUpdated: new Date()
+            }
+          });
+        }
+        break;
+      case "Cancelled":
+        emergency.completedAt = new Date();
+        // Reset ambulance status and assignment for cancelled emergencies
+        if (emergency.ambulanceId) {
+          await Ambulance.findByIdAndUpdate(emergency.ambulanceId, {
+            status: "Available",
+            currentEmergency: null,
+            currentLocation: {
+              ...emergency.ambulanceId.currentLocation,
+              lastUpdated: new Date()
+            }
           });
         }
         break;
