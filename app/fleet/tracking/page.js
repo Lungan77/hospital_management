@@ -48,13 +48,13 @@ function FleetTracking() {
   }, []);
 
   const fetchAmbulanceLocations = async () => {
-    console.log("Fetching ambulance locations...");
+    console.log("🔄 Fetching ambulance locations...");
     try {
       const res = await fetch("/api/ambulances");
       const data = await res.json();
       if (res.ok) {
         setAmbulances(data.ambulances);
-        console.log("Fetched ambulances:", data.ambulances.length, "ambulances");
+        console.log("📊 Fetched", data.ambulances.length, "ambulances");
         
         // Log ambulances with location data
         const withLocation = data.ambulances.filter(a => 
@@ -63,16 +63,18 @@ function FleetTracking() {
           !isNaN(a.currentLocation.latitude) &&
           !isNaN(a.currentLocation.longitude)
         );
-        console.log("Ambulances with valid locations:", withLocation.length);
+        console.log("📍 Ambulances with GPS:", withLocation.length);
         withLocation.forEach(a => {
-          console.log(`${a.callSign}: ${a.currentLocation.latitude}, ${a.currentLocation.longitude}`);
+          console.log(`🚑 ${a.callSign}: ${a.currentLocation.latitude.toFixed(4)}, ${a.currentLocation.longitude.toFixed(4)} (${a.currentLocation.lastUpdated})`);
         });
+        
+        setMessage(`Tracking ${withLocation.length} of ${data.ambulances.length} ambulances with GPS data`);
       } else {
-        console.error("Failed to fetch ambulances:", data);
+        console.error("❌ Failed to fetch ambulances:", data);
         setMessage("Failed to load ambulance data");
       }
     } catch (error) {
-      console.error("Error fetching ambulance locations:", error);
+      console.error("❌ Network error fetching locations:", error);
       setMessage("Error loading ambulance locations");
     } finally {
       setLoading(false);
@@ -106,9 +108,14 @@ function FleetTracking() {
   };
 
   const updateDriverLocation = async () => {
+    console.log("🔄 Fleet tracking requesting location update...");
     if (typeof window !== 'undefined' && navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(async (position) => {
-        console.log("Getting current position:", position.coords);
+        console.log("📍 Fleet tracking position:", {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+          accuracy: position.coords.accuracy
+        });
         try {
           const res = await fetch("/api/driver/location", {
             method: "PUT",
@@ -116,36 +123,39 @@ function FleetTracking() {
             body: JSON.stringify({
               latitude: position.coords.latitude,
               longitude: position.coords.longitude,
-              address: `Fleet Tracking: ${position.coords.latitude.toFixed(4)}, ${position.coords.longitude.toFixed(4)}`
+              address: `Fleet Tracking Update: ${position.coords.latitude.toFixed(4)}, ${position.coords.longitude.toFixed(4)}`
             }),
           });
           
           const data = await res.json();
-          console.log("Location update response:", data);
+          console.log("✅ Fleet tracking update response:", data);
           
           if (res.ok) {
-            console.log("Fleet tracking location updated:", data.message);
+            console.log("✅ Fleet tracking location updated");
+            setMessage(`Location updated: ${new Date().toLocaleTimeString()}`);
             // Refresh the map data
             setTimeout(() => {
               fetchAmbulanceLocations();
-            }, 1000);
+            }, 500);
           } else {
-            console.log("Location update failed:", res.status, data);
+            console.log("❌ Fleet tracking update failed:", data.error);
+            setMessage(`Update failed: ${data.error}`);
           }
         } catch (error) {
-          console.error("Error updating fleet tracking location:", error);
+          console.error("❌ Network error in fleet tracking:", error);
+          setMessage("Network error updating location");
         }
       }, (error) => {
-        console.error("Fleet tracking geolocation error:", error);
+        console.error("❌ Fleet tracking geolocation error:", error.message);
         // Show user-friendly message
-        setMessage("Location access denied. Please enable location permissions for real-time tracking.");
+        setMessage(`Location error: ${error.message}. Please enable location permissions.`);
       }, {
         enableHighAccuracy: true,
-        timeout: 15000,
-        maximumAge: 10000
+        timeout: 10000,
+        maximumAge: 5000
       });
     } else {
-      console.error("Geolocation not available for fleet tracking");
+      console.error("❌ Geolocation not available for fleet tracking");
       setMessage("Geolocation not supported by this browser.");
     }
   };
@@ -203,6 +213,9 @@ function FleetTracking() {
                 <p className="text-sm text-gray-500 mt-2">
                   Last updated: {lastUpdate.toLocaleTimeString()}
                 </p>
+                <p className="text-xs text-blue-600 mt-1">
+                  Auto-updating every 5 seconds
+                </p>
               </div>
             </div>
             
@@ -250,10 +263,15 @@ function FleetTracking() {
                 <div className="mb-4 p-4 bg-blue-50 rounded-xl border border-blue-200">
                   <p className="text-blue-800 text-sm">
                     <strong>Live Tracking:</strong> {ambulances.length} ambulances total, 
-                    {ambulances.filter(a => a.currentLocation?.latitude && a.currentLocation?.longitude && !isNaN(a.currentLocation.latitude) && !isNaN(a.currentLocation.longitude)).length} with GPS data
+                    <span className="font-bold text-blue-900">
+                      {ambulances.filter(a => a.currentLocation?.latitude && a.currentLocation?.longitude && !isNaN(a.currentLocation.latitude) && !isNaN(a.currentLocation.longitude)).length}
+                    </span> with GPS data
                   </p>
                   <p className="text-blue-700 text-xs mt-1">
-                    Last update: {lastUpdate.toLocaleTimeString()} | Auto-refresh every 3 seconds
+                    Last update: {lastUpdate.toLocaleTimeString()} | Auto-refresh every 5 seconds
+                  </p>
+                  <p className="text-blue-600 text-xs mt-1">
+                    Status: {message || "Tracking active"}
                   </p>
                 </div>
                 <FleetMap 

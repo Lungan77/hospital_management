@@ -334,7 +334,7 @@ function FleetManagement() {
                   </div>
                   
                   <div className="text-sm text-gray-600">
-                    <p><strong>Type:</strong> {ambulance.type}</p>
+                    onClick={() => window.location.href = '/emergency/paramedic'}
                     <p><strong>Base:</strong> {ambulance.baseStation}</p>
                   </div>
                 </div>

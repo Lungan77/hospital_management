@@ -25,18 +25,20 @@ export async function GET(req) {
       !isNaN(amb.currentLocation.longitude)
     );
     
-    console.log(`API: ${ambulancesWithLocation.length} ambulances have valid location data`);
+    console.log(`📍 API: ${ambulancesWithLocation.length} ambulances have valid GPS data`);
     
     // Log each ambulance location for debugging
     ambulances.forEach(amb => {
       if (amb.currentLocation?.latitude && amb.currentLocation?.longitude) {
-        console.log(`API: ${amb.callSign} location:`, {
+        console.log(`🚑 ${amb.callSign}:`, {
           lat: amb.currentLocation.latitude,
           lng: amb.currentLocation.longitude,
-          updated: amb.currentLocation.lastUpdated
+          address: amb.currentLocation.address,
+          updated: amb.currentLocation.lastUpdated,
+          status: amb.status
         });
       } else {
-        console.log(`API: ${amb.callSign} has no valid location data`);
+        console.log(`⚠️ ${amb.callSign}: No GPS data`);
       }
     });
 

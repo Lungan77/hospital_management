@@ -34,6 +34,7 @@ function DriverDashboard() {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
+    console.log("🚗 Driver dashboard initializing location tracking for:", session?.user.name);
     fetchDriverData();
     
     // Initial location update after a short delay
@@ -43,17 +44,22 @@ function DriverDashboard() {
     
     // Set up real-time updates
     const interval = setInterval(() => {
+      console.log("🔄 Driver dashboard auto-updating location...");
       fetchDriverData();
       updateLocation();
-    }, 10000); // Update every 10 seconds for real-time tracking
+    }, 15000); // Update every 15 seconds
     return () => clearInterval(interval);
-  }, []);
+  }, [session]);
 
   const updateLocation = () => {
-    console.log("Driver updating location...");
+    console.log("🚗 Driver updating location...");
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(async (position) => {
-        console.log("Driver position obtained:", position.coords.latitude, position.coords.longitude);
+        console.log("📍 Driver position obtained:", {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+          accuracy: position.coords.accuracy
+        });
         try {
           const res = await fetch("/api/driver/location", {
             method: "PUT",
@@ -61,32 +67,36 @@ function DriverDashboard() {
             body: JSON.stringify({
               latitude: position.coords.latitude,
               longitude: position.coords.longitude,
-              address: `Live Driver Location: ${position.coords.latitude.toFixed(4)}, ${position.coords.longitude.toFixed(4)}`,
-              timestamp: new Date().toISOString()
+              address: `Driver ${session?.user.name}: ${position.coords.latitude.toFixed(4)}, ${position.coords.longitude.toFixed(4)}`
             }),
           });
           
           const data = await res.json();
           if (res.ok) {
-            console.log("✅ Driver location updated successfully:", data.message);
+            console.log("✅ Driver location updated:", data.message);
             if (data.ambulance) {
-              console.log("📍 Ambulance location updated:", data.ambulance.callSign, data.ambulance.currentLocation);
+              console.log("🚑 Ambulance updated:", data.ambulance.callSign, "at", data.ambulance.currentLocation);
+              setMessage(`Location updated: ${data.ambulance.callSign} at ${new Date().toLocaleTimeString()}`);
             }
           } else {
-            console.log("❌ Driver location update failed:", data.error);
+            console.log("❌ Location update failed:", data.error);
+            setMessage(`Location update failed: ${data.error}`);
           }
         } catch (error) {
-          console.error("❌ Error updating driver location:", error);
+          console.error("❌ Network error updating location:", error);
+          setMessage("Network error updating location");
         }
       }, (error) => {
-        console.error("❌ Driver geolocation error:", error);
+        console.error("❌ Geolocation error:", error.message);
+        setMessage(`Geolocation error: ${error.message}`);
       }, {
         enableHighAccuracy: true,
-        timeout: 15000,
-        maximumAge: 30000
+        timeout: 10000,
+        maximumAge: 5000
       });
     } else {
-      console.log("❌ Geolocation not available for driver");
+      console.log("❌ Geolocation not supported");
+      setMessage("Geolocation not supported by this browser");
     }
   };
 
@@ -184,8 +194,25 @@ function DriverDashboard() {
         </div>
 
         {message && (
-          <div className="mb-8 p-6 bg-blue-50 border-l-4 border-blue-500 rounded-r-2xl shadow-lg">
-            <p className="text-blue-700 font-semibold text-lg">{message}</p>
+          <div className={`mb-8 p-6 rounded-2xl border-l-4 shadow-lg ${
+            message.includes("updated") || message.includes("successfully") 
+              ? "bg-green-50 border-green-500 text-green-700" 
+              : message.includes("error") || message.includes("failed")
+              ? "bg-red-50 border-red-500 text-red-700"
+              : "bg-blue-50 border-blue-500 text-blue-700"
+          }`}>
+            <div className="flex items-center gap-3">
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                message.includes("updated") || message.includes("successfully") ? "bg-green-500" : 
+                message.includes("error") || message.includes("failed") ? "bg-red-500" : "bg-blue-500"
+              }`}>
+                <span className="text-white text-xs font-bold">
+                  {message.includes("updated") || message.includes("successfully") ? "✓" : 
+                   message.includes("error") || message.includes("failed") ? "!" : "i"}
+                </span>
+              </div>
+              <p className="font-semibold">{message}</p>
+            </div>
           </div>
         )}
 
