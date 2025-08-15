@@ -520,14 +520,21 @@ function FleetManagement() {
                         onClick={async () => {
                           setSelectedAmbulance(ambulance);
                           setShowAssignModal(true);
+                      
                           try {
                             const res = await fetch("/api/ambulances/crew/available");
+                            const data = await res.json();
+                            console.log(data); // You can replace this with your actual logic
+                          } catch (error) {
+                            console.error("Error fetching crew:", error);
                           }
-                        }
+                        }}
+                        className="flex items-center justify-center gap-2 bg-purple-50 text-purple-600 py-2 px-4 rounded-lg text-sm font-semibold hover:bg-purple-100 transition-colors"
                       >
                         <Users className="w-4 h-4" />
                         Assign Crew
                       </button>
+
                             const data = await res.json();
                             if (res.ok) {
                               setAvailableCrew(data);
