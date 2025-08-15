@@ -66,18 +66,28 @@ function ParamedicInterface() {
     const interval = setInterval(fetchCurrentAssignment, 30000);
     return () => clearInterval(interval);
   }, []);
-
+          const res = await fetch("/api/driver/location", {
   useEffect(() => {
     // Simulate getting coordinates from address (in real app, use geocoding API)
     if (currentAssignment?.address) {
       // Mock coordinates for demonstration - in real app, geocode the address
       setIncidentCoordinates([-26.2041, 28.0473]); // Johannesburg coordinates as example
-    }
+              address: `Emergency Response Location: ${position.coords.latitude.toFixed(4)}, ${position.coords.longitude.toFixed(4)}`
     
     // Get ambulance location (current user location)
+          
+          if (res.ok) {
+            console.log("Emergency paramedic location updated");
+          }
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition((position) => {
         setAmbulanceCoordinates([position.coords.latitude, position.coords.longitude]);
+      }, (error) => {
+        console.error("Geolocation error:", error);
+      }, {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 60000
       });
     }
   }, [currentAssignment]);

@@ -91,50 +91,51 @@ function FleetTracking() {
     if (typeof window !== 'undefined' && navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(async (position) => {
         try {
-          const res = await fetch("/api/ambulances/location/update", {
+          const res = await fetch("/api/driver/location", {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               latitude: position.coords.latitude,
               longitude: position.coords.longitude,
-              address: "Current Location"
+              address: `Live Tracking: ${position.coords.latitude.toFixed(4)}, ${position.coords.longitude.toFixed(4)}`
             }),
           });
           
           if (res.ok) {
-            console.log("Location updated successfully");
+            const data = await res.json();
+            console.log("Fleet tracking location updated:", data.message);
             fetchAmbulanceLocations(); // Refresh the map
           } else {
-            console.log("Location update failed");
+            console.log("Location update failed:", res.status);
           }
         } catch (error) {
-          console.error("Error updating location");
+          console.error("Error updating fleet tracking location:", error);
         }
       }, (error) => {
-        console.log("Geolocation error:", error);
+        console.log("Fleet tracking geolocation error:", error);
+      }, {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 30000
       });
     } else {
-      console.log("Geolocation not available");
+      console.log("Geolocation not available for fleet tracking");
     }
   };
 
   // Auto-update driver location every 30 seconds if user is a driver
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      updateDriverLocation(); // Initial update
-    }
+    updateDriverLocation(); // Initial update
     
     const interval = setInterval(() => {
-      if (typeof window !== 'undefined') {
-        updateDriverLocation();
-      }
+      updateDriverLocation();
     }, 30000);
     
     return () => clearInterval(interval);
   }, []);
 
   if (loading) {
-    return (
+    if (navigator.geolocation) {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white flex items-center justify-center">
         <div className="text-center">
           <div className="w-20 h-20 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>

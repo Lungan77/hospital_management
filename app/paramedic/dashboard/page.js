@@ -55,12 +55,19 @@ function ParamedicDashboard() {
             body: JSON.stringify({
               latitude: position.coords.latitude,
               longitude: position.coords.longitude,
-              address: "Current Location"
+              address: `Paramedic Location: ${position.coords.latitude.toFixed(4)}, ${position.coords.longitude.toFixed(4)}`
             }),
           });
+          console.log("Paramedic location updated");
         } catch (error) {
           console.error("Error updating location");
         }
+      }, (error) => {
+        console.error("Geolocation error:", error);
+      }, {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 60000
       });
     }
   };
