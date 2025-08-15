@@ -15,7 +15,7 @@ export async function GET(req) {
       .sort({ callSign: 1 })
       .lean();
 
-    console.log(`Found ${ambulances.length} ambulances`);
+    console.log(`API: Found ${ambulances.length} ambulances`);
     
     // Log ambulances with location data
     const ambulancesWithLocation = ambulances.filter(amb => 
@@ -25,7 +25,20 @@ export async function GET(req) {
       !isNaN(amb.currentLocation.longitude)
     );
     
-    console.log(`${ambulancesWithLocation.length} ambulances have valid location data`);
+    console.log(`API: ${ambulancesWithLocation.length} ambulances have valid location data`);
+    
+    // Log each ambulance location for debugging
+    ambulances.forEach(amb => {
+      if (amb.currentLocation?.latitude && amb.currentLocation?.longitude) {
+        console.log(`API: ${amb.callSign} location:`, {
+          lat: amb.currentLocation.latitude,
+          lng: amb.currentLocation.longitude,
+          updated: amb.currentLocation.lastUpdated
+        });
+      } else {
+        console.log(`API: ${amb.callSign} has no valid location data`);
+      }
+    });
 
     return Response.json({ ambulances }, { status: 200 });
   } catch (error) {

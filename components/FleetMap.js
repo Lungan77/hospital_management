@@ -104,20 +104,20 @@ export default function FleetMap({
         
         {/* Ambulance Markers */}
         {ambulances.map((ambulance) => {
-          console.log("Processing ambulance:", ambulance.callSign, ambulance.currentLocation);
+          console.log("Processing ambulance for map:", ambulance.callSign, "Location:", ambulance.currentLocation);
           
           if (!ambulance.currentLocation?.latitude || 
               !ambulance.currentLocation?.longitude ||
               isNaN(ambulance.currentLocation.latitude) ||
               isNaN(ambulance.currentLocation.longitude)) {
-            console.log("Skipping ambulance due to invalid location:", ambulance.callSign);
+            console.warn("Skipping ambulance due to invalid location:", ambulance.callSign, ambulance.currentLocation);
             return null;
           }
           
           const position = [ambulance.currentLocation.latitude, ambulance.currentLocation.longitude];
           const icon = createAmbulanceIcon(ambulance.status);
           
-          console.log("Adding marker for:", ambulance.callSign, "at position:", position);
+          console.log("✓ Adding marker for:", ambulance.callSign, "at position:", position);
           
           return (
             <Marker 

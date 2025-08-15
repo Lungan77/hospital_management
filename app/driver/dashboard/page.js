@@ -39,13 +39,13 @@ function DriverDashboard() {
     // Initial location update after a short delay
     setTimeout(() => {
       updateLocation();
-    }, 1000);
+    }, 2000);
     
     // Set up real-time updates
     const interval = setInterval(() => {
       fetchDriverData();
       updateLocation();
-    }, 15000); // Update every 15 seconds for more frequent tracking
+    }, 10000); // Update every 10 seconds for real-time tracking
     return () => clearInterval(interval);
   }, []);
 
