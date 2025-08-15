@@ -522,6 +522,8 @@ function FleetManagement() {
                           setShowAssignModal(true);
                           try {
                             const res = await fetch("/api/ambulances/crew/available");
+                          }
+                        }
                       >
                         <Users className="w-4 h-4" />
                         Assign Crew
