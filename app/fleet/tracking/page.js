@@ -91,7 +91,7 @@ function FleetTracking() {
   };
 
   const updateDriverLocation = async () => {
-    if (navigator.geolocation) {
+    if (typeof window !== 'undefined' && navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(async (position) => {
         try {
           const res = await fetch("/api/ambulances/location/update", {
@@ -105,22 +105,32 @@ function FleetTracking() {
           });
           
           if (res.ok) {
+            console.log("Location updated successfully");
             fetchAmbulanceLocations(); // Refresh the map
+          } else {
+            console.log("Location update failed");
           }
         } catch (error) {
           console.error("Error updating location");
         }
+      }, (error) => {
+        console.log("Geolocation error:", error);
       });
+    } else {
+      console.log("Geolocation not available");
     }
   };
 
   // Auto-update driver location every 30 seconds if user is a driver
   useEffect(() => {
-    // Only update location if user is driver or paramedic
-    updateDriverLocation(); // Initial update
+    if (typeof window !== 'undefined') {
+      updateDriverLocation(); // Initial update
+    }
     
     const interval = setInterval(() => {
-      updateDriverLocation();
+      if (typeof window !== 'undefined') {
+        updateDriverLocation();
+      }
     }, 30000);
     
     return () => clearInterval(interval);

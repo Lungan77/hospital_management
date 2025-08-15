@@ -4,7 +4,7 @@ import Ambulance from "@/models/Ambulance";
 import { isAuthenticated } from "@/hoc/protectedRoute";
 
 export async function GET(req) {
-  const auth = await isAuthenticated(req, ["admin", "dispatcher"]);
+  const auth = await isAuthenticated(["admin", "dispatcher"]);
   if (auth.error) return Response.json({ error: auth.error }, { status: auth.status });
 
   try {
@@ -17,8 +17,8 @@ export async function GET(req) {
     // Get currently assigned crew members
     const ambulances = await Ambulance.find({}).select("crew");
     const assignedCrewIds = ambulances.flatMap(amb => 
-      amb.crew.map(member => member.memberId.toString())
-    );
+      amb.crew.map(member => member.memberId ? member.memberId.toString() : null)
+    ).filter(Boolean);
 
     // Filter out already assigned crew
     const availableDrivers = drivers.filter(driver => 

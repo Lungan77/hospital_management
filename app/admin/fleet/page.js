@@ -37,6 +37,7 @@ function FleetManagement() {
     driverId: "",
     paramedicId: ""
   });
+  const [updating, setUpdating] = useState(false);
 
   const [newAmbulance, setNewAmbulance] = useState({
     vehicleNumber: "",
@@ -129,6 +130,7 @@ function FleetManagement() {
       return;
     }
 
+    setUpdating(true);
     try {
       const res = await fetch("/api/ambulances/crew/assign", {
         method: "POST",
@@ -154,6 +156,7 @@ function FleetManagement() {
     } catch (error) {
       setMessage("Error assigning crew");
     }
+    setUpdating(false);
   };
 
   const getStatusColor = (status) => {

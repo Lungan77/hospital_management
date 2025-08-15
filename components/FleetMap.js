@@ -62,7 +62,10 @@ export default function FleetMap({
     // If ambulances are available, center map on fleet
     if (ambulances.length > 0) {
       const validLocations = ambulances.filter(a => 
-        a.currentLocation?.latitude && a.currentLocation?.longitude
+        a.currentLocation?.latitude && 
+        a.currentLocation?.longitude &&
+        !isNaN(a.currentLocation.latitude) &&
+        !isNaN(a.currentLocation.longitude)
       );
       
       if (validLocations.length > 0) {
@@ -98,7 +101,10 @@ export default function FleetMap({
         
         {/* Ambulance Markers */}
         {ambulances.map((ambulance) => {
-          if (!ambulance.currentLocation?.latitude || !ambulance.currentLocation?.longitude) {
+          if (!ambulance.currentLocation?.latitude || 
+              !ambulance.currentLocation?.longitude ||
+              isNaN(ambulance.currentLocation.latitude) ||
+              isNaN(ambulance.currentLocation.longitude)) {
             return null;
           }
           
@@ -139,7 +145,7 @@ export default function FleetMap({
                         <p><strong>Crew:</strong></p>
                         {ambulance.crew.map((member, idx) => (
                           <p key={idx} className="text-xs ml-2">
-                            {member.role}: {member.memberId?.name || "Unknown"}
+                            {member.role}: {member.memberId?.name || "Unassigned"}
                           </p>
                         ))}
                       </div>
@@ -159,17 +165,17 @@ export default function FleetMap({
                   <div className="mt-3 space-y-2">
                     <button
                       onClick={() => handleAmbulanceClick(ambulance)}
-                      className="w-full bg-blue-600 text-white px-3 py-2 rounded text-sm hover:bg-blue-700 transition-colors"
+                      className="w-full bg-blue-600 text-white px-3 py-2 rounded text-xs hover:bg-blue-700 transition-colors"
                     >
                       View Details
                     </button>
-                    {ambulance.currentLocation.address && (
+                    {ambulance.currentLocation?.address && (
                       <button
                         onClick={() => {
                           const address = encodeURIComponent(ambulance.currentLocation.address);
                           window.open(`https://www.google.com/maps/search/?api=1&query=${address}`, '_blank');
                         }}
-                        className="w-full bg-green-600 text-white px-3 py-2 rounded text-sm hover:bg-green-700 transition-colors"
+                        className="w-full bg-green-600 text-white px-3 py-2 rounded text-xs hover:bg-green-700 transition-colors mt-2"
                       >
                         Open in Google Maps
                       </button>
