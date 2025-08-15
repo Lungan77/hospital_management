@@ -481,13 +481,9 @@ function FleetManagement() {
                           <p className="text-xs text-gray-500">+{ambulance.equipment.length - 3} more items</p>
                         )}
                       </div>
-                    </div>
-                  )}
-
-                  {/* Action Buttons */}
-                  <div className="p-6">
+                    <div className="p-6">
                     <div className="grid grid-cols-2 gap-3 mb-4">
-                      <button 
+                      <button
                         onClick={() => {
                           setSelectedAmbulance(ambulance);
                           setShowDetailsModal(true);
@@ -497,47 +493,42 @@ function FleetManagement() {
                         <Eye className="w-4 h-4" />
                         Details
                       </button>
+                  
                       <button className="flex items-center justify-center gap-2 bg-green-50 text-green-600 py-3 px-4 rounded-xl text-sm font-semibold hover:bg-green-100 transition-colors">
                         <MapPin className="w-4 h-4" />
                         Track
                       </button>
                     </div>
-                    
+                  
                     <div className="grid grid-cols-3 gap-2">
                       <button className="flex items-center justify-center gap-1 bg-purple-50 text-purple-600 py-2 px-2 rounded-lg text-xs font-semibold hover:bg-purple-100 transition-colors">
                         <Phone className="w-3 h-3" />
                         Call
                       </button>
+                  
                       <button className="flex items-center justify-center gap-1 bg-orange-50 text-orange-600 py-2 px-2 rounded-lg text-xs font-semibold hover:bg-orange-100 transition-colors">
                         <Edit className="w-3 h-3" />
                         Edit
                       </button>
+                  
                       <button className="flex items-center justify-center gap-1 bg-gray-50 text-gray-600 py-2 px-2 rounded-lg text-xs font-semibold hover:bg-gray-100 transition-colors">
                         <Settings className="w-3 h-3" />
                         Config
                       </button>
+                  
                       <button
                         onClick={async () => {
                           setSelectedAmbulance(ambulance);
                           setShowAssignModal(true);
-                      
+                  
                           try {
                             const res = await fetch("/api/ambulances/crew/available");
                             const data = await res.json();
-                            console.log(data); // You can replace this with your actual logic
-                          } catch (error) {
-                            console.error("Error fetching crew:", error);
-                          }
-                        }}
-                        className="flex items-center justify-center gap-2 bg-purple-50 text-purple-600 py-2 px-4 rounded-lg text-sm font-semibold hover:bg-purple-100 transition-colors"
-                      >
-                        <Users className="w-4 h-4" />
-                        Assign Crew
-                      </button>
-
-                            const data = await res.json();
+                  
                             if (res.ok) {
                               setAvailableCrew(data);
+                            } else {
+                              setAvailableCrew({ drivers: [], paramedics: [] });
                             }
                           } catch {
                             setAvailableCrew({ drivers: [], paramedics: [] });
@@ -549,7 +540,7 @@ function FleetManagement() {
                         Assign Crew
                       </button>
                     </div>
-
+                  
                     {/* Quick Status Updates */}
                     {ambulance.status === "Available" && (
                       <div className="mt-4 pt-4 border-t border-gray-100">
@@ -570,7 +561,7 @@ function FleetManagement() {
                         </div>
                       </div>
                     )}
-
+                  
                     {["Maintenance", "Out of Service"].includes(ambulance.status) && (
                       <div className="mt-4 pt-4 border-t border-gray-100">
                         <button
@@ -582,11 +573,7 @@ function FleetManagement() {
                       </div>
                     )}
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
+
 
         {/* Fleet Analytics */}
         <div className="mt-12 grid md:grid-cols-2 lg:grid-cols-4 gap-6">
