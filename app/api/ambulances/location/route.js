@@ -36,17 +36,20 @@ export async function PUT(req) {
 }
 
 export async function GET(req) {
-  const auth = await isAuthenticated(req, ["admin", "dispatcher", "nurse", "doctor"]);
+  const auth = await isAuthenticated(req, ["admin", "dispatcher", "nurse", "doctor", "driver", "paramedic"]);
   if (auth.error) return Response.json({ error: auth.error }, { status: auth.status });
 
   try {
     await connectDB();
 
-    // Get all ambulance locations
+    // Get all ambulances with location data and crew information
     const ambulances = await Ambulance.find({
       "currentLocation.latitude": { $exists: true },
       "currentLocation.longitude": { $exists: true }
-    }).select("callSign vehicleNumber status currentLocation");
+    })
+    .populate("crew.memberId", "name role")
+    .populate("currentEmergency", "incidentNumber priority")
+    .select("callSign vehicleNumber status currentLocation crew currentEmergency type baseStation radioChannel fuelLevel");
 
     return Response.json({ ambulances }, { status: 200 });
   } catch (error) {

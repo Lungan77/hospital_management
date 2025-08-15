@@ -119,6 +119,7 @@ export default function FleetMap({
                   <h3 className="font-bold text-lg mb-2">{ambulance.callSign}</h3>
                   <div className="space-y-1 text-sm">
                     <p><strong>Vehicle:</strong> {ambulance.vehicleNumber}</p>
+                    <p><strong>Type:</strong> {ambulance.type}</p>
                     <p><strong>Status:</strong> 
                       <span className={`ml-1 px-2 py-1 rounded-full text-xs font-semibold ${
                         ambulance.status === "Available" ? "bg-green-100 text-green-700" :
@@ -133,6 +134,22 @@ export default function FleetMap({
                     </p>
                     <p><strong>Radio:</strong> {ambulance.radioChannel || "N/A"}</p>
                     <p><strong>Fuel:</strong> {ambulance.fuelLevel || 0}%</p>
+                    {ambulance.crew && ambulance.crew.length > 0 && (
+                      <div className="mt-2">
+                        <p><strong>Crew:</strong></p>
+                        {ambulance.crew.map((member, idx) => (
+                          <p key={idx} className="text-xs ml-2">
+                            {member.role}: {member.memberId?.name || "Unknown"}
+                          </p>
+                        ))}
+                      </div>
+                    )}
+                    {ambulance.currentEmergency && (
+                      <div className="mt-2 p-2 bg-red-100 rounded">
+                        <p className="text-xs"><strong>Emergency:</strong> {ambulance.currentEmergency.incidentNumber}</p>
+                        <p className="text-xs"><strong>Priority:</strong> {ambulance.currentEmergency.priority}</p>
+                      </div>
+                    )}
                     <p className="text-xs text-gray-500 mt-2">
                       Last updated: {ambulance.currentLocation.lastUpdated ? 
                         new Date(ambulance.currentLocation.lastUpdated).toLocaleTimeString() : "Unknown"}

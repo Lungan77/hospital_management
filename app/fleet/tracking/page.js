@@ -48,10 +48,14 @@ function FleetTracking() {
 
   const fetchAmbulanceLocations = async () => {
     try {
-      const res = await fetch("/api/ambulances/location");
+      const res = await fetch("/api/ambulances");
       const data = await res.json();
       if (res.ok) {
-        setAmbulances(data.ambulances);
+        // Filter ambulances that have location data
+        const ambulancesWithLocation = data.ambulances.filter(ambulance => 
+          ambulance.currentLocation?.latitude && ambulance.currentLocation?.longitude
+        );
+        setAmbulances(ambulancesWithLocation);
       }
     } catch (error) {
       console.error("Error fetching ambulance locations");
@@ -85,6 +89,40 @@ function FleetTracking() {
     };
     return icons[status] || <Clock className="w-4 h-4" />;
   };
+
+  const updateDriverLocation = async () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(async (position) => {
+        try {
+          // Find ambulance assigned to current user (if they are a driver)
+          const res = await fetch("/api/driver/location", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+              address: "Current Location" // In real app, reverse geocode this
+            }),
+          });
+          
+          if (res.ok) {
+            fetchAmbulanceLocations(); // Refresh the map
+          }
+        } catch (error) {
+          console.error("Error updating location");
+        }
+      });
+    }
+  };
+
+  // Auto-update driver location every 30 seconds if user is a driver
+  useEffect(() => {
+    const interval = setInterval(() => {
+      updateDriverLocation();
+    }, 30000);
+    
+    return () => clearInterval(interval);
+  }, []);
 
   if (loading) {
     return (

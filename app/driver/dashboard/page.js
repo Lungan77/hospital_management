@@ -35,10 +35,34 @@ function DriverDashboard() {
 
   useEffect(() => {
     fetchDriverData();
+    updateLocation(); // Update location on load
     // Set up real-time updates
-    const interval = setInterval(fetchDriverData, 30000);
+    const interval = setInterval(() => {
+      fetchDriverData();
+      updateLocation();
+    }, 30000);
     return () => clearInterval(interval);
   }, []);
+
+  const updateLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(async (position) => {
+        try {
+          await fetch("/api/driver/location", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+              address: "Current Location"
+            }),
+          });
+        } catch (error) {
+          console.error("Error updating location");
+        }
+      });
+    }
+  };
 
   const fetchDriverData = async () => {
     try {
