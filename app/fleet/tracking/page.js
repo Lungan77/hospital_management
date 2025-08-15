@@ -41,21 +41,38 @@ function FleetTracking() {
     const interval = setInterval(() => {
       fetchAmbulanceLocations();
       setLastUpdate(new Date());
-    }, 30000);
+    }, 5000); // Update every 5 seconds for real-time tracking
     
     return () => clearInterval(interval);
   }, []);
 
   const fetchAmbulanceLocations = async () => {
+    console.log("Fetching ambulance locations...");
     try {
       const res = await fetch("/api/ambulances");
       const data = await res.json();
       if (res.ok) {
         setAmbulances(data.ambulances);
-        console.log("Fetched ambulances:", data.ambulances.length);
+        console.log("Fetched ambulances:", data.ambulances.length, "ambulances");
+        
+        // Log ambulances with location data
+        const withLocation = data.ambulances.filter(a => 
+          a.currentLocation?.latitude && 
+          a.currentLocation?.longitude &&
+          !isNaN(a.currentLocation.latitude) &&
+          !isNaN(a.currentLocation.longitude)
+        );
+        console.log("Ambulances with valid locations:", withLocation.length);
+        withLocation.forEach(a => {
+          console.log(`${a.callSign}: ${a.currentLocation.latitude}, ${a.currentLocation.longitude}`);
+        });
+      } else {
+        console.error("Failed to fetch ambulances:", data);
+        setMessage("Failed to load ambulance data");
       }
     } catch (error) {
-      console.error("Error fetching ambulance locations");
+      console.error("Error fetching ambulance locations:", error);
+      setMessage("Error loading ambulance locations");
     } finally {
       setLoading(false);
     }
@@ -90,6 +107,7 @@ function FleetTracking() {
   const updateDriverLocation = async () => {
     if (typeof window !== 'undefined' && navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(async (position) => {
+        console.log("Getting current position:", position.coords);
         try {
           const res = await fetch("/api/driver/location", {
             method: "PUT",
@@ -97,29 +115,37 @@ function FleetTracking() {
             body: JSON.stringify({
               latitude: position.coords.latitude,
               longitude: position.coords.longitude,
-              address: `Live Tracking: ${position.coords.latitude.toFixed(4)}, ${position.coords.longitude.toFixed(4)}`
+              address: `Fleet Tracking: ${position.coords.latitude.toFixed(4)}, ${position.coords.longitude.toFixed(4)}`
             }),
           });
           
+          const data = await res.json();
+          console.log("Location update response:", data);
+          
           if (res.ok) {
-            const data = await res.json();
             console.log("Fleet tracking location updated:", data.message);
-            fetchAmbulanceLocations(); // Refresh the map
+            // Refresh the map data
+            setTimeout(() => {
+              fetchAmbulanceLocations();
+            }, 1000);
           } else {
-            console.log("Location update failed:", res.status);
+            console.log("Location update failed:", res.status, data);
           }
         } catch (error) {
           console.error("Error updating fleet tracking location:", error);
         }
       }, (error) => {
-        console.log("Fleet tracking geolocation error:", error);
+        console.error("Fleet tracking geolocation error:", error);
+        // Show user-friendly message
+        setMessage("Location access denied. Please enable location permissions for real-time tracking.");
       }, {
         enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 30000
+        timeout: 15000,
+        maximumAge: 10000
       });
     } else {
-      console.log("Geolocation not available for fleet tracking");
+      console.error("Geolocation not available for fleet tracking");
+      setMessage("Geolocation not supported by this browser.");
     }
   };
 
@@ -129,7 +155,7 @@ function FleetTracking() {
     
     const interval = setInterval(() => {
       updateDriverLocation();
-    }, 30000);
+    }, 10000); // Update every 10 seconds for more responsive tracking
     
     return () => clearInterval(interval);
   }, []);
@@ -200,6 +226,12 @@ function FleetTracking() {
             </div>
           </div>
         </div>
+
+        {message && (
+          <div className="mb-8 p-6 bg-blue-50 border-l-4 border-blue-500 rounded-r-2xl shadow-lg">
+            <p className="text-blue-700 font-semibold text-lg">{message}</p>
+          </div>
+        )}
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Map View */}
