@@ -33,6 +33,7 @@ function FleetTracking() {
   const [ambulances, setAmbulances] = useState([]);
   const [selectedAmbulance, setSelectedAmbulance] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState("");
   const [lastUpdate, setLastUpdate] = useState(new Date());
 
   useEffect(() => {
