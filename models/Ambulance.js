@@ -59,6 +59,17 @@ const AmbulanceSchema = new mongoose.Schema(
     nextMaintenance: { type: Date },
     maintenanceNotes: { type: String },
     
+    // Vehicle Check Records
+    vehicleChecks: [{
+      checkItems: { type: Object }, // Stores the check results
+      notes: { type: String },
+      completedAt: { type: Date },
+      completedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+      criticalFailures: { type: Number, default: 0 },
+      passed: { type: Boolean, default: true }
+    }],
+    lastVehicleCheck: { type: Date },
+    
     // Base Station
     baseStation: { type: String, required: true },
     
