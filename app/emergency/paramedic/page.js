@@ -321,6 +321,12 @@ function ParamedicInterface() {
   };
 
   const beginTransport = async () => {
+    // Check if equipment check is complete
+    if (!equipmentCheckComplete) {
+      setMessage("Please complete equipment check before beginning transport");
+      return;
+    }
+
     setTransportLoading(true);
     try {
       const res = await fetch("/api/emergency/transport/begin", {
