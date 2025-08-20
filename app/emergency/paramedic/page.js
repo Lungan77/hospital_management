@@ -530,7 +530,12 @@ function ParamedicInterface() {
                   
                   <div className="space-y-4">
                     <button
-                      onClick={() => {}}
+                      onClick={() => {
+                        const address = encodeURIComponent(currentAssignment.address);
+                        const url = `https://www.google.com/maps/dir/?api=1&destination=${address}&travelmode=driving`;
+                        window.open(url, '_blank');
+                        setMessage("Navigation opened in Google Maps");
+                      }}
                       className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4 rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 flex items-center justify-center gap-3"
                     >
                       <Navigation className="w-6 h-6" />
@@ -709,6 +714,18 @@ function ParamedicInterface() {
                       Begin Transport
                     </button>
                   )}
+                  
+                  {currentAssignment.status === "Transporting" && (
+                    <div className="p-4 bg-green-50 rounded-xl border border-green-200">
+                      <div className="flex items-center gap-2 text-green-700 mb-2">
+                        <CheckCircle className="w-5 h-5" />
+                        <span className="font-semibold">Transport in Progress</span>
+                      </div>
+                      <p className="text-green-600 text-sm">
+                        Patient is being transported to hospital. Complete handover when you arrive.
+                      </p>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="p-6 bg-gray-50 rounded-2xl border border-gray-200">
@@ -766,6 +783,18 @@ function ParamedicInterface() {
                 <Flag className="w-8 h-8 text-orange-600" />
                 Patient Handover
               </h2>
+
+              {currentAssignment.status !== "Transporting" && (
+                <div className="mb-8 p-6 bg-yellow-50 border-l-4 border-yellow-500 rounded-r-2xl">
+                  <div className="flex items-center gap-3">
+                    <AlertTriangle className="w-6 h-6 text-yellow-600" />
+                    <div>
+                      <p className="text-yellow-800 font-semibold">Transport Not Started</p>
+                      <p className="text-yellow-700 text-sm">You must begin transport before completing handover.</p>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div className="space-y-6 mb-8">
                 <div>

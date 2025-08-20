@@ -4,7 +4,7 @@ import Ambulance from "@/models/Ambulance";
 import { isAuthenticated } from "@/hoc/protectedRoute";
 
 export async function POST(req) {
-  const auth = await isAuthenticated(req, ["nurse", "doctor", "dispatcher"]);
+  const auth = await isAuthenticated(req, ["nurse", "doctor", "dispatcher", "paramedic"]);
   if (auth.error) return Response.json({ error: auth.error }, { status: auth.status });
 
   try {
@@ -36,6 +36,7 @@ export async function POST(req) {
       paramedicSummary,
       treatmentSummary,
       patientConditionOnArrival,
+      receivingStaff: auth.session.user.id,
       handoverNotes,
       // receivingStaff would be set when hospital staff signs off
       // receivingStaffSignature would be added with digital signature
@@ -48,12 +49,7 @@ export async function POST(req) {
       await Ambulance.findByIdAndUpdate(emergency.ambulanceId, {
         status: "Available",
         currentEmergency: null,
-        currentLocation: {
-          latitude: null,
-          longitude: null,
-          address: "Base Station",
-          lastUpdated: new Date()
-        }
+        // Keep current location but clear emergency assignment
       });
     }
 

@@ -56,9 +56,9 @@ export default function TreatmentForm({ onSubmit, loading }) {
       ...prev,
       medications: prev.medications.map((med, i) => 
         i === index ? { ...med, [field]: value } : med
-      )
-    }));
-  };
+          medication: treatmentData.medications.filter(m => m.name).map(m => `${m.name} ${m.dosage} ${m.route}`).join("; "),
+          dosage: treatmentData.medications.filter(m => m.name).map(m => m.dosage).join(", "),
+          route: treatmentData.medications.filter(m => m.name).map(m => m.route).join(", "),
 
   const removeMedication = (index) => {
     setTreatment(prev => ({
@@ -68,8 +68,8 @@ export default function TreatmentForm({ onSubmit, loading }) {
   };
 
   const handleSubmit = (e) => {
-    e.preventDefault();
-    if (onSubmit) {
+    if (!treatmentData.treatmentGiven?.length && !treatmentData.medications?.filter(m => m.name).length) {
+      setMessage("Please enter at least one treatment or medication");
       onSubmit(treatment);
     }
   };

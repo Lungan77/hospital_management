@@ -3,7 +3,7 @@ import Emergency from "@/models/Emergency";
 import { isAuthenticated } from "@/hoc/protectedRoute";
 
 export async function POST(req) {
-  const auth = await isAuthenticated(req, ["nurse", "doctor"]);
+  const auth = await isAuthenticated(req, ["nurse", "doctor", "paramedic"]);
   if (auth.error) return Response.json({ error: auth.error }, { status: auth.status });
 
   try {
@@ -30,12 +30,12 @@ export async function POST(req) {
     const vitalSigns = {
       timestamp: new Date(),
       bloodPressure,
-      heartRate: parseInt(heartRate),
-      respiratoryRate: parseInt(respiratoryRate),
-      temperature: parseFloat(temperature),
-      oxygenSaturation: parseInt(oxygenSaturation),
-      glucoseLevel: parseInt(glucoseLevel),
-      painScale: parseInt(painScale),
+      heartRate: heartRate ? parseInt(heartRate) : null,
+      respiratoryRate: respiratoryRate ? parseInt(respiratoryRate) : null,
+      temperature: temperature ? parseFloat(temperature) : null,
+      oxygenSaturation: oxygenSaturation ? parseInt(oxygenSaturation) : null,
+      glucoseLevel: glucoseLevel ? parseInt(glucoseLevel) : null,
+      painScale: painScale ? parseInt(painScale) : 0,
       consciousnessLevel,
       symptoms,
       recordedBy: auth.session.user.id
