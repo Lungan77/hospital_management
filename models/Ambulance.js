@@ -33,8 +33,14 @@ const AmbulanceSchema = new mongoose.Schema(
     // Equipment Information
     equipment: [{
       name: { type: String, required: true },
+      quantity: { type: Number, default: 1 },
+      minQuantity: { type: Number, default: 1 },
       status: { type: String, enum: ["Operational", "Needs Maintenance", "Out of Order"], default: "Operational" },
-      lastChecked: { type: Date }
+      lastChecked: { type: Date },
+      location: { type: String },
+      expiryDate: { type: Date },
+      addedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+      lastUpdatedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" }
     }],
     
     // Current Assignment
