@@ -59,6 +59,11 @@ export default function TreatmentForm({ onSubmit, loading }) {
           medication: treatmentData.medications.filter(m => m.name).map(m => `${m.name} ${m.dosage} ${m.route}`).join("; "),
           dosage: treatmentData.medications.filter(m => m.name).map(m => m.dosage).join(", "),
           route: treatmentData.medications.filter(m => m.name).map(m => m.route).join(", "),
+      )
+    }
+    )
+    )
+  }
 
   const removeMedication = (index) => {
     setTreatment(prev => ({
