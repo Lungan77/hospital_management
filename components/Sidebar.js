@@ -23,6 +23,7 @@ import {
   ChevronRight,
   Truck,
   Wrench,
+  Phone,
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -80,6 +81,7 @@ export default function Sidebar() {
     ],
     dispatcher: [
       { label: "Dashboard", href: "/dashboard", icon: <Home className="w-5 h-5" />, color: "text-blue-500" },
+      { label: "Log Emergency", href: "/emergency/dispatch/report", icon: <Phone className="w-5 h-5" />, color: "text-red-500" },
       { label: "Emergency Dispatch", href: "/emergency/dispatch", icon: <Truck className="w-5 h-5" />, color: "text-red-500" },
      //{ label: "Ambulance Fleet", href: "/emergency/ambulances", icon: <Activity className="w-5 h-5" />, color: "text-orange-500" },
       { label: "Fleet Management", href: "/admin/fleet", icon: <Truck className="w-5 h-5" />, color: "text-blue-500" },
