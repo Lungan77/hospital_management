@@ -65,9 +65,13 @@ function ParamedicInterface() {
   const [medicalLoading, setMedicalLoading] = useState(false);
   const [transportLoading, setTransportLoading] = useState(false);
   const [handoverLoading, setHandoverLoading] = useState(false);
+  const [equipmentStatus, setEquipmentStatus] = useState({});
+  const [equipmentLoading, setEquipmentLoading] = useState(false);
+  const [equipmentCheckComplete, setEquipmentCheckComplete] = useState(false);
 
   useEffect(() => {
     fetchCurrentAssignment();
+    fetchEquipmentStatus();
     // Set up real-time updates
     const interval = setInterval(fetchCurrentAssignment, 30000);
     return () => clearInterval(interval);
@@ -124,6 +128,61 @@ function ParamedicInterface() {
       console.error("Error fetching assignment");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchEquipmentStatus = async () => {
+    try {
+      const res = await fetch("/api/ambulances/equipment/status");
+      const data = await res.json();
+      if (res.ok) {
+        setEquipmentStatus(data.equipment || {});
+        setEquipmentCheckComplete(data.checkComplete || false);
+      }
+    } catch (error) {
+      console.error("Error fetching equipment status");
+    }
+  };
+
+  const updateEquipmentStatus = async (equipmentName, status) => {
+    setEquipmentLoading(true);
+    try {
+      const res = await fetch("/api/ambulances/equipment/check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          equipmentName, 
+          status,
+          checkedBy: session?.user.id
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setEquipmentStatus(prev => ({ ...prev, [equipmentName]: status }));
+        setMessage(`${equipmentName} marked as ${status}`);
+        
+        // Check if all required equipment is operational
+        const requiredEquipment = [
+          "Defibrillator", "Oxygen Tank", "IV Supplies", "Medications", 
+          "Airway Kit", "Trauma Kit", "Cardiac Monitor", "Suction Unit"
+        ];
+        
+        const allOperational = requiredEquipment.every(eq => 
+          equipmentStatus[eq] === "Operational" || (eq === equipmentName && status === "Operational")
+        );
+        
+        if (allOperational) {
+          setEquipmentCheckComplete(true);
+          setMessage("All equipment checks complete - Ready for emergency response");
+        }
+      } else {
+        setMessage(data.error || "Error updating equipment status");
+      }
+    } catch (error) {
+      setMessage("Error updating equipment status");
+    } finally {
+      setEquipmentLoading(false);
     }
   };
 
@@ -370,6 +429,7 @@ function ParamedicInterface() {
   const tabs = [
     { id: "overview", label: "Overview", icon: <Activity className="w-4 h-4" /> },
     { id: "navigation", label: "Navigation", icon: <Navigation className="w-4 h-4" /> },
+    { id: "equipment", label: "Equipment Check", icon: <CheckCircle className="w-4 h-4" /> },
     { id: "protocols", label: "Medical Protocols", icon: <FileText className="w-4 h-4" /> },
     { id: "vitals", label: "Vitals", icon: <Heart className="w-4 h-4" /> },
     { id: "treatment", label: "Treatment", icon: <FileText className="w-4 h-4" /> },
