@@ -151,14 +151,23 @@ function DispatchDashboard() {
         <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-8 mb-8 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-red-100 to-orange-100 rounded-full -translate-y-32 translate-x-32 opacity-50"></div>
           <div className="relative z-10">
-            <div className="flex items-center gap-6 mb-6">
-              <div className="w-20 h-20 bg-gradient-to-br from-red-600 to-red-700 rounded-3xl flex items-center justify-center shadow-lg">
-                <Radio className="w-10 h-10 text-white" />
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-6">
+                <div className="w-20 h-20 bg-gradient-to-br from-red-600 to-red-700 rounded-3xl flex items-center justify-center shadow-lg">
+                  <Radio className="w-10 h-10 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-5xl font-bold text-gray-900 mb-2">Emergency Dispatch</h1>
+                  <p className="text-gray-600 text-xl">Coordinate emergency response and ambulance dispatch</p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-5xl font-bold text-gray-900 mb-2">Emergency Dispatch</h1>
-                <p className="text-gray-600 text-xl">Coordinate emergency response and ambulance dispatch</p>
-              </div>
+              <a
+                href="/emergency/dispatch/report"
+                className="flex items-center gap-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-4 rounded-2xl font-semibold text-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg hover:shadow-blue-500/25 transform hover:scale-105"
+              >
+                <Phone className="w-6 h-6" />
+                Log 911 Call
+              </a>
             </div>
             
             {/* Quick Stats */}
