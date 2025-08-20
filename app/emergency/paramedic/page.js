@@ -68,10 +68,23 @@ function ParamedicInterface() {
   const [equipmentStatus, setEquipmentStatus] = useState({});
   const [equipmentLoading, setEquipmentLoading] = useState(false);
   const [equipmentCheckComplete, setEquipmentCheckComplete] = useState(false);
+  const [showAddEquipmentModal, setShowAddEquipmentModal] = useState(false);
+  const [showLowStockAlert, setShowLowStockAlert] = useState(false);
+  const [lowStockItems, setLowStockItems] = useState([]);
+  const [newEquipment, setNewEquipment] = useState({
+    name: "",
+    quantity: 1,
+    minQuantity: 1,
+    status: "Operational",
+    location: "",
+    expiryDate: ""
+  });
+  const [equipmentInventory, setEquipmentInventory] = useState({});
 
   useEffect(() => {
     fetchCurrentAssignment();
     fetchEquipmentStatus();
+    checkLowStock();
     // Set up real-time updates
     const interval = setInterval(fetchCurrentAssignment, 30000);
     return () => clearInterval(interval);
@@ -137,7 +150,18 @@ function ParamedicInterface() {
       const data = await res.json();
       if (res.ok) {
         setEquipmentStatus(data.equipment || {});
+        setEquipmentInventory(data.inventory || {});
         setEquipmentCheckComplete(data.checkComplete || false);
+        
+        // Check for low stock items
+        const lowStock = Object.entries(data.inventory || {}).filter(([name, item]) => 
+          item.quantity <= item.minQuantity
+        );
+        
+        if (lowStock.length > 0) {
+          setLowStockItems(lowStock);
+          setShowLowStockAlert(true);
+        }
       }
     } catch (error) {
       console.error("Error fetching equipment status");
@@ -183,6 +207,83 @@ function ParamedicInterface() {
       setMessage("Error updating equipment status");
     } finally {
       setEquipmentLoading(false);
+    }
+  };
+
+  const checkLowStock = async () => {
+    try {
+      const res = await fetch("/api/ambulances/equipment/low-stock");
+      const data = await res.json();
+      if (res.ok && data.lowStockItems?.length > 0) {
+        setLowStockItems(data.lowStockItems);
+        setShowLowStockAlert(true);
+      }
+    } catch (error) {
+      console.error("Error checking low stock");
+    }
+  };
+
+  const addEquipment = async () => {
+    if (!newEquipment.name || !newEquipment.quantity) {
+      setMessage("Equipment name and quantity are required");
+      return;
+    }
+
+    setEquipmentLoading(true);
+    try {
+      const res = await fetch("/api/ambulances/equipment/add", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...newEquipment,
+          addedBy: session?.user.id
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setMessage(`${newEquipment.name} added successfully`);
+        fetchEquipmentStatus();
+        setShowAddEquipmentModal(false);
+        setNewEquipment({
+          name: "",
+          quantity: 1,
+          minQuantity: 1,
+          status: "Operational",
+          location: "",
+          expiryDate: ""
+        });
+      } else {
+        setMessage(data.error || "Error adding equipment");
+      }
+    } catch (error) {
+      setMessage("Error adding equipment");
+    } finally {
+      setEquipmentLoading(false);
+    }
+  };
+
+  const updateEquipmentQuantity = async (equipmentName, newQuantity) => {
+    try {
+      const res = await fetch("/api/ambulances/equipment/quantity", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          equipmentName,
+          quantity: newQuantity,
+          updatedBy: session?.user.id
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setMessage(`${equipmentName} quantity updated`);
+        fetchEquipmentStatus();
+      } else {
+        setMessage(data.error || "Error updating quantity");
+      }
+    } catch (error) {
+      setMessage("Error updating equipment quantity");
     }
   };
 
@@ -659,6 +760,199 @@ function ParamedicInterface() {
                   </p>
                 </div>
               </div>
+            </div>
+          )}
+
+          {activeTab === "equipment" && (
+            <div className="p-8">
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+                  <CheckCircle className="w-8 h-8 text-green-600" />
+                  Equipment Check & Inventory
+                </h2>
+                <button
+                  onClick={() => setShowAddEquipmentModal(true)}
+                  className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-200"
+                >
+                  <Plus className="w-5 h-5" />
+                  Add Equipment
+                </button>
+              </div>
+
+              {/* Equipment Check Progress */}
+              <div className="mb-8 p-6 bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl border border-green-200">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-bold text-green-900 text-lg">Equipment Check Progress</h3>
+                  <div className="flex items-center gap-2">
+                    {equipmentCheckComplete ? (
+                      <>
+                        <CheckCircle className="w-6 h-6 text-green-600" />
+                        <span className="text-green-600 font-semibold">Complete</span>
+                      </>
+                    ) : (
+                      <>
+                        <Clock className="w-6 h-6 text-yellow-600" />
+                        <span className="text-yellow-600 font-semibold">In Progress</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="w-full bg-gray-200 rounded-full h-3 mb-4">
+                  <div 
+                    className="bg-gradient-to-r from-green-500 to-green-600 h-3 rounded-full transition-all duration-500"
+                    style={{ 
+                      width: `${Math.round((Object.values(equipmentStatus).filter(status => status === "Operational").length / Object.keys(equipmentStatus).length) * 100) || 0}%` 
+                    }}
+                  ></div>
+                </div>
+                
+                <div className="grid grid-cols-3 gap-4 text-sm">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-green-600">
+                      {Object.values(equipmentStatus).filter(status => status === "Operational").length}
+                    </div>
+                    <div className="text-green-600">Operational</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-yellow-600">
+                      {Object.values(equipmentStatus).filter(status => status === "Needs Maintenance").length}
+                    </div>
+                    <div className="text-yellow-600">Needs Maintenance</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-red-600">
+                      {Object.values(equipmentStatus).filter(status => status === "Out of Order").length}
+                    </div>
+                    <div className="text-red-600">Out of Order</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Equipment Grid */}
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {Object.entries(equipmentStatus).map(([equipmentName, status]) => {
+                  const inventory = equipmentInventory[equipmentName] || {};
+                  const isLowStock = inventory.quantity <= inventory.minQuantity;
+                  
+                  return (
+                    <div key={equipmentName} className={`p-6 border-2 rounded-2xl transition-all duration-200 ${
+                      status === "Operational" ? "border-green-200 bg-green-50" :
+                      status === "Needs Maintenance" ? "border-yellow-200 bg-yellow-50" :
+                      "border-red-200 bg-red-50"
+                    }`}>
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="font-bold text-gray-900">{equipmentName}</h3>
+                        <div className={`p-2 rounded-lg ${
+                          status === "Operational" ? "bg-green-100 text-green-600" :
+                          status === "Needs Maintenance" ? "bg-yellow-100 text-yellow-600" :
+                          "bg-red-100 text-red-600"
+                        }`}>
+                          {status === "Operational" && <CheckCircle className="w-5 h-5" />}
+                          {status === "Needs Maintenance" && <AlertTriangle className="w-5 h-5" />}
+                          {status === "Out of Order" && <AlertTriangle className="w-5 h-5" />}
+                        </div>
+                      </div>
+                      
+                      {/* Inventory Information */}
+                      {inventory.quantity !== undefined && (
+                        <div className="mb-4 p-3 bg-white rounded-lg border">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm font-medium text-gray-700">Quantity</span>
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => updateEquipmentQuantity(equipmentName, Math.max(0, inventory.quantity - 1))}
+                                className="w-6 h-6 bg-red-100 text-red-600 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors"
+                              >
+                                <Minus className="w-3 h-3" />
+                              </button>
+                              <span className={`font-bold ${isLowStock ? "text-red-600" : "text-gray-900"}`}>
+                                {inventory.quantity}
+                              </span>
+                              <button
+                                onClick={() => updateEquipmentQuantity(equipmentName, inventory.quantity + 1)}
+                                className="w-6 h-6 bg-green-100 text-green-600 rounded-full flex items-center justify-center hover:bg-green-200 transition-colors"
+                              >
+                                <Plus className="w-3 h-3" />
+                              </button>
+                            </div>
+                          </div>
+                          
+                          {isLowStock && (
+                            <div className="flex items-center gap-2 text-red-600 text-sm">
+                              <AlertTriangle className="w-4 h-4" />
+                              <span>Low Stock Alert!</span>
+                            </div>
+                          )}
+                          
+                          <div className="text-xs text-gray-500 mt-1">
+                            Min: {inventory.minQuantity} | Location: {inventory.location || "N/A"}
+                          </div>
+                          
+                          {inventory.expiryDate && (
+                            <div className="text-xs text-gray-500">
+                              Expires: {new Date(inventory.expiryDate).toLocaleDateString()}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      
+                      <div className="space-y-2">
+                        <button
+                          onClick={() => updateEquipmentStatus(equipmentName, "Operational")}
+                          disabled={equipmentLoading || status === "Operational"}
+                          className={`w-full py-2 px-4 rounded-lg font-semibold transition-colors ${
+                            status === "Operational" 
+                              ? "bg-green-200 text-green-800 cursor-not-allowed" 
+                              : "bg-green-100 text-green-700 hover:bg-green-200"
+                          }`}
+                        >
+                          ✓ Operational
+                        </button>
+                        
+                        <button
+                          onClick={() => updateEquipmentStatus(equipmentName, "Needs Maintenance")}
+                          disabled={equipmentLoading || status === "Needs Maintenance"}
+                          className={`w-full py-2 px-4 rounded-lg font-semibold transition-colors ${
+                            status === "Needs Maintenance" 
+                              ? "bg-yellow-200 text-yellow-800 cursor-not-allowed" 
+                              : "bg-yellow-100 text-yellow-700 hover:bg-yellow-200"
+                          }`}
+                        >
+                          ⚠ Needs Maintenance
+                        </button>
+                        
+                        <button
+                          onClick={() => updateEquipmentStatus(equipmentName, "Out of Order")}
+                          disabled={equipmentLoading || status === "Out of Order"}
+                          className={`w-full py-2 px-4 rounded-lg font-semibold transition-colors ${
+                            status === "Out of Order" 
+                              ? "bg-red-200 text-red-800 cursor-not-allowed" 
+                              : "bg-red-100 text-red-700 hover:bg-red-200"
+                          }`}
+                        >
+                          ✗ Out of Order
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Equipment Check Validation */}
+              {!equipmentCheckComplete && (
+                <div className="mt-8 p-6 bg-yellow-50 border-l-4 border-yellow-500 rounded-r-2xl">
+                  <div className="flex items-center gap-3">
+                    <AlertTriangle className="w-6 h-6 text-yellow-600" />
+                    <div>
+                      <p className="text-yellow-800 font-semibold">Equipment Check Required</p>
+                      <p className="text-yellow-700 text-sm">
+                        All equipment must be marked as operational before proceeding with emergency response.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
