@@ -1,28 +1,7 @@
 "use client";
 import { useState } from "react";
 import withAuth from "@/hoc/withAuth";
-import { 
-  FileText, 
-  Heart, 
-  Brain, 
-  Lungs, 
-  Shield, 
-  Zap, 
-  Thermometer,
-  Search,
-  Filter,
-  Clock,
-  AlertTriangle,
-  CheckCircle,
-  Phone,
-  Star,
-  Activity,
-  Pill,
-  Stethoscope,
-  Eye,
-  ChevronDown,
-  ChevronUp
-} from "lucide-react";
+import { FileText, Heart, Brain, Settings as Lungs, Shield, Zap, Thermometer, Search, Filter, Clock, AlertTriangle, CheckCircle, Phone, Star, Activity, Pill, Stethoscope, Eye, ChevronDown, ChevronUp } from "lucide-react";
 
 function MedicalProtocols() {
   const [searchTerm, setSearchTerm] = useState("");
