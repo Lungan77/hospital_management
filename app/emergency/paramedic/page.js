@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 import VitalsForm from "@/components/VitalsForm";
 import TreatmentForm from "@/components/TreatmentForm";
 import FileUpload from "@/components/FileUpload";
+import MedicalProtocols from "@/components/MedicalProtocols";
 import { 
   Truck, 
   MapPin, 
@@ -59,6 +60,11 @@ function ParamedicInterface() {
   const [uploadingFile, setUploadingFile] = useState(false);
   const [incidentCoordinates, setIncidentCoordinates] = useState(null);
   const [ambulanceCoordinates, setAmbulanceCoordinates] = useState(null);
+  const [vitalsLoading, setVitalsLoading] = useState(false);
+  const [treatmentLoading, setTreatmentLoading] = useState(false);
+  const [medicalLoading, setMedicalLoading] = useState(false);
+  const [transportLoading, setTransportLoading] = useState(false);
+  const [handoverLoading, setHandoverLoading] = useState(false);
 
   useEffect(() => {
     fetchCurrentAssignment();
@@ -163,12 +169,13 @@ function ParamedicInterface() {
   };
 
   const recordVitals = async (vitalsData) => {
-    const requiredFields = Object.values(vitalsData);
-    if (requiredFields.some(field => !field)) {
-      setMessage("Please fill in all vital signs");
+    // Only require essential vitals
+    if (!vitalsData.bloodPressure || !vitalsData.heartRate || !vitalsData.temperature) {
+      setMessage("Please fill in blood pressure, heart rate, and temperature");
       return;
     }
 
+    setVitalsLoading(true);
     try {
       const res = await fetch("/api/emergency/vitals", {
         method: "POST",
@@ -184,18 +191,22 @@ function ParamedicInterface() {
       
       if (res.ok) {
         fetchCurrentAssignment();
+        setMessage("Vital signs recorded successfully");
       }
     } catch (error) {
       setMessage("Error recording vitals");
+    } finally {
+      setVitalsLoading(false);
     }
   };
 
   const recordTreatment = async (treatmentData) => {
-    if (!treatmentData.treatmentGiven?.length && !treatmentData.medications?.length) {
+    if (!treatmentData.treatmentGiven?.length && !treatmentData.medications?.filter(m => m.name).length) {
       setMessage("Please enter treatment details");
       return;
     }
 
+    setTreatmentLoading(true);
     try {
       const res = await fetch("/api/emergency/treatment", {
         method: "POST",
@@ -215,13 +226,17 @@ function ParamedicInterface() {
       
       if (res.ok) {
         fetchCurrentAssignment();
+        setMessage("Treatment recorded successfully");
       }
     } catch (error) {
       setMessage("Error recording treatment");
+    } finally {
+      setTreatmentLoading(false);
     }
   };
 
   const updateMedicalInfo = async () => {
+    setMedicalLoading(true);
     try {
       const res = await fetch("/api/emergency/medical-info", {
         method: "PUT",
@@ -237,13 +252,17 @@ function ParamedicInterface() {
       
       if (res.ok) {
         fetchCurrentAssignment();
+        setMessage("Medical information updated successfully");
       }
     } catch (error) {
       setMessage("Error updating medical information");
+    } finally {
+      setMedicalLoading(false);
     }
   };
 
   const beginTransport = async () => {
+    setTransportLoading(true);
     try {
       const res = await fetch("/api/emergency/transport/begin", {
         method: "POST",
@@ -255,10 +274,13 @@ function ParamedicInterface() {
       setMessage(data.message || data.error);
       
       if (res.ok) {
-        updateStatus("Transporting");
+        fetchCurrentAssignment();
+        setMessage("Transport begun successfully");
       }
     } catch (error) {
       setMessage("Error beginning transport");
+    } finally {
+      setTransportLoading(false);
     }
   };
 
@@ -268,6 +290,7 @@ function ParamedicInterface() {
       return;
     }
 
+    setHandoverLoading(true);
     try {
       const res = await fetch("/api/emergency/handover", {
         method: "POST",
@@ -282,10 +305,13 @@ function ParamedicInterface() {
       setMessage(data.message || data.error);
       
       if (res.ok) {
-        updateStatus("Completed");
+        fetchCurrentAssignment();
+        setMessage("Handover completed successfully - Emergency response complete");
       }
     } catch (error) {
       setMessage("Error completing handover");
+    } finally {
+      setHandoverLoading(false);
     }
   };
 
@@ -344,6 +370,7 @@ function ParamedicInterface() {
   const tabs = [
     { id: "overview", label: "Overview", icon: <Activity className="w-4 h-4" /> },
     { id: "navigation", label: "Navigation", icon: <Navigation className="w-4 h-4" /> },
+    { id: "protocols", label: "Medical Protocols", icon: <FileText className="w-4 h-4" /> },
     { id: "vitals", label: "Vitals", icon: <Heart className="w-4 h-4" /> },
     { id: "treatment", label: "Treatment", icon: <FileText className="w-4 h-4" /> },
     { id: "medical", label: "Medical Info", icon: <FileText className="w-4 h-4" /> },
@@ -569,6 +596,18 @@ function ParamedicInterface() {
             </div>
           )}
 
+          {/* Medical Protocols Tab */}
+          {activeTab === "protocols" && (
+            <div className="p-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-8 flex items-center gap-3">
+                <FileText className="w-8 h-8 text-blue-600" />
+                Medical Protocols & Guidelines
+              </h2>
+              
+              <MedicalProtocols />
+            </div>
+          )}
+
           {/* Vitals Tab */}
           {activeTab === "vitals" && (
             <div className="p-8">
@@ -576,7 +615,7 @@ function ParamedicInterface() {
                 <Heart className="w-8 h-8 text-pink-600" />
                 Record Vital Signs
               </h2>
-              <VitalsForm onSubmit={recordVitals} loading={loading} />
+              <VitalsForm onSubmit={recordVitals} loading={vitalsLoading} />
             </div>
           )}
 
@@ -587,7 +626,7 @@ function ParamedicInterface() {
                 <FileText className="w-8 h-8 text-purple-600" />
                 Record Treatment
               </h2>
-              <TreatmentForm onSubmit={recordTreatment} loading={loading} />
+              <TreatmentForm onSubmit={recordTreatment} loading={treatmentLoading} />
             </div>
           )}
 
@@ -657,9 +696,17 @@ function ParamedicInterface() {
               
               <button
                 onClick={updateMedicalInfo}
-                className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-4 rounded-xl font-semibold text-lg hover:from-green-700 hover:to-green-800 transition-all duration-200"
+                disabled={medicalLoading}
+                className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-4 rounded-xl font-semibold text-lg hover:from-green-700 hover:to-green-800 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Save Medical Information
+                {medicalLoading ? (
+                  <div className="flex items-center justify-center gap-3">
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    Saving...
+                  </div>
+                ) : (
+                  "Save Medical Information"
+                )}
               </button>
             </div>
           )}
@@ -708,10 +755,20 @@ function ParamedicInterface() {
                   {currentAssignment.status === "On Scene" && (
                     <button
                       onClick={beginTransport}
-                      className="w-full bg-gradient-to-r from-indigo-600 to-indigo-700 text-white py-4 rounded-xl font-semibold text-lg hover:from-indigo-700 hover:to-indigo-800 transition-all duration-200 flex items-center justify-center gap-3"
+                      disabled={transportLoading}
+                      className="w-full bg-gradient-to-r from-indigo-600 to-indigo-700 text-white py-4 rounded-xl font-semibold text-lg hover:from-indigo-700 hover:to-indigo-800 transition-all duration-200 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <Play className="w-6 h-6" />
-                      Begin Transport
+                      {transportLoading ? (
+                        <>
+                          <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                          Starting Transport...
+                        </>
+                      ) : (
+                        <>
+                          <Play className="w-6 h-6" />
+                          Begin Transport
+                        </>
+                      )}
                     </button>
                   )}
                   
@@ -858,10 +915,19 @@ function ParamedicInterface() {
               <button
                 onClick={completeHandover}
                 disabled={currentAssignment.status !== "Transporting"}
-                className="w-full bg-gradient-to-r from-orange-600 to-orange-700 text-white py-4 rounded-xl font-semibold text-lg hover:from-orange-700 hover:to-orange-800 transition-all duration-200 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                className="w-full bg-gradient-to-r from-orange-600 to-orange-700 text-white py-4 rounded-xl font-semibold text-lg hover:from-orange-700 hover:to-orange-800 transition-all duration-200 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Flag className="w-6 h-6" />
-                Complete Handover
+                {handoverLoading ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    Completing Handover...
+                  </>
+                ) : (
+                  <>
+                    <Flag className="w-6 h-6" />
+                    Complete Handover
+                  </>
+                )}
               </button>
             </div>
           )}
