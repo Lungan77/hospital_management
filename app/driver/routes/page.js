@@ -20,8 +20,6 @@ import {
   User,
   Phone
 } from "lucide-react";
-import jsPDF from "jspdf";
-import "jspdf-autotable";
 
 function RouteHistory() {
   const [routes, setRoutes] = useState([]);
@@ -111,6 +109,206 @@ function RouteHistory() {
   };
 
   const filteredStats = calculateFilteredStats();
+
+  const generateRouteReportPDF = () => {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 20;
+    
+    // Colors
+    const colors = {
+      primary: [59, 130, 246], // Blue
+      secondary: [107, 114, 128], // Gray
+      success: [34, 197, 94], // Green
+      warning: [245, 158, 11], // Orange
+      danger: [239, 68, 68], // Red
+      text: [31, 41, 55] // Dark gray
+    };
+
+    // Header
+    doc.setFillColor(...colors.primary);
+    doc.rect(0, 0, pageWidth, 60, 'F');
+    
+    // Logo area
+    doc.setFillColor(255, 255, 255);
+    doc.circle(30, 30, 15, 'F');
+    doc.setTextColor(...colors.primary);
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.text("EMS", 30, 35, { align: "center" });
+    
+    // Title
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(24);
+    doc.setFont("helvetica", "bold");
+    doc.text("Driver Route History Report", 60, 25);
+    
+    // Subtitle
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "normal");
+    doc.text("Emergency Response Route Analysis", 60, 35);
+    
+    // Report metadata
+    doc.setFontSize(10);
+    doc.text(`Generated: ${new Date().toLocaleString()}`, 60, 45);
+    doc.text(`Period: ${dateRange === "today" ? "Today" : dateRange === "week" ? "This Week" : dateRange === "month" ? "This Month" : "All Time"}`, 60, 52);
+
+    let yPosition = 80;
+
+    // Performance Summary
+    doc.setTextColor(...colors.text);
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.text("Performance Summary", margin, yPosition);
+    yPosition += 15;
+
+    // Performance stats
+    const performanceStats = [
+      { label: "Total Routes", value: filteredStats.totalRoutes, color: colors.primary },
+      { label: "Distance (km)", value: filteredStats.totalDistance, color: colors.success },
+      { label: "Drive Time", value: `${Math.round(filteredStats.totalDuration / 60)}h ${filteredStats.totalDuration % 60}m`, color: colors.warning },
+      { label: "Avg Response", value: `${filteredStats.avgResponseTime} min`, color: colors.danger }
+    ];
+
+    const boxWidth = (pageWidth - 2 * margin - 30) / 4;
+    performanceStats.forEach((stat, index) => {
+      const x = margin + (index * (boxWidth + 10));
+      
+      // Box background
+      doc.setFillColor(...stat.color);
+      doc.roundedRect(x, yPosition, boxWidth, 25, 3, 3, 'F');
+      
+      // Text
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.text(String(stat.value), x + boxWidth/2, yPosition + 10, { align: "center" });
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "normal");
+      doc.text(stat.label, x + boxWidth/2, yPosition + 18, { align: "center" });
+    });
+
+    yPosition += 45;
+
+    // Route Details Table
+    doc.setTextColor(...colors.text);
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.text("Route Details", margin, yPosition);
+    yPosition += 10;
+
+    // Prepare route table data
+    const routeTableData = filteredRoutes.map(route => [
+      route.emergencyId,
+      new Date(route.date).toLocaleDateString(),
+      route.priority,
+      route.status,
+      `${route.distance} km`,
+      `${route.duration} min`,
+      route.responseTime ? `${route.responseTime} min` : "N/A",
+      `${route.fuelUsed}L`,
+      route.destination.substring(0, 25) + (route.destination.length > 25 ? "..." : "")
+    ]);
+
+    doc.autoTable({
+      startY: yPosition,
+      head: [['Emergency ID', 'Date', 'Priority', 'Status', 'Distance', 'Duration', 'Response', 'Fuel', 'Destination']],
+      body: routeTableData,
+      theme: 'grid',
+      headStyles: {
+        fillColor: colors.primary,
+        textColor: [255, 255, 255],
+        fontSize: 9,
+        fontStyle: 'bold',
+        halign: 'center'
+      },
+      bodyStyles: {
+        fontSize: 8,
+        cellPadding: 2
+      },
+      columnStyles: {
+        0: { cellWidth: 25 },
+        1: { cellWidth: 20 },
+        2: { cellWidth: 15, halign: 'center' },
+        3: { cellWidth: 18, halign: 'center' },
+        4: { cellWidth: 18, halign: 'center' },
+        5: { cellWidth: 18, halign: 'center' },
+        6: { cellWidth: 18, halign: 'center' },
+        7: { cellWidth: 15, halign: 'center' },
+        8: { cellWidth: 35 }
+      },
+      alternateRowStyles: {
+        fillColor: [248, 250, 252]
+      },
+      margin: { left: margin, right: margin }
+    });
+
+    // Efficiency Analysis
+    yPosition = doc.lastAutoTable.finalY + 20;
+    
+    if (yPosition > pageHeight - 80) {
+      doc.addPage();
+      yPosition = 30;
+    }
+
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("Efficiency Analysis", margin, yPosition);
+    yPosition += 10;
+
+    const efficiencyData = [
+      ['Fuel Efficiency', `${filteredStats.totalDistance > 0 && filteredStats.totalFuel > 0 ? Math.round((filteredStats.totalDistance / filteredStats.totalFuel) * 10) / 10 : 0} km/L`],
+      ['Average Speed', `${filteredStats.totalDuration > 0 ? Math.round((filteredStats.totalDistance / (filteredStats.totalDuration / 60)) * 10) / 10 : 0} km/h`],
+      ['Response Time Performance', avgResponseTime <= 10 ? 'Excellent' : avgResponseTime <= 15 ? 'Good' : 'Needs Improvement'],
+      ['Total Operating Hours', `${Math.round(filteredStats.totalDuration / 60 * 10) / 10} hours`],
+      ['Routes per Day', `${Math.round(filteredStats.totalRoutes / Math.max(1, Math.ceil((new Date() - new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)) / (24 * 60 * 60 * 1000))) * 10) / 10}`]
+    ];
+
+    doc.autoTable({
+      startY: yPosition,
+      head: [['Efficiency Metric', 'Value']],
+      body: efficiencyData,
+      theme: 'striped',
+      headStyles: {
+        fillColor: colors.warning,
+        textColor: [255, 255, 255],
+        fontSize: 10,
+        fontStyle: 'bold'
+      },
+      bodyStyles: {
+        fontSize: 9
+      },
+      columnStyles: {
+        0: { cellWidth: 80, fontStyle: 'bold' },
+        1: { cellWidth: 60, halign: 'center' }
+      },
+      margin: { left: margin, right: margin }
+    });
+
+    // Footer
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      
+      // Footer line
+      doc.setDrawColor(...colors.primary);
+      doc.setLineWidth(0.5);
+      doc.line(margin, pageHeight - 25, pageWidth - margin, pageHeight - 25);
+      
+      // Footer text
+      doc.setTextColor(...colors.secondary);
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "normal");
+      doc.text("Emergency Medical Services - Driver Performance Report", margin, pageHeight - 15);
+      doc.text(`Page ${i} of ${pageCount}`, pageWidth - margin, pageHeight - 15, { align: "right" });
+      doc.text(`Driver: ${session?.user?.name || "Unknown"}`, pageWidth - margin, pageHeight - 8, { align: "right" });
+    }
+
+    // Save the PDF
+    const fileName = `Driver_Route_Report_${new Date().toISOString().split('T')[0]}.pdf`;
+    doc.save(fileName);
+  };
 
   if (loading) {
     return (
