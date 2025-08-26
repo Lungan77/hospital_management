@@ -20,7 +20,9 @@ import {
   Plus,
   X,
   User,
-  Shield
+  Shield,
+  Edit,
+  Save
 } from "lucide-react";
 
 function FleetManagement() {
@@ -31,8 +33,10 @@ function FleetManagement() {
   const [message, setMessage] = useState("");
   const [filter, setFilter] = useState("all");
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [selectedAmbulance, setSelectedAmbulance] = useState(null);
+  const [editingAmbulance, setEditingAmbulance] = useState(null);
   const [assignmentData, setAssignmentData] = useState({
     driverId: "",
     paramedicId: ""
@@ -40,6 +44,19 @@ function FleetManagement() {
   const [updating, setUpdating] = useState(false);
 
   const [newAmbulance, setNewAmbulance] = useState({
+    vehicleNumber: "",
+    callSign: "",
+    type: "Basic Life Support",
+    make: "",
+    model: "",
+    year: "",
+    licensePlate: "",
+    baseStation: "",
+    radioChannel: "",
+    fuelLevel: 100
+  });
+
+  const [editAmbulance, setEditAmbulance] = useState({
     vehicleNumber: "",
     callSign: "",
     type: "Basic Life Support",
@@ -122,6 +139,52 @@ function FleetManagement() {
     } catch (error) {
       setMessage("Error adding ambulance");
     }
+  };
+
+  const updateAmbulance = async () => {
+    if (!editAmbulance.vehicleNumber || !editAmbulance.callSign) {
+      setMessage("Vehicle number and call sign are required");
+      return;
+    }
+
+    setUpdating(true);
+    try {
+      const res = await fetch(`/api/ambulances/${editingAmbulance._id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editAmbulance),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setMessage("Ambulance updated successfully");
+        fetchAmbulances();
+        setShowEditModal(false);
+        setEditingAmbulance(null);
+      } else {
+        setMessage(data.error || "Error updating ambulance");
+      }
+    } catch (error) {
+      setMessage("Error updating ambulance");
+    }
+    setUpdating(false);
+  };
+
+  const openEditModal = (ambulance) => {
+    setEditingAmbulance(ambulance);
+    setEditAmbulance({
+      vehicleNumber: ambulance.vehicleNumber || "",
+      callSign: ambulance.callSign || "",
+      type: ambulance.type || "Basic Life Support",
+      make: ambulance.make || "",
+      model: ambulance.model || "",
+      year: ambulance.year || "",
+      licensePlate: ambulance.licensePlate || "",
+      baseStation: ambulance.baseStation || "",
+      radioChannel: ambulance.radioChannel || "",
+      fuelLevel: ambulance.fuelLevel || 100
+    });
+    setShowEditModal(true);
   };
 
   const assignCrew = async () => {
@@ -334,7 +397,7 @@ function FleetManagement() {
                   </div>
                   
                   <div className="text-sm text-gray-600">
-                    onClick={() => window.location.href = '/emergency/paramedic'}
+                    <p><strong>Type:</strong> {ambulance.type}</p>
                     <p><strong>Base:</strong> {ambulance.baseStation}</p>
                   </div>
                 </div>
@@ -391,7 +454,7 @@ function FleetManagement() {
                     <div className="text-center py-4">
                       <Users className="w-12 h-12 text-gray-300 mx-auto mb-2" />
                       <p className="text-gray-500 text-sm mb-2">No crew assigned</p>
-                      <p className="text-xs text-gray-400">Click &quot;Assign Crew&quot; to add personnel</p>
+                      <p className="text-xs text-gray-400">Click "Assign Crew" to add personnel</p>
                     </div>
                   )}
                 </div>
@@ -464,12 +527,15 @@ function FleetManagement() {
                     </Link>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
-                    <button className="bg-green-50 text-green-600 py-2 px-4 rounded-lg text-sm font-semibold hover:bg-green-100 transition-colors flex items-center justify-center gap-2">
-                      <Phone className="w-4 h-4" />
-                      Contact
+                    <button
+                      onClick={() => openEditModal(ambulance)}
+                      className="bg-yellow-50 text-yellow-600 py-2 px-4 rounded-lg text-sm font-semibold hover:bg-yellow-100 transition-colors flex items-center justify-center gap-2"
+                    >
+                      <Edit className="w-4 h-4" />
+                      Edit
                     </button>
                     <Link href="/fleet/maintenance" className="flex-1">
-                      <button className="w-full bg-yellow-50 text-yellow-600 py-2 px-4 rounded-lg text-sm font-semibold hover:bg-yellow-100 transition-colors flex items-center justify-center gap-2">
+                      <button className="w-full bg-green-50 text-green-600 py-2 px-4 rounded-lg text-sm font-semibold hover:bg-green-100 transition-colors flex items-center justify-center gap-2">
                         <Settings className="w-4 h-4" />
                         Manage
                       </button>
@@ -637,6 +703,170 @@ function FleetManagement() {
         </div>
       )}
 
+      {/* Edit Ambulance Modal */}
+      {showEditModal && editingAmbulance && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-gray-900">
+                Edit Ambulance - {editingAmbulance.callSign}
+              </h2>
+              <button
+                onClick={() => {
+                  setShowEditModal(false);
+                  setEditingAmbulance(null);
+                }}
+                className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-6">
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Vehicle Number *</label>
+                  <input
+                    type="text"
+                    value={editAmbulance.vehicleNumber}
+                    onChange={(e) => setEditAmbulance(prev => ({ ...prev, vehicleNumber: e.target.value }))}
+                    className="w-full p-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="e.g., AMB-001"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Call Sign *</label>
+                  <input
+                    type="text"
+                    value={editAmbulance.callSign}
+                    onChange={(e) => setEditAmbulance(prev => ({ ...prev, callSign: e.target.value }))}
+                    className="w-full p-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="e.g., RESCUE-1"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Type</label>
+                  <select
+                    value={editAmbulance.type}
+                    onChange={(e) => setEditAmbulance(prev => ({ ...prev, type: e.target.value }))}
+                    className="w-full p-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="Basic Life Support">Basic Life Support</option>
+                    <option value="Advanced Life Support">Advanced Life Support</option>
+                    <option value="Critical Care">Critical Care</option>
+                    <option value="Rescue">Rescue</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Base Station</label>
+                  <input
+                    type="text"
+                    value={editAmbulance.baseStation}
+                    onChange={(e) => setEditAmbulance(prev => ({ ...prev, baseStation: e.target.value }))}
+                    className="w-full p-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="e.g., Station 1"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Make</label>
+                  <input
+                    type="text"
+                    value={editAmbulance.make}
+                    onChange={(e) => setEditAmbulance(prev => ({ ...prev, make: e.target.value }))}
+                    className="w-full p-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="e.g., Ford"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Model</label>
+                  <input
+                    type="text"
+                    value={editAmbulance.model}
+                    onChange={(e) => setEditAmbulance(prev => ({ ...prev, model: e.target.value }))}
+                    className="w-full p-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="e.g., Transit"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Year</label>
+                  <input
+                    type="number"
+                    value={editAmbulance.year}
+                    onChange={(e) => setEditAmbulance(prev => ({ ...prev, year: e.target.value }))}
+                    className="w-full p-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="2024"
+                    min="1990"
+                    max="2030"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">License Plate</label>
+                  <input
+                    type="text"
+                    value={editAmbulance.licensePlate}
+                    onChange={(e) => setEditAmbulance(prev => ({ ...prev, licensePlate: e.target.value }))}
+                    className="w-full p-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="e.g., ABC-123"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Radio Channel</label>
+                  <input
+                    type="text"
+                    value={editAmbulance.radioChannel}
+                    onChange={(e) => setEditAmbulance(prev => ({ ...prev, radioChannel: e.target.value }))}
+                    className="w-full p-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="e.g., CH-7"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Fuel Level (%)</label>
+                  <input
+                    type="number"
+                    value={editAmbulance.fuelLevel}
+                    onChange={(e) => setEditAmbulance(prev => ({ ...prev, fuelLevel: parseInt(e.target.value) }))}
+                    className="w-full p-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    min="0"
+                    max="100"
+                  />
+                </div>
+              </div>
+              
+              <div className="flex gap-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowEditModal(false);
+                    setEditingAmbulance(null);
+                  }}
+                  className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-300 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={updateAmbulance}
+                  disabled={updating}
+                  className="flex-1 bg-gradient-to-r from-yellow-600 to-yellow-700 text-white py-3 rounded-xl font-semibold hover:from-yellow-700 hover:to-yellow-800 transition-all duration-200 disabled:opacity-50"
+                >
+                  {updating ? "Updating..." : "Update Ambulance"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Assign Crew Modal */}
       {showAssignModal && selectedAmbulance && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -737,9 +967,10 @@ function FleetManagement() {
                 </button>
                 <button
                   onClick={assignCrew}
-                  className="flex-1 bg-gradient-to-r from-purple-600 to-purple-700 text-white py-3 rounded-xl font-semibold hover:from-purple-700 hover:to-purple-800 transition-all duration-200"
+                  disabled={updating}
+                  className="flex-1 bg-gradient-to-r from-purple-600 to-purple-700 text-white py-3 rounded-xl font-semibold hover:from-purple-700 hover:to-purple-800 transition-all duration-200 disabled:opacity-50"
                 >
-                  Assign Crew
+                  {updating ? "Assigning..." : "Assign Crew"}
                 </button>
               </div>
             </div>
