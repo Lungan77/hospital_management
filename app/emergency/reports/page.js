@@ -78,6 +78,288 @@ function EmergencyReports() {
     return `${Math.floor(diff / 60000)} min`;
   };
 
+  const generateEmergencyReportPDF = () => {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 20;
+    
+    // Colors
+    const colors = {
+      primary: [37, 99, 235], // Blue
+      secondary: [107, 114, 128], // Gray
+      success: [34, 197, 94], // Green
+      warning: [245, 158, 11], // Orange
+      danger: [239, 68, 68], // Red
+      text: [31, 41, 55] // Dark gray
+    };
+
+    // Header
+    doc.setFillColor(...colors.primary);
+    doc.rect(0, 0, pageWidth, 60, 'F');
+    
+    // Logo area
+    doc.setFillColor(255, 255, 255);
+    doc.circle(30, 30, 15, 'F');
+    doc.setTextColor(...colors.primary);
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.text("EMS", 30, 35, { align: "center" });
+    
+    // Title
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(24);
+    doc.setFont("helvetica", "bold");
+    doc.text("Emergency Response Report", 60, 25);
+    
+    // Subtitle
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "normal");
+    doc.text("Comprehensive Emergency Services Analysis", 60, 35);
+    
+    // Report metadata
+    doc.setFontSize(10);
+    doc.text(`Generated: ${new Date().toLocaleString()}`, 60, 45);
+    doc.text(`Period: ${dateRange === "today" ? "Today" : dateRange === "week" ? "This Week" : dateRange === "month" ? "This Month" : "All Time"}`, 60, 52);
+
+    let yPosition = 80;
+
+    // Summary Statistics
+    doc.setTextColor(...colors.text);
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.text("Executive Summary", margin, yPosition);
+    yPosition += 15;
+
+    // Stats boxes
+    const stats = [
+      { label: "Total Incidents", value: filteredEmergencies.length, color: colors.primary },
+      { label: "Completed", value: filteredEmergencies.filter(e => e.status === "Completed").length, color: colors.success },
+      { label: "Critical Cases", value: filteredEmergencies.filter(e => e.priority === "Critical").length, color: colors.danger },
+      { 
+        label: "Avg Response Time", 
+        value: filteredEmergencies.filter(e => e.onSceneAt && e.dispatchedAt).length > 0 ? 
+          `${Math.round(filteredEmergencies
+            .filter(e => e.onSceneAt && e.dispatchedAt)
+            .reduce((sum, e) => sum + (new Date(e.onSceneAt) - new Date(e.dispatchedAt)), 0) / 
+            (filteredEmergencies.filter(e => e.onSceneAt && e.dispatchedAt).length * 60000)
+          )} min` : "N/A",
+        color: colors.warning
+      }
+    ];
+
+    const boxWidth = (pageWidth - 2 * margin - 30) / 4;
+    stats.forEach((stat, index) => {
+      const x = margin + (index * (boxWidth + 10));
+      
+      // Box background
+      doc.setFillColor(...stat.color);
+      doc.roundedRect(x, yPosition, boxWidth, 25, 3, 3, 'F');
+      
+      // Text
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text(String(stat.value), x + boxWidth/2, yPosition + 10, { align: "center" });
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "normal");
+      doc.text(stat.label, x + boxWidth/2, yPosition + 18, { align: "center" });
+    });
+
+    yPosition += 45;
+
+    // Emergency Details Table
+    doc.setTextColor(...colors.text);
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.text("Emergency Incidents", margin, yPosition);
+    yPosition += 10;
+
+    // Prepare table data
+    const tableData = filteredEmergencies.map(emergency => [
+      emergency.incidentNumber,
+      new Date(emergency.reportedAt).toLocaleDateString(),
+      new Date(emergency.reportedAt).toLocaleTimeString(),
+      emergency.priority,
+      emergency.status,
+      emergency.patientName || "Unknown",
+      emergency.type,
+      calculateResponseTime(emergency),
+      calculateTransportTime(emergency),
+      emergency.address.substring(0, 30) + (emergency.address.length > 30 ? "..." : "")
+    ]);
+
+    // Table configuration
+    const tableConfig = {
+      startY: yPosition,
+      head: [[
+        'Incident #', 'Date', 'Time', 'Priority', 'Status', 
+        'Patient', 'Type', 'Response', 'Transport', 'Location'
+      ]],
+      body: tableData,
+      theme: 'grid',
+      headStyles: {
+        fillColor: colors.primary,
+        textColor: [255, 255, 255],
+        fontSize: 8,
+        fontStyle: 'bold',
+        halign: 'center'
+      },
+      bodyStyles: {
+        fontSize: 7,
+        cellPadding: 2
+      },
+      columnStyles: {
+        0: { cellWidth: 20 }, // Incident #
+        1: { cellWidth: 18 }, // Date
+        2: { cellWidth: 15 }, // Time
+        3: { cellWidth: 15, halign: 'center' }, // Priority
+        4: { cellWidth: 18, halign: 'center' }, // Status
+        5: { cellWidth: 20 }, // Patient
+        6: { cellWidth: 18 }, // Type
+        7: { cellWidth: 15, halign: 'center' }, // Response
+        8: { cellWidth: 15, halign: 'center' }, // Transport
+        9: { cellWidth: 35 } // Location
+      },
+      alternateRowStyles: {
+        fillColor: [248, 250, 252]
+      },
+      margin: { left: margin, right: margin }
+    };
+
+    doc.autoTable(tableConfig);
+
+    // Performance Analysis Section
+    yPosition = doc.lastAutoTable.finalY + 20;
+    
+    if (yPosition > pageHeight - 60) {
+      doc.addPage();
+      yPosition = 30;
+    }
+
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.text("Performance Analysis", margin, yPosition);
+    yPosition += 15;
+
+    // Performance metrics
+    const completionRate = Math.round((filteredEmergencies.filter(e => e.status === "Completed").length / filteredEmergencies.length) * 100) || 0;
+    const criticalCases = filteredEmergencies.filter(e => e.priority === "Critical").length;
+    const avgResponseTime = filteredEmergencies.filter(e => e.onSceneAt && e.dispatchedAt).length > 0 ? 
+      Math.round(filteredEmergencies
+        .filter(e => e.onSceneAt && e.dispatchedAt)
+        .reduce((sum, e) => sum + (new Date(e.onSceneAt) - new Date(e.dispatchedAt)), 0) / 
+        (filteredEmergencies.filter(e => e.onSceneAt && e.dispatchedAt).length * 60000)
+      ) : 0;
+    const avgTransportTime = filteredEmergencies.filter(e => e.transportStartedAt && e.arrivedHospitalAt).length > 0 ? 
+      Math.round(filteredEmergencies
+        .filter(e => e.transportStartedAt && e.arrivedHospitalAt)
+        .reduce((sum, e) => sum + (new Date(e.arrivedHospitalAt) - new Date(e.transportStartedAt)), 0) / 
+        (filteredEmergencies.filter(e => e.transportStartedAt && e.arrivedHospitalAt).length * 60000)
+      ) : 0;
+
+    // Performance data
+    const performanceData = [
+      ['Total Emergency Responses', filteredEmergencies.length.toString()],
+      ['Completed Successfully', `${filteredEmergencies.filter(e => e.status === "Completed").length} (${completionRate}%)`],
+      ['Critical Priority Cases', criticalCases.toString()],
+      ['Average Response Time', `${avgResponseTime} minutes`],
+      ['Average Transport Time', `${avgTransportTime} minutes`],
+      ['Response Time Target (<15 min)', avgResponseTime <= 15 ? '✓ Met' : '✗ Not Met'],
+      ['Critical Case Response', criticalCases > 0 ? `${criticalCases} handled` : 'None this period']
+    ];
+
+    doc.autoTable({
+      startY: yPosition,
+      head: [['Performance Metric', 'Value']],
+      body: performanceData,
+      theme: 'striped',
+      headStyles: {
+        fillColor: colors.success,
+        textColor: [255, 255, 255],
+        fontSize: 10,
+        fontStyle: 'bold'
+      },
+      bodyStyles: {
+        fontSize: 9
+      },
+      columnStyles: {
+        0: { cellWidth: 80, fontStyle: 'bold' },
+        1: { cellWidth: 60, halign: 'center' }
+      },
+      margin: { left: margin, right: margin }
+    });
+
+    // Priority Distribution
+    yPosition = doc.lastAutoTable.finalY + 20;
+    
+    if (yPosition > pageHeight - 80) {
+      doc.addPage();
+      yPosition = 30;
+    }
+
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("Priority Distribution", margin, yPosition);
+    yPosition += 10;
+
+    const priorityData = [
+      ['Critical', filteredEmergencies.filter(e => e.priority === "Critical").length],
+      ['High', filteredEmergencies.filter(e => e.priority === "High").length],
+      ['Medium', filteredEmergencies.filter(e => e.priority === "Medium").length],
+      ['Low', filteredEmergencies.filter(e => e.priority === "Low").length]
+    ];
+
+    doc.autoTable({
+      startY: yPosition,
+      head: [['Priority Level', 'Count', 'Percentage']],
+      body: priorityData.map(([priority, count]) => [
+        priority,
+        count.toString(),
+        `${Math.round((count / filteredEmergencies.length) * 100) || 0}%`
+      ]),
+      theme: 'grid',
+      headStyles: {
+        fillColor: colors.warning,
+        textColor: [255, 255, 255],
+        fontSize: 10,
+        fontStyle: 'bold'
+      },
+      bodyStyles: {
+        fontSize: 9
+      },
+      columnStyles: {
+        0: { cellWidth: 40 },
+        1: { cellWidth: 30, halign: 'center' },
+        2: { cellWidth: 30, halign: 'center' }
+      },
+      margin: { left: margin, right: margin }
+    });
+
+    // Footer
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      
+      // Footer line
+      doc.setDrawColor(...colors.primary);
+      doc.setLineWidth(0.5);
+      doc.line(margin, pageHeight - 25, pageWidth - margin, pageHeight - 25);
+      
+      // Footer text
+      doc.setTextColor(...colors.secondary);
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "normal");
+      doc.text("Emergency Medical Services - Confidential Report", margin, pageHeight - 15);
+      doc.text(`Page ${i} of ${pageCount}`, pageWidth - margin, pageHeight - 15, { align: "right" });
+      doc.text(`Generated: ${new Date().toLocaleString()}`, pageWidth - margin, pageHeight - 8, { align: "right" });
+    }
+
+    // Save the PDF
+    const fileName = `Emergency_Report_${new Date().toISOString().split('T')[0]}_${filteredEmergencies.length}_incidents.pdf`;
+    doc.save(fileName);
+  };
+
   const filteredEmergencies = emergencies.filter(emergency => {
     const matchesSearch = emergency.incidentNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          emergency.patientName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
