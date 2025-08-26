@@ -454,7 +454,7 @@ function FleetManagement() {
                     <div className="text-center py-4">
                       <Users className="w-12 h-12 text-gray-300 mx-auto mb-2" />
                       <p className="text-gray-500 text-sm mb-2">No crew assigned</p>
-                      <p className="text-xs text-gray-400">Click "Assign Crew" to add personnel</p>
+                      <p className="text-xs text-gray-400">Click &quot;Assign Crew&quot; to add personnel</p>
                     </div>
                   )}
                 </div>
