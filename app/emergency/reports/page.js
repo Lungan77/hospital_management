@@ -18,6 +18,8 @@ import {
   TrendingUp,
   Timer
 } from "lucide-react";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 
 function EmergencyReports() {
   const [emergencies, setEmergencies] = useState([]);
@@ -102,19 +104,7 @@ function EmergencyReports() {
   });
 
   const generateReport = () => {
-    // In a real application, this would generate a PDF or Excel report
-    const reportData = filteredEmergencies.map(emergency => ({
-      incidentNumber: emergency.incidentNumber,
-      date: new Date(emergency.reportedAt).toLocaleDateString(),
-      priority: emergency.priority,
-      status: emergency.status,
-      responseTime: calculateResponseTime(emergency),
-      transportTime: calculateTransportTime(emergency),
-      location: emergency.address
-    }));
-    
-    console.log("Report data:", reportData);
-    alert("Report generation would be implemented here");
+    generateEmergencyReportPDF();
   };
 
   if (loading) {
