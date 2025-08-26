@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import withAuth from "@/hoc/withAuth";
+import Link from "next/link";
 import { 
   Truck, 
   MapPin, 
@@ -17,7 +18,10 @@ import {
   Calendar,
   BarChart3,
   Star,
-  Award
+  Award,
+  RefreshCw,
+  User,
+  Timer
 } from "lucide-react";
 
 function DriverDashboard() {
@@ -28,23 +32,21 @@ function DriverDashboard() {
     responses: 0,
     milesDriven: 0,
     hoursActive: 0,
-    safetyScore: 98
+    safetyScore: 0
   });
+  const [recentRoutes, setRecentRoutes] = useState([]);
+  const [lastVehicleCheck, setLastVehicleCheck] = useState(null);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    console.log("🚗 Driver dashboard initializing location tracking for:", session?.user.name);
+    console.log("🚗 Driver dashboard initializing for:", session?.user.name);
     fetchDriverData();
-    
-    // Initial location update after a short delay
-    setTimeout(() => {
-      updateLocation();
-    }, 2000);
+    updateLocation();
     
     // Set up real-time updates
     const interval = setInterval(() => {
-      console.log("🔄 Driver dashboard auto-updating location...");
+      console.log("🔄 Driver dashboard auto-updating...");
       fetchDriverData();
       updateLocation();
     }, 15000); // Update every 15 seconds
@@ -110,13 +112,36 @@ function DriverDashboard() {
         setVehicleStatus(assignmentData.vehicle);
       }
 
-      // Fetch today's stats (mock data for now)
-      setTodayStats({
-        responses: 8,
-        milesDriven: 156,
-        hoursActive: 6.5,
-        safetyScore: 98
-      });
+      // Fetch route history for today's stats
+      const routesRes = await fetch("/api/driver/routes");
+      const routesData = await routesRes.json();
+      if (routesRes.ok) {
+        const routes = routesData.routes || [];
+        setRecentRoutes(routes.slice(0, 5)); // Last 5 routes
+        
+        // Calculate today's stats
+        const today = new Date().toDateString();
+        const todayRoutes = routes.filter(route => 
+          new Date(route.date).toDateString() === today
+        );
+        
+        const stats = {
+          responses: todayRoutes.length,
+          milesDriven: Math.round(todayRoutes.reduce((sum, route) => sum + (route.distance || 0), 0)),
+          hoursActive: Math.round(todayRoutes.reduce((sum, route) => sum + (route.duration || 0), 0) / 60 * 10) / 10,
+          safetyScore: routes.length > 0 ? 98 : 100 // Mock safety score
+        };
+        
+        setTodayStats(stats);
+      }
+
+      // Fetch last vehicle check
+      const checkRes = await fetch("/api/driver/vehicle-check");
+      const checkData = await checkRes.json();
+      if (checkRes.ok) {
+        setLastVehicleCheck(checkData.lastCheck);
+      }
+
     } catch (error) {
       setMessage("Error loading driver data");
     } finally {
@@ -143,6 +168,33 @@ function DriverDashboard() {
     }
   };
 
+  const getStatusColor = (status) => {
+    const colors = {
+      "Available": "text-green-600",
+      "Dispatched": "text-blue-600",
+      "En Route": "text-purple-600",
+      "On Scene": "text-orange-600",
+      "Transporting": "text-cyan-600",
+      "Out of Service": "text-red-600",
+      "Maintenance": "text-yellow-600"
+    };
+    return colors[status] || "text-gray-600";
+  };
+
+  const getVehicleCheckStatus = () => {
+    if (!lastVehicleCheck) return { status: "needed", color: "red", text: "Check Required" };
+    
+    const checkDate = new Date(lastVehicleCheck.completedAt);
+    const today = new Date();
+    const hoursSinceCheck = (today - checkDate) / (1000 * 60 * 60);
+    
+    if (hoursSinceCheck > 24) return { status: "expired", color: "red", text: "Check Expired" };
+    if (!lastVehicleCheck.passed) return { status: "failed", color: "red", text: "Check Failed" };
+    return { status: "passed", color: "green", text: "Check Passed" };
+  };
+
+  const vehicleCheckStatus = getVehicleCheckStatus();
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-white flex items-center justify-center">
@@ -161,14 +213,35 @@ function DriverDashboard() {
         <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-8 mb-8 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-orange-100 to-yellow-100 rounded-full -translate-y-32 translate-x-32 opacity-50"></div>
           <div className="relative z-10">
-            <div className="flex items-center gap-6 mb-6">
-              <div className="w-20 h-20 bg-gradient-to-br from-orange-600 to-yellow-600 rounded-3xl flex items-center justify-center shadow-lg">
-                <Truck className="w-10 h-10 text-white" />
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-6">
+                <div className="w-20 h-20 bg-gradient-to-br from-orange-600 to-yellow-600 rounded-3xl flex items-center justify-center shadow-lg">
+                  <Truck className="w-10 h-10 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-5xl font-bold text-gray-900 mb-2">Driver Dashboard</h1>
+                  <p className="text-gray-600 text-xl">Welcome back, {session?.user.name}</p>
+                  {vehicleStatus && (
+                    <div className="flex items-center gap-3 mt-2">
+                      <span className="text-gray-600">Vehicle:</span>
+                      <span className="font-semibold text-gray-900">{vehicleStatus.callSign}</span>
+                      <span className={`text-sm font-medium ${getStatusColor(vehicleStatus.status)}`}>
+                        ({vehicleStatus.status})
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
-              <div>
-                <h1 className="text-5xl font-bold text-gray-900 mb-2">Driver Dashboard</h1>
-                <p className="text-gray-600 text-xl">Welcome back, {session?.user.name}</p>
-              </div>
+              <button
+                onClick={() => {
+                  fetchDriverData();
+                  updateLocation();
+                }}
+                className="flex items-center gap-2 bg-orange-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-orange-700 transition-colors"
+              >
+                <RefreshCw className="w-5 h-5" />
+                Refresh
+              </button>
             </div>
             
             {/* Today's Stats */}
@@ -182,7 +255,7 @@ function DriverDashboard() {
                 <div className="text-sm text-green-600">Miles Driven</div>
               </div>
               <div className="bg-purple-50 rounded-2xl p-4 border border-purple-200">
-                <div className="text-2xl font-bold text-purple-600">{todayStats.hoursActive}</div>
+                <div className="text-2xl font-bold text-purple-600">{todayStats.hoursActive}h</div>
                 <div className="text-sm text-purple-600">Hours Active</div>
               </div>
               <div className="bg-yellow-50 rounded-2xl p-4 border border-yellow-200">
@@ -241,6 +314,14 @@ function DriverDashboard() {
                         <p className="text-red-600 font-medium">Status</p>
                         <p className="text-red-800 font-bold">{currentAssignment.status}</p>
                       </div>
+                      <div>
+                        <p className="text-red-600 font-medium">Patient</p>
+                        <p className="text-red-800">{currentAssignment.patientName || "Unknown"}</p>
+                      </div>
+                      <div>
+                        <p className="text-red-600 font-medium">Type</p>
+                        <p className="text-red-800">{currentAssignment.type}</p>
+                      </div>
                       <div className="md:col-span-2">
                         <p className="text-red-600 font-medium">Location</p>
                         <p className="text-red-800">{currentAssignment.address}</p>
@@ -248,14 +329,24 @@ function DriverDashboard() {
                     </div>
                   </div>
 
-                  <div className="flex gap-4">
-                    <button className="flex-1 bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
-                      <Navigation className="w-5 h-5" />
+                  <div className="grid grid-cols-2 gap-4">
+                    <Link href="/driver/assignment">
+                      <button className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
+                        <Navigation className="w-5 h-5" />
+                        Open Assignment
+                      </button>
+                    </Link>
+                    <button 
+                      onClick={() => {
+                        if (currentAssignment.address) {
+                          const address = encodeURIComponent(currentAssignment.address);
+                          window.open(`https://www.google.com/maps/dir/?api=1&destination=${address}&travelmode=driving`, '_blank');
+                        }
+                      }}
+                      className="w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+                    >
+                      <MapPin className="w-5 h-5" />
                       Navigate
-                    </button>
-                    <button className="flex-1 bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors flex items-center justify-center gap-2">
-                      <Phone className="w-5 h-5" />
-                      Contact Dispatch
                     </button>
                   </div>
                 </div>
@@ -263,7 +354,12 @@ function DriverDashboard() {
                 <div className="text-center py-12">
                   <Truck className="w-24 h-24 text-gray-300 mx-auto mb-6" />
                   <h3 className="text-xl font-bold text-gray-800 mb-2">No Active Assignment</h3>
-                  <p className="text-gray-600">Waiting for emergency dispatch</p>
+                  <p className="text-gray-600 mb-6">Waiting for emergency dispatch</p>
+                  <Link href="/driver/assignment">
+                    <button className="bg-orange-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-orange-700 transition-colors">
+                      Check for Assignment
+                    </button>
+                  </Link>
                 </div>
               )}
             </div>
@@ -288,10 +384,28 @@ function DriverDashboard() {
                       <div className="text-2xl font-bold text-green-600">{vehicleStatus.fuelLevel || 85}%</div>
                       <div className="text-sm text-green-600">Fuel Level</div>
                     </div>
-                    <div className="text-center p-4 bg-blue-50 rounded-xl border border-blue-200">
-                      <CheckCircle className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-                      <div className="text-lg font-bold text-blue-600">Ready</div>
-                      <div className="text-sm text-blue-600">Vehicle Status</div>
+                    <div className={`text-center p-4 rounded-xl border ${
+                      vehicleCheckStatus.status === "passed" ? "bg-green-50 border-green-200" :
+                      vehicleCheckStatus.status === "failed" ? "bg-red-50 border-red-200" :
+                      "bg-yellow-50 border-yellow-200"
+                    }`}>
+                      {vehicleCheckStatus.status === "passed" ? <CheckCircle className="w-8 h-8 text-green-600 mx-auto mb-2" /> :
+                       vehicleCheckStatus.status === "failed" ? <AlertTriangle className="w-8 h-8 text-red-600 mx-auto mb-2" /> :
+                       <Clock className="w-8 h-8 text-yellow-600 mx-auto mb-2" />}
+                      <div className={`text-lg font-bold ${
+                        vehicleCheckStatus.status === "passed" ? "text-green-600" :
+                        vehicleCheckStatus.status === "failed" ? "text-red-600" :
+                        "text-yellow-600"
+                      }`}>
+                        {vehicleCheckStatus.text}
+                      </div>
+                      <div className={`text-sm ${
+                        vehicleCheckStatus.status === "passed" ? "text-green-600" :
+                        vehicleCheckStatus.status === "failed" ? "text-red-600" :
+                        "text-yellow-600"
+                      }`}>
+                        Vehicle Check
+                      </div>
                     </div>
                   </div>
 
@@ -308,12 +422,17 @@ function DriverDashboard() {
                       <span className="font-medium text-gray-700">Radio Channel</span>
                       <span className="font-bold text-gray-900">{vehicleStatus.radioChannel || "CH-7"}</span>
                     </div>
+                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
+                      <span className="font-medium text-gray-700">Base Station</span>
+                      <span className="font-bold text-gray-900">{vehicleStatus.baseStation}</span>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <button 
                       onClick={() => updateVehicleStatus("Available")}
-                      className="bg-green-50 text-green-600 py-3 rounded-xl font-semibold hover:bg-green-100 transition-colors"
+                      disabled={vehicleCheckStatus.status !== "passed"}
+                      className="bg-green-50 text-green-600 py-3 rounded-xl font-semibold hover:bg-green-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Mark Available
                     </button>
@@ -324,6 +443,14 @@ function DriverDashboard() {
                       Out of Service
                     </button>
                   </div>
+
+                  {vehicleCheckStatus.status !== "passed" && (
+                    <div className="p-4 bg-yellow-50 rounded-xl border border-yellow-200">
+                      <p className="text-yellow-800 text-sm font-medium">
+                        ⚠️ Vehicle check required before marking available for service
+                      </p>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="text-center py-12">
@@ -343,29 +470,83 @@ function DriverDashboard() {
             Quick Actions
           </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <button className="p-6 border-2 border-gray-200 rounded-2xl hover:border-orange-400 hover:bg-orange-50 transition-all duration-200 group">
-              <CheckCircle className="w-12 h-12 text-orange-600 mx-auto mb-4 group-hover:scale-110 transition-transform" />
+            <Link href="/driver/assignment" className="group p-6 border-2 border-gray-200 rounded-2xl hover:border-orange-400 hover:bg-orange-50 transition-all duration-200">
+              <Activity className="w-12 h-12 text-orange-600 mx-auto mb-4 group-hover:scale-110 transition-transform" />
+              <h3 className="font-bold text-gray-900 mb-2">Current Assignment</h3>
+              <p className="text-gray-600 text-sm">View active emergency</p>
+              {currentAssignment && (
+                <div className="mt-2 text-xs text-orange-600 font-semibold">
+                  {currentAssignment.incidentNumber}
+                </div>
+              )}
+            </Link>
+            
+            <Link href="/driver/vehicle-check" className="group p-6 border-2 border-gray-200 rounded-2xl hover:border-blue-400 hover:bg-blue-50 transition-all duration-200">
+              <CheckCircle className="w-12 h-12 text-blue-600 mx-auto mb-4 group-hover:scale-110 transition-transform" />
               <h3 className="font-bold text-gray-900 mb-2">Vehicle Check</h3>
               <p className="text-gray-600 text-sm">Pre-shift inspection</p>
-            </button>
+              <div className={`mt-2 text-xs font-semibold ${
+                vehicleCheckStatus.status === "passed" ? "text-green-600" :
+                vehicleCheckStatus.status === "failed" ? "text-red-600" :
+                "text-yellow-600"
+              }`}>
+                {vehicleCheckStatus.text}
+              </div>
+            </Link>
             
-            <button className="p-6 border-2 border-gray-200 rounded-2xl hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 group">
-              <Route className="w-12 h-12 text-blue-600 mx-auto mb-4 group-hover:scale-110 transition-transform" />
+            <Link href="/driver/routes" className="group p-6 border-2 border-gray-200 rounded-2xl hover:border-green-400 hover:bg-green-50 transition-all duration-200">
+              <Route className="w-12 h-12 text-green-600 mx-auto mb-4 group-hover:scale-110 transition-transform" />
               <h3 className="font-bold text-gray-900 mb-2">Route History</h3>
               <p className="text-gray-600 text-sm">View past routes</p>
-            </button>
+              <div className="mt-2 text-xs text-green-600 font-semibold">
+                {recentRoutes.length} recent routes
+              </div>
+            </Link>
             
-            <button className="p-6 border-2 border-gray-200 rounded-2xl hover:border-green-400 hover:bg-green-50 transition-all duration-200 group">
-              <BarChart3 className="w-12 h-12 text-green-600 mx-auto mb-4 group-hover:scale-110 transition-transform" />
-              <h3 className="font-bold text-gray-900 mb-2">Performance</h3>
-              <p className="text-gray-600 text-sm">View statistics</p>
-            </button>
-            
-            <button className="p-6 border-2 border-gray-200 rounded-2xl hover:border-purple-400 hover:bg-purple-50 transition-all duration-200 group">
+            <button 
+              onClick={() => {
+                const dispatchNumber = "911";
+                window.open(`tel:${dispatchNumber}`, '_self');
+              }}
+              className="group p-6 border-2 border-gray-200 rounded-2xl hover:border-purple-400 hover:bg-purple-50 transition-all duration-200"
+            >
               <Phone className="w-12 h-12 text-purple-600 mx-auto mb-4 group-hover:scale-110 transition-transform" />
-              <h3 className="font-bold text-gray-900 mb-2">Contact</h3>
-              <p className="text-gray-600 text-sm">Dispatch & Support</p>
+              <h3 className="font-bold text-gray-900 mb-2">Contact Dispatch</h3>
+              <p className="text-gray-600 text-sm">Emergency coordination</p>
             </button>
+          </div>
+        </div>
+
+        {/* Recent Activity */}
+        <div className="mt-8 bg-white rounded-3xl shadow-xl border border-gray-100 p-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+            <Award className="w-8 h-8 text-orange-600" />
+            Recent Activity
+          </h2>
+          <div className="space-y-4">
+            {recentRoutes.length > 0 ? (
+              recentRoutes.map((route, index) => (
+                <div key={index} className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                  <div className={`w-3 h-3 rounded-full ${
+                    route.status === 'Completed' ? 'bg-green-500' :
+                    route.status === 'Active' ? 'bg-blue-500' : 'bg-yellow-500'
+                  }`}></div>
+                  <div className="flex-1">
+                    <p className="font-medium text-gray-900">Emergency Response: {route.emergencyId}</p>
+                    <p className="text-sm text-gray-600">{route.destination}</p>
+                  </div>
+                  <div className="text-right text-sm text-gray-500">
+                    <div>{new Date(route.date).toLocaleDateString()}</div>
+                    <div>{route.distance}km • {route.duration}min</div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-8">
+                <Route className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-500">No recent activity</p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -381,7 +562,7 @@ function DriverDashboard() {
               </div>
             </div>
             <div className="text-gray-600 font-medium">Emergency Responses</div>
-            <div className="text-sm text-green-600 font-semibold">+2 from yesterday</div>
+            <div className="text-sm text-green-600 font-semibold">Today</div>
           </div>
 
           <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
@@ -394,13 +575,13 @@ function DriverDashboard() {
               </div>
             </div>
             <div className="text-gray-600 font-medium">Miles Driven</div>
-            <div className="text-sm text-blue-600 font-semibold">+24 from yesterday</div>
+            <div className="text-sm text-blue-600 font-semibold">Today</div>
           </div>
 
           <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 rounded-xl bg-purple-100 text-purple-600">
-                <Clock className="w-6 h-6" />
+                <Timer className="w-6 h-6" />
               </div>
               <div className="text-right">
                 <div className="text-3xl font-bold text-gray-900">{todayStats.hoursActive}</div>
@@ -421,34 +602,6 @@ function DriverDashboard() {
             </div>
             <div className="text-gray-600 font-medium">Safety Score</div>
             <div className="text-sm text-green-600 font-semibold">Excellent rating</div>
-          </div>
-        </div>
-
-        {/* Recent Activity */}
-        <div className="mt-8 bg-white rounded-3xl shadow-xl border border-gray-100 p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
-            <Award className="w-8 h-8 text-orange-600" />
-            Recent Activity
-          </h2>
-          <div className="space-y-4">
-            {[
-              { time: "14:30", action: "Emergency response completed", location: "Main St & 5th Ave", status: "success" },
-              { time: "12:15", action: "Patient transported to hospital", location: "General Hospital", status: "success" },
-              { time: "10:45", action: "Vehicle inspection completed", location: "Station 3", status: "info" },
-              { time: "09:30", action: "Shift started", location: "Station 3", status: "info" }
-            ].map((activity, index) => (
-              <div key={index} className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
-                <div className={`w-3 h-3 rounded-full ${
-                  activity.status === 'success' ? 'bg-green-500' :
-                  activity.status === 'info' ? 'bg-blue-500' : 'bg-yellow-500'
-                }`}></div>
-                <div className="flex-1">
-                  <p className="font-medium text-gray-900">{activity.action}</p>
-                  <p className="text-sm text-gray-600">{activity.location}</p>
-                </div>
-                <div className="text-sm text-gray-500">{activity.time}</div>
-              </div>
-            ))}
           </div>
         </div>
       </div>

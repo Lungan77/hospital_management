@@ -38,14 +38,15 @@ export async function POST(req) {
     ];
 
     const criticalFailures = criticalItems.filter(item => checkItems[item] === "fail");
+    const checkPassed = criticalFailures.length === 0;
     
     if (criticalFailures.length > 0) {
       // Mark ambulance as out of service if critical items fail
       ambulance.status = "Out of Service";
       ambulance.maintenanceNotes = `Critical vehicle check failures: ${criticalFailures.join(", ")}. Inspected by ${auth.session.user.name} on ${new Date().toLocaleString()}. Notes: ${notes}`;
     } else {
-      // Mark as available if all critical items pass
-      if (ambulance.status === "Out of Service") {
+      // Mark as available if all critical items pass and not currently assigned
+      if (ambulance.status === "Out of Service" && !ambulance.currentEmergency) {
         ambulance.status = "Available";
       }
     }
@@ -55,18 +56,20 @@ export async function POST(req) {
       ambulance.vehicleChecks = [];
     }
 
-    ambulance.vehicleChecks.push({
+    const vehicleCheck = {
       checkItems,
       notes,
       completedAt: new Date(completedAt),
       completedBy: auth.session.user.id,
       criticalFailures: criticalFailures.length,
-      passed: criticalFailures.length === 0
-    });
+      passed: checkPassed
+    };
 
-    // Keep only last 10 checks
-    if (ambulance.vehicleChecks.length > 10) {
-      ambulance.vehicleChecks = ambulance.vehicleChecks.slice(-10);
+    ambulance.vehicleChecks.push(vehicleCheck);
+
+    // Keep only last 20 checks
+    if (ambulance.vehicleChecks.length > 20) {
+      ambulance.vehicleChecks = ambulance.vehicleChecks.slice(-20);
     }
 
     ambulance.lastVehicleCheck = new Date(completedAt);
@@ -76,12 +79,14 @@ export async function POST(req) {
       message: criticalFailures.length > 0 
         ? "Vehicle check completed with critical issues. Vehicle marked out of service."
         : "Vehicle check completed successfully. Vehicle ready for service.",
-      passed: criticalFailures.length === 0,
+      passed: checkPassed,
       criticalFailures,
+      vehicleCheck,
       ambulance: {
         _id: ambulance._id,
         callSign: ambulance.callSign,
-        status: ambulance.status
+        status: ambulance.status,
+        lastVehicleCheck: ambulance.lastVehicleCheck
       }
     }, { status: 200 });
   } catch (error) {
@@ -101,12 +106,13 @@ export async function GET(req) {
     const ambulance = await Ambulance.findOne({
       "crew.memberId": auth.session.user.id,
       "crew.role": "Driver"
-    });
+    }).populate("vehicleChecks.completedBy", "name");
 
     if (!ambulance) {
       return Response.json({ 
         vehicle: null,
-        lastCheck: null 
+        lastCheck: null,
+        checkHistory: []
       }, { status: 200 });
     }
 
@@ -115,8 +121,17 @@ export async function GET(req) {
       : null;
 
     return Response.json({ 
-      vehicle: ambulance,
-      lastCheck 
+      vehicle: {
+        _id: ambulance._id,
+        callSign: ambulance.callSign,
+        vehicleNumber: ambulance.vehicleNumber,
+        type: ambulance.type,
+        status: ambulance.status,
+        baseStation: ambulance.baseStation,
+        lastVehicleCheck: ambulance.lastVehicleCheck
+      },
+      lastCheck,
+      checkHistory: ambulance.vehicleChecks || []
     }, { status: 200 });
   } catch (error) {
     console.error("Error fetching vehicle check data:", error);

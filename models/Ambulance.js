@@ -66,9 +66,20 @@ const AmbulanceSchema = new mongoose.Schema(
       completedAt: { type: Date },
       completedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
       criticalFailures: { type: Number, default: 0 },
-      passed: { type: Boolean, default: true }
+      passed: { type: Boolean, default: true },
+      checkType: { type: String, enum: ["Pre-Shift", "Post-Shift", "Maintenance", "Emergency"], default: "Pre-Shift" }
     }],
     lastVehicleCheck: { type: Date },
+    
+    // Performance Metrics
+    performanceMetrics: {
+      totalMileage: { type: Number, default: 0 },
+      totalResponses: { type: Number, default: 0 },
+      avgResponseTime: { type: Number, default: 0 },
+      safetyScore: { type: Number, default: 100, min: 0, max: 100 },
+      fuelEfficiency: { type: Number, default: 0 }, // km per liter
+      lastUpdated: { type: Date, default: Date.now }
+    },
     
     // Base Station
     baseStation: { type: String, required: true },

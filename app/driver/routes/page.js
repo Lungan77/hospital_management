@@ -16,11 +16,20 @@ import {
   TrendingUp,
   Download,
   Filter,
-  Search
+  Search,
+  User,
+  Phone
 } from "lucide-react";
 
 function RouteHistory() {
   const [routes, setRoutes] = useState([]);
+  const [stats, setStats] = useState({
+    totalRoutes: 0,
+    totalDistance: 0,
+    totalDuration: 0,
+    avgResponseTime: 0,
+    totalFuel: 0
+  });
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
   const [dateRange, setDateRange] = useState("week");
@@ -32,67 +41,20 @@ function RouteHistory() {
 
   const fetchRouteHistory = async () => {
     try {
-      // Mock route data for demonstration
-      const mockRoutes = [
-        {
-          id: "1",
-          date: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-          emergencyId: "EMG-20250103-1234",
-          startLocation: "Station 3, Main Street",
-          destination: "456 Oak Avenue",
-          distance: 8.5,
-          duration: 12,
-          fuelUsed: 2.1,
-          status: "Completed",
-          priority: "High",
-          responseTime: 8,
-          patientName: "John Smith"
-        },
-        {
-          id: "2", 
-          date: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 hours ago
-          emergencyId: "EMG-20250103-1156",
-          startLocation: "General Hospital",
-          destination: "789 Pine Street",
-          distance: 12.3,
-          duration: 18,
-          fuelUsed: 3.2,
-          status: "Completed",
-          priority: "Critical",
-          responseTime: 6,
-          patientName: "Mary Johnson"
-        },
-        {
-          id: "3",
-          date: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
-          emergencyId: "EMG-20250103-0945",
-          startLocation: "Station 3, Main Street", 
-          destination: "321 Elm Street",
-          distance: 5.7,
-          duration: 9,
-          fuelUsed: 1.4,
-          status: "Completed",
-          priority: "Medium",
-          responseTime: 11,
-          patientName: "Robert Davis"
-        },
-        {
-          id: "4",
-          date: new Date(Date.now() - 24 * 60 * 60 * 1000), // Yesterday
-          emergencyId: "EMG-20250102-1630",
-          startLocation: "Station 3, Main Street",
-          destination: "654 Maple Drive",
-          distance: 15.2,
-          duration: 25,
-          fuelUsed: 4.1,
-          status: "Completed",
-          priority: "High",
-          responseTime: 14,
-          patientName: "Sarah Wilson"
-        }
-      ];
-      
-      setRoutes(mockRoutes);
+      const res = await fetch("/api/driver/routes");
+      const data = await res.json();
+      if (res.ok) {
+        setRoutes(data.routes || []);
+        setStats(data.stats || {
+          totalRoutes: 0,
+          totalDistance: 0,
+          totalDuration: 0,
+          avgResponseTime: 0,
+          totalFuel: 0
+        });
+      } else {
+        console.error("Error fetching routes:", data.error);
+      }
     } catch (error) {
       console.error("Error fetching route history");
     } finally {
@@ -135,18 +97,18 @@ function RouteHistory() {
     return colors[priority] || "bg-gray-100 text-gray-700 border-gray-200";
   };
 
-  const calculateStats = () => {
+  const calculateFilteredStats = () => {
     return {
       totalRoutes: filteredRoutes.length,
-      totalDistance: filteredRoutes.reduce((sum, route) => sum + route.distance, 0),
+      totalDistance: Math.round(filteredRoutes.reduce((sum, route) => sum + route.distance, 0) * 10) / 10,
       totalDuration: filteredRoutes.reduce((sum, route) => sum + route.duration, 0),
       avgResponseTime: filteredRoutes.length > 0 ? 
-        Math.round(filteredRoutes.reduce((sum, route) => sum + route.responseTime, 0) / filteredRoutes.length) : 0,
-      totalFuel: filteredRoutes.reduce((sum, route) => sum + route.fuelUsed, 0)
+        Math.round(filteredRoutes.filter(r => r.responseTime).reduce((sum, route) => sum + route.responseTime, 0) / filteredRoutes.filter(r => r.responseTime).length) : 0,
+      totalFuel: Math.round(filteredRoutes.reduce((sum, route) => sum + route.fuelUsed, 0) * 10) / 10
     };
   };
 
-  const stats = calculateStats();
+  const filteredStats = calculateFilteredStats();
 
   if (loading) {
     return (
@@ -176,7 +138,23 @@ function RouteHistory() {
                   <p className="text-gray-600 text-xl">Track your emergency response routes and performance</p>
                 </div>
               </div>
-              <button className="flex items-center gap-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-2xl font-semibold text-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-blue-500/25 transform hover:scale-105">
+              <button 
+                onClick={() => {
+                  // Generate report functionality
+                  const reportData = filteredRoutes.map(route => ({
+                    emergencyId: route.emergencyId,
+                    date: new Date(route.date).toLocaleDateString(),
+                    priority: route.priority,
+                    distance: route.distance,
+                    duration: route.duration,
+                    responseTime: route.responseTime,
+                    destination: route.destination
+                  }));
+                  console.log("Route report data:", reportData);
+                  alert("Route report generated (check console for data)");
+                }}
+                className="flex items-center gap-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-2xl font-semibold text-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-blue-500/25 transform hover:scale-105"
+              >
                 <Download className="w-6 h-6" />
                 Export Report
               </button>
@@ -185,23 +163,23 @@ function RouteHistory() {
             {/* Stats Overview */}
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <div className="bg-blue-50 rounded-2xl p-4 border border-blue-200">
-                <div className="text-2xl font-bold text-blue-600">{stats.totalRoutes}</div>
+                <div className="text-2xl font-bold text-blue-600">{filteredStats.totalRoutes}</div>
                 <div className="text-sm text-blue-600">Total Routes</div>
               </div>
               <div className="bg-green-50 rounded-2xl p-4 border border-green-200">
-                <div className="text-2xl font-bold text-green-600">{stats.totalDistance.toFixed(1)} km</div>
+                <div className="text-2xl font-bold text-green-600">{filteredStats.totalDistance} km</div>
                 <div className="text-sm text-green-600">Distance</div>
               </div>
               <div className="bg-purple-50 rounded-2xl p-4 border border-purple-200">
-                <div className="text-2xl font-bold text-purple-600">{Math.round(stats.totalDuration / 60)}h {stats.totalDuration % 60}m</div>
+                <div className="text-2xl font-bold text-purple-600">{Math.round(filteredStats.totalDuration / 60)}h {filteredStats.totalDuration % 60}m</div>
                 <div className="text-sm text-purple-600">Drive Time</div>
               </div>
               <div className="bg-orange-50 rounded-2xl p-4 border border-orange-200">
-                <div className="text-2xl font-bold text-orange-600">{stats.avgResponseTime} min</div>
+                <div className="text-2xl font-bold text-orange-600">{filteredStats.avgResponseTime} min</div>
                 <div className="text-sm text-orange-600">Avg Response</div>
               </div>
               <div className="bg-yellow-50 rounded-2xl p-4 border border-yellow-200">
-                <div className="text-2xl font-bold text-yellow-600">{stats.totalFuel.toFixed(1)}L</div>
+                <div className="text-2xl font-bold text-yellow-600">{filteredStats.totalFuel}L</div>
                 <div className="text-sm text-yellow-600">Fuel Used</div>
               </div>
             </div>
@@ -298,7 +276,7 @@ function RouteHistory() {
                         </div>
                         <div className="flex items-center gap-2 text-gray-600">
                           <Calendar className="w-4 h-4 text-orange-500" />
-                          <span><strong>Time:</strong> {route.date.toLocaleTimeString()}</span>
+                          <span><strong>Date:</strong> {new Date(route.date).toLocaleDateString()}</span>
                         </div>
                       </div>
                     </div>
@@ -310,8 +288,8 @@ function RouteHistory() {
                       <div className="text-xs text-blue-600">Distance</div>
                     </div>
                     <div className="p-3 bg-green-50 rounded-xl">
-                      <div className="text-lg font-bold text-green-600">{route.responseTime} min</div>
-                      <div className="text-xs text-green-600">Response</div>
+                      <div className="text-lg font-bold text-green-600">{route.responseTime || "N/A"}</div>
+                      <div className="text-xs text-green-600">Response (min)</div>
                     </div>
                     <div className="p-3 bg-yellow-50 rounded-xl">
                       <div className="text-lg font-bold text-yellow-600">{route.fuelUsed}L</div>
@@ -322,18 +300,22 @@ function RouteHistory() {
 
                 {/* Route Details */}
                 <div className="mt-6 p-4 bg-gray-50 rounded-xl">
-                  <div className="grid md:grid-cols-3 gap-4 text-sm">
+                  <div className="grid md:grid-cols-4 gap-4 text-sm">
                     <div>
                       <p className="text-gray-500 font-medium">Patient</p>
-                      <p className="text-gray-900 font-semibold">{route.patientName}</p>
+                      <p className="text-gray-900 font-semibold">{route.patientName || "Unknown"}</p>
                     </div>
                     <div>
-                      <p className="text-gray-500 font-medium">Date</p>
-                      <p className="text-gray-900">{route.date.toLocaleDateString()}</p>
+                      <p className="text-gray-500 font-medium">Emergency Type</p>
+                      <p className="text-gray-900">{route.type || "Medical"}</p>
                     </div>
                     <div>
                       <p className="text-gray-500 font-medium">Avg Speed</p>
-                      <p className="text-gray-900">{Math.round((route.distance / (route.duration / 60)) * 10) / 10} km/h</p>
+                      <p className="text-gray-900">{route.duration > 0 ? Math.round((route.distance / (route.duration / 60)) * 10) / 10 : 0} km/h</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500 font-medium">Time</p>
+                      <p className="text-gray-900">{new Date(route.date).toLocaleTimeString()}</p>
                     </div>
                   </div>
                 </div>
@@ -350,11 +332,13 @@ function RouteHistory() {
                 <BarChart3 className="w-6 h-6" />
               </div>
               <div className="text-right">
-                <div className="text-2xl font-bold text-gray-900">{stats.avgResponseTime} min</div>
+                <div className="text-2xl font-bold text-gray-900">{filteredStats.avgResponseTime} min</div>
               </div>
             </div>
             <div className="text-gray-600 font-medium">Avg Response Time</div>
-            <div className="text-sm text-green-600 font-semibold">-2 min improvement</div>
+            <div className="text-sm text-green-600 font-semibold">
+              {filteredStats.avgResponseTime <= 10 ? "Excellent" : filteredStats.avgResponseTime <= 15 ? "Good" : "Needs Improvement"}
+            </div>
           </div>
 
           <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
@@ -364,7 +348,8 @@ function RouteHistory() {
               </div>
               <div className="text-right">
                 <div className="text-2xl font-bold text-gray-900">
-                  {stats.totalDistance > 0 ? Math.round((stats.totalDistance / stats.totalFuel) * 10) / 10 : 0} km/L
+                  {filteredStats.totalDistance > 0 && filteredStats.totalFuel > 0 ? 
+                    Math.round((filteredStats.totalDistance / filteredStats.totalFuel) * 10) / 10 : 0} km/L
                 </div>
               </div>
             </div>
@@ -391,7 +376,7 @@ function RouteHistory() {
                 <Timer className="w-6 h-6" />
               </div>
               <div className="text-right">
-                <div className="text-2xl font-bold text-gray-900">{Math.round(stats.totalDuration / 60)}h</div>
+                <div className="text-2xl font-bold text-gray-900">{Math.round(filteredStats.totalDuration / 60)}h</div>
               </div>
             </div>
             <div className="text-gray-600 font-medium">Total Drive Time</div>

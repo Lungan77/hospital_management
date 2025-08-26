@@ -20,7 +20,8 @@ import {
   Timer,
   Play,
   Square,
-  RefreshCw
+  RefreshCw,
+  Calendar
 } from "lucide-react";
 
 // Dynamic import for map component
@@ -75,8 +76,12 @@ function DriverAssignment() {
             data.assignment.coordinates.longitude
           ]);
         }
+        
+        if (data.message) {
+          setMessage(data.message);
+        }
       } else {
-        setMessage("No current assignment");
+        setMessage(data.error || "Error fetching assignment");
       }
     } catch (error) {
       setMessage("Error fetching assignment");
@@ -136,7 +141,7 @@ function DriverAssignment() {
     if (!assignment) return;
     
     try {
-      const res = await fetch("/api/emergency/paramedic/status", {
+      const res = await fetch("/api/emergency/status", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -317,6 +322,12 @@ function DriverAssignment() {
                         {assignment.dispatchedAt ? new Date(assignment.dispatchedAt).toLocaleString() : "Not dispatched"}
                       </p>
                     </div>
+                    {assignment.reportedAt && (
+                      <div>
+                        <p className="text-gray-600 font-medium">Reported Time</p>
+                        <p className="text-gray-900">{new Date(assignment.reportedAt).toLocaleString()}</p>
+                      </div>
+                    )}
                     {eta && (
                       <div>
                         <p className="text-gray-600 font-medium">Estimated Arrival</p>
@@ -482,11 +493,13 @@ function DriverAssignment() {
                 <Route className="w-6 h-6" />
               </div>
               <div className="text-right">
-                <div className="text-2xl font-bold text-gray-900">8</div>
+                <div className="text-2xl font-bold text-gray-900">
+                  {assignment ? 1 : 0}
+                </div>
               </div>
             </div>
-            <div className="text-gray-600 font-medium">Responses Today</div>
-            <div className="text-sm text-green-600 font-semibold">+2 from yesterday</div>
+            <div className="text-gray-600 font-medium">Active Assignments</div>
+            <div className="text-sm text-green-600 font-semibold">Current status</div>
           </div>
 
           <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
@@ -495,11 +508,14 @@ function DriverAssignment() {
                 <Timer className="w-6 h-6" />
               </div>
               <div className="text-right">
-                <div className="text-2xl font-bold text-gray-900">12 min</div>
+                <div className="text-2xl font-bold text-gray-900">
+                  {assignment && assignment.dispatchedAt ? 
+                    Math.round((new Date() - new Date(assignment.dispatchedAt)) / 60000) : 0} min
+                </div>
               </div>
             </div>
-            <div className="text-gray-600 font-medium">Avg Response Time</div>
-            <div className="text-sm text-green-600 font-semibold">-3 min improvement</div>
+            <div className="text-gray-600 font-medium">Response Time</div>
+            <div className="text-sm text-green-600 font-semibold">Current call</div>
           </div>
 
           <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
@@ -508,11 +524,13 @@ function DriverAssignment() {
                 <CheckCircle className="w-6 h-6" />
               </div>
               <div className="text-right">
-                <div className="text-2xl font-bold text-gray-900">98%</div>
+                <div className="text-2xl font-bold text-gray-900">
+                  {vehicle?.status === "Available" ? "Ready" : vehicle?.status || "Unknown"}
+                </div>
               </div>
             </div>
-            <div className="text-gray-600 font-medium">Safety Score</div>
-            <div className="text-sm text-green-600 font-semibold">Excellent rating</div>
+            <div className="text-gray-600 font-medium">Vehicle Status</div>
+            <div className="text-sm text-blue-600 font-semibold">Current state</div>
           </div>
 
           <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
@@ -521,11 +539,11 @@ function DriverAssignment() {
                 <Fuel className="w-6 h-6" />
               </div>
               <div className="text-right">
-                <div className="text-2xl font-bold text-gray-900">156</div>
+                <div className="text-2xl font-bold text-gray-900">{vehicle?.fuelLevel || 85}%</div>
               </div>
             </div>
-            <div className="text-gray-600 font-medium">Miles Driven</div>
-            <div className="text-sm text-blue-600 font-semibold">This shift</div>
+            <div className="text-gray-600 font-medium">Fuel Level</div>
+            <div className="text-sm text-purple-600 font-semibold">Current tank</div>
           </div>
         </div>
       </div>
