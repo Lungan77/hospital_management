@@ -61,7 +61,7 @@ export default function Sidebar() {
       { label: "Emergency Response", href: "/emergency/paramedic", icon: <HeartPulse className="w-5 h-5" />, color: "text-red-500" },
       { label: "Medical Protocols", href: "/paramedic/protocols", icon: <FileText className="w-5 h-5" />, color: "text-purple-500" },
       { label: "Equipment Check", href: "/paramedic/equipment", icon: <ClipboardCheck className="w-5 h-5" />, color: "text-green-500" },
-      { label: "Patient Records", href: "/paramedic/patients", icon: <Users className="w-5 h-5" />, color: "text-blue-500" },
+      { label: "Patient Records", href: "/paramedic/patients", icon: <Users className="w-5 h-5" />, color: "text-teal-500" },
     ],
     receptionist: [
       { label: "Dashboard", href: "/dashboard", icon: <Home className="w-5 h-5" />, color: "text-blue-500" },
