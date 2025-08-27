@@ -18,6 +18,8 @@ export async function POST(req) {
       addedBy 
     } = await req.json();
 
+    console.log("Adding equipment:", { name, quantity, minQuantity, status, location, expiryDate, addedBy });
+
     if (!name || !quantity) {
       return Response.json({ error: "Equipment name and quantity are required" }, { status: 400 });
     }
@@ -34,6 +36,7 @@ export async function POST(req) {
       if (!ambulance) {
         return Response.json({ error: "No ambulance found" }, { status: 404 });
       }
+      console.log("Using first available ambulance for testing:", ambulance.callSign);
     }
 
     // Check if equipment already exists
@@ -43,29 +46,32 @@ export async function POST(req) {
       // Update existing equipment
       ambulance.equipment[existingEquipmentIndex] = {
         ...ambulance.equipment[existingEquipmentIndex],
-        quantity: quantity,
-        minQuantity: minQuantity || 1,
+        quantity: parseInt(quantity),
+        minQuantity: parseInt(minQuantity) || 1,
         status: status || "Operational",
         location: location || "Unknown",
         expiryDate: expiryDate || null,
         lastChecked: new Date(),
-        lastUpdatedBy: addedBy
+        lastUpdatedBy: auth.session.user.id
       };
+      console.log("Updated existing equipment:", name);
     } else {
       // Add new equipment
       ambulance.equipment.push({
         name,
-        quantity,
-        minQuantity: minQuantity || 1,
+        quantity: parseInt(quantity),
+        minQuantity: parseInt(minQuantity) || 1,
         status: status || "Operational",
         location: location || "Unknown",
         expiryDate: expiryDate || null,
         lastChecked: new Date(),
-        addedBy: addedBy
+        addedBy: auth.session.user.id
       });
+      console.log("Added new equipment:", name);
     }
 
     await ambulance.save();
+    console.log("Equipment saved successfully");
 
     return Response.json({ 
       message: `${name} added successfully`,

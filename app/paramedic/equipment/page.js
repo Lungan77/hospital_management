@@ -146,7 +146,7 @@ function ParamedicEquipment() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...newEquipment,
-          addedBy: "Paramedic"
+          addedBy: auth.session?.user?.id || "Paramedic"
         }),
       });
 

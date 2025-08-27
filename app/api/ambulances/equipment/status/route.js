@@ -14,6 +14,7 @@ export async function GET(req) {
       "crew.memberId": auth.session.user.id
     });
 
+    console.log("Found ambulance for equipment status:", ambulance ? ambulance.callSign : "None");
     if (!ambulance) {
       // Return default equipment status for testing
       const defaultEquipment = {
@@ -38,10 +39,12 @@ export async function GET(req) {
         "Suction Unit": { quantity: 1, minQuantity: 1, location: "Side Compartment", expiryDate: null }
       };
       
+      console.log("Returning default equipment status");
       return Response.json({ 
         equipment: defaultEquipment,
         inventory: defaultInventory,
-        checkComplete: false 
+        checkComplete: false,
+        testMode: true
       }, { status: 200 });
     }
 
@@ -59,6 +62,8 @@ export async function GET(req) {
       };
     });
 
+    console.log("Equipment status:", equipmentStatus);
+    console.log("Equipment inventory:", equipmentInventory);
     // Add default equipment if not present
     const requiredEquipment = [
       { name: "Defibrillator", defaultQty: 1, minQty: 1, location: "Main Compartment" },
