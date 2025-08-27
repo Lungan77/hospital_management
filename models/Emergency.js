@@ -128,7 +128,28 @@ const EmergencySchema = new mongoose.Schema(
       patientConditionOnArrival: { type: String },
       receivingStaff: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
       receivingStaffSignature: { type: String },
-      handoverNotes: { type: String }
+      handoverNotes: { type: String },
+      verified: { type: Boolean, default: false },
+      verifiedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+      verifiedAt: { type: Date },
+      verificationNotes: { type: String }
+    },
+    
+    // ER Assessment
+    erAssessment: {
+      triageLevel: { type: String },
+      chiefComplaint: { type: String },
+      presentingSymptoms: { type: String },
+      allergies: { type: String },
+      currentMedications: { type: String },
+      medicalHistory: { type: String },
+      erNotes: { type: String },
+      disposition: { type: String },
+      assignedBed: { type: String },
+      assignedNurse: { type: String },
+      assignedDoctor: { type: String },
+      assessedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+      assessedAt: { type: Date }
     },
     
     // Hospital Information

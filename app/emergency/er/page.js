@@ -382,4 +382,4 @@ function ERStaffPortal() {
   );
 }
 
-export default withAuth(ERStaffPortal, ["doctor", "nurse", "admin"]);
+export default withAuth(ERStaffPortal, ["doctor", "nurse", "admin", "er"]);

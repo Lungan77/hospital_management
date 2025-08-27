@@ -375,4 +375,4 @@ function Dashboard() {
   );
 }
 
-export default withAuth(Dashboard, ["admin", "doctor", "nurse", "receptionist", "patient", "labtech", "dispatcher", "driver", "paramedic"]);
+export default withAuth(Dashboard, ["admin", "doctor", "nurse", "receptionist", "patient", "labtech", "dispatcher", "driver", "paramedic", "er"]);
