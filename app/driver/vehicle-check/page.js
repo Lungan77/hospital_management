@@ -446,6 +446,15 @@ function VehicleCheck() {
                   </p>
                 </div>
               )}
+              
+              {checkComplete && (
+                <div className="mt-4 p-4 bg-blue-50 rounded-xl border border-blue-200">
+                  <p className="text-blue-800 text-center font-semibold">
+                    ✅ Vehicle check saved successfully! 
+                    {vehicle && ` ${vehicle.callSign} status updated.`}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>
