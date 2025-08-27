@@ -25,6 +25,9 @@ import {
   Brain
 } from "lucide-react";
 
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+
 function ParamedicPatients() {
   const [patients, setPatients] = useState([]);
   const [selectedPatient, setSelectedPatient] = useState(null);
@@ -232,7 +235,7 @@ function ParamedicPatients() {
         treatment.response || '-'
       ]);
 
-      doc.autoTable({
+      autoTable(doc, {
         startY: yPosition,
         head: [['Time', 'Treatment', 'Medication', 'Dosage', 'Route', 'Response']],
         body: treatmentData,

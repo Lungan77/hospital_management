@@ -310,7 +310,7 @@ function EmergencyReports() {
       ['Low', filteredEmergencies.filter(e => e.priority === "Low").length]
     ];
 
-    doc.autoTable({
+    autoTable(doc, {
       startY: yPosition,
       head: [['Priority Level', 'Count', 'Percentage']],
       body: priorityData.map(([priority, count]) => [

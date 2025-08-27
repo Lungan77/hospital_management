@@ -245,7 +245,6 @@ function RouteHistory() {
     });
 
     // Efficiency Analysis
-    yPosition = doc.lastAutoTable.finalY + 20;
     
     if (yPosition > pageHeight - 80) {
       doc.addPage();
@@ -265,7 +264,7 @@ function RouteHistory() {
       ['Routes per Day', `${Math.round(filteredStats.totalRoutes / Math.max(1, Math.ceil((new Date() - new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)) / (24 * 60 * 60 * 1000))) * 10) / 10}`]
     ];
 
-    doc.autoTable({
+    autoTable(doc, {
       startY: yPosition,
       head: [['Efficiency Metric', 'Value']],
       body: efficiencyData,
