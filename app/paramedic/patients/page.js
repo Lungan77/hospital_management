@@ -1,32 +1,29 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import withAuth from "@/hoc/withAuth";
-import { 
-  Users, 
-  Heart, 
-  Activity, 
-  Clock, 
-  MapPin, 
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import {
+  Users,
+  Heart,
+  Activity,
+  Clock,
+  MapPin,
   Phone,
-  AlertTriangle,
   CheckCircle,
   FileText,
   Stethoscope,
   Calendar,
   User,
   Search,
-  Filter,
   Plus,
   Eye,
   Download,
-  Thermometer,
   Droplets,
   Zap,
   Brain
 } from "lucide-react";
-
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 
 function ParamedicPatients() {
   const [patients, setPatients] = useState([]);
@@ -66,10 +63,10 @@ function ParamedicPatients() {
 
   const getPriorityColor = (priority) => {
     const colors = {
-      "Critical": "bg-red-100 text-red-700 border-red-200",
-      "High": "bg-orange-100 text-orange-700 border-orange-200",
-      "Medium": "bg-yellow-100 text-yellow-700 border-yellow-200",
-      "Low": "bg-green-100 text-green-700 border-green-200"
+      Critical: "bg-red-100 text-red-700 border-red-200",
+      High: "bg-orange-100 text-orange-700 border-orange-200",
+      Medium: "bg-yellow-100 text-yellow-700 border-yellow-200",
+      Low: "bg-green-100 text-green-700 border-green-200"
     };
     return colors[priority] || "bg-gray-100 text-gray-700 border-gray-200";
   };
@@ -84,11 +81,12 @@ function ParamedicPatients() {
     return patient.treatments[patient.treatments.length - 1];
   };
 
-  const filteredPatients = patients.filter(patient => {
-    const matchesSearch = patient.patientName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         patient.incidentNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         patient.address.toLowerCase().includes(searchTerm.toLowerCase());
-    
+  const filteredPatients = patients.filter((patient) => {
+    const matchesSearch =
+      patient.patientName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      patient.incidentNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      patient.address.toLowerCase().includes(searchTerm.toLowerCase());
+
     if (filter === "active") return ["On Scene", "Transporting"].includes(patient.status) && matchesSearch;
     if (filter === "critical") return patient.priority === "Critical" && matchesSearch;
     if (filter === "completed") return patient.status === "Completed" && matchesSearch;
@@ -100,34 +98,34 @@ function ParamedicPatients() {
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
     const margin = 20;
-    
+
     // Colors
     const colors = {
-      primary: [220, 38, 38], // Red
+      primary: [220, 38, 38],     // Red
       secondary: [107, 114, 128], // Gray
-      success: [34, 197, 94], // Green
-      warning: [245, 158, 11], // Orange
-      text: [31, 41, 55] // Dark gray
+      success: [34, 197, 94],     // Green
+      warning: [245, 158, 11],    // Orange
+      text: [31, 41, 55]          // Dark gray
     };
 
     // Header
     doc.setFillColor(...colors.primary);
-    doc.rect(0, 0, pageWidth, 60, 'F');
-    
+    doc.rect(0, 0, pageWidth, 60, "F");
+
     // Logo
     doc.setFillColor(255, 255, 255);
-    doc.circle(30, 30, 15, 'F');
+    doc.circle(30, 30, 15, "F");
     doc.setTextColor(...colors.primary);
     doc.setFontSize(16);
     doc.setFont("helvetica", "bold");
     doc.text("EMS", 30, 35, { align: "center" });
-    
+
     // Title
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(24);
     doc.setFont("helvetica", "bold");
     doc.text("Patient Care Report", 60, 25);
-    
+
     // Subtitle
     doc.setFontSize(12);
     doc.setFont("helvetica", "normal");
@@ -144,37 +142,35 @@ function ParamedicPatients() {
     yPosition += 15;
 
     const patientInfo = [
-      ['Patient Name', patient.patientName || 'Unknown'],
-      ['Age', patient.patientAge ? `${patient.patientAge} years` : 'Unknown'],
-      ['Gender', patient.patientGender || 'Unknown'],
-      ['Emergency Type', patient.type || 'Medical'],
-      ['Priority Level', patient.priority || 'Medium'],
-      ['Chief Complaint', patient.chiefComplaint || 'Not specified'],
-      ['Patient Condition', patient.patientCondition || 'Not documented']
+      ["Patient Name", patient.patientName || "Unknown"],
+      ["Age", patient.patientAge ? `${patient.patientAge} years` : "Unknown"],
+      ["Gender", patient.patientGender || "Unknown"],
+      ["Emergency Type", patient.type || "Medical"],
+      ["Priority Level", patient.priority || "Medium"],
+      ["Chief Complaint", patient.chiefComplaint || "Not specified"],
+      ["Patient Condition", patient.patientCondition || "Not documented"]
     ];
 
-    doc.autoTable({
+    autoTable(doc, {
       startY: yPosition,
-      head: [['Field', 'Information']],
+      head: [["Field", "Information"]],
       body: patientInfo,
-      theme: 'grid',
+      theme: "grid",
       headStyles: {
         fillColor: colors.primary,
         textColor: [255, 255, 255],
         fontSize: 10,
-        fontStyle: 'bold'
+        fontStyle: "bold"
       },
-      bodyStyles: {
-        fontSize: 9
-      },
+      bodyStyles: { fontSize: 9 },
       columnStyles: {
-        0: { cellWidth: 60, fontStyle: 'bold' },
+        0: { cellWidth: 60, fontStyle: "bold" },
         1: { cellWidth: 120 }
       },
       margin: { left: margin, right: margin }
     });
 
-    yPosition = doc.lastAutoTable.finalY + 20;
+    yPosition = ((doc.lastAutoTable && doc.lastAutoTable.finalY) || yPosition) + 20;
 
     // Vital Signs
     if (patient.vitalSigns && patient.vitalSigns.length > 0) {
@@ -183,35 +179,33 @@ function ParamedicPatients() {
       doc.text("Vital Signs History", margin, yPosition);
       yPosition += 10;
 
-      const vitalsData = patient.vitalSigns.map(vital => [
+      const vitalsData = patient.vitalSigns.map((vital) => [
         new Date(vital.timestamp).toLocaleTimeString(),
-        vital.bloodPressure || '-',
-        `${vital.heartRate || '-'} bpm`,
-        `${vital.respiratoryRate || '-'} /min`,
-        `${vital.temperature || '-'}°C`,
-        `${vital.oxygenSaturation || '-'}%`,
+        vital.bloodPressure || "-",
+        `${vital.heartRate || "-"} bpm`,
+        `${vital.respiratoryRate || "-"} /min`,
+        `${vital.temperature || "-"}°C`,
+        `${vital.oxygenSaturation || "-"}%`,
         `${vital.painScale || 0}/10`,
-        vital.consciousnessLevel || '-'
+        vital.consciousnessLevel || "-"
       ]);
 
-      doc.autoTable({
+      autoTable(doc, {
         startY: yPosition,
-        head: [['Time', 'BP', 'HR', 'RR', 'Temp', 'SpO2', 'Pain', 'LOC']],
+        head: [["Time", "BP", "HR", "RR", "Temp", "SpO2", "Pain", "LOC"]],
         body: vitalsData,
-        theme: 'striped',
+        theme: "striped",
         headStyles: {
           fillColor: colors.success,
           textColor: [255, 255, 255],
           fontSize: 8,
-          fontStyle: 'bold'
+          fontStyle: "bold"
         },
-        bodyStyles: {
-          fontSize: 7
-        },
+        bodyStyles: { fontSize: 7 },
         margin: { left: margin, right: margin }
       });
 
-      yPosition = doc.lastAutoTable.finalY + 20;
+      yPosition = ((doc.lastAutoTable && doc.lastAutoTable.finalY) || yPosition) + 20;
     }
 
     // Treatments
@@ -226,42 +220,42 @@ function ParamedicPatients() {
       doc.text("Treatments Administered", margin, yPosition);
       yPosition += 10;
 
-      const treatmentData = patient.treatments.map(treatment => [
+      const treatmentData = patient.treatments.map((treatment) => [
         new Date(treatment.timestamp).toLocaleTimeString(),
-        treatment.treatment || '-',
-        treatment.medication || '-',
-        treatment.dosage || '-',
-        treatment.route || '-',
-        treatment.response || '-'
+        treatment.treatment || "-",
+        treatment.medication || "-",
+        treatment.dosage || "-",
+        treatment.route || "-",
+        treatment.response || "-"
       ]);
 
       autoTable(doc, {
         startY: yPosition,
-        head: [['Time', 'Treatment', 'Medication', 'Dosage', 'Route', 'Response']],
+        head: [["Time", "Treatment", "Medication", "Dosage", "Route", "Response"]],
         body: treatmentData,
-        theme: 'grid',
+        theme: "grid",
         headStyles: {
           fillColor: colors.warning,
           textColor: [255, 255, 255],
           fontSize: 8,
-          fontStyle: 'bold'
+          fontStyle: "bold"
         },
-        bodyStyles: {
-          fontSize: 7
-        },
+        bodyStyles: { fontSize: 7 },
         margin: { left: margin, right: margin }
       });
+
+      yPosition = ((doc.lastAutoTable && doc.lastAutoTable.finalY) || yPosition) + 20;
     }
 
     // Footer
     const pageCount = doc.internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
-      
+
       doc.setDrawColor(...colors.primary);
       doc.setLineWidth(0.5);
       doc.line(margin, pageHeight - 25, pageWidth - margin, pageHeight - 25);
-      
+
       doc.setTextColor(...colors.secondary);
       doc.setFontSize(8);
       doc.setFont("helvetica", "normal");
@@ -269,7 +263,7 @@ function ParamedicPatients() {
       doc.text(`Page ${i} of ${pageCount}`, pageWidth - margin, pageHeight - 15, { align: "right" });
     }
 
-    doc.save(`Patient_Report_${patient.incidentNumber}_${new Date().toISOString().split('T')[0]}.pdf`);
+    doc.save(`Patient_Report_${patient.incidentNumber}_${new Date().toISOString().split("T")[0]}.pdf`);
   };
 
   if (loading) {
@@ -299,7 +293,7 @@ function ParamedicPatients() {
                 <p className="text-gray-600 text-xl">Emergency patient care and treatment documentation</p>
               </div>
             </div>
-            
+
             {/* Patient Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="bg-blue-50 rounded-2xl p-4 border border-blue-200">
@@ -308,19 +302,19 @@ function ParamedicPatients() {
               </div>
               <div className="bg-orange-50 rounded-2xl p-4 border border-orange-200">
                 <div className="text-2xl font-bold text-orange-600">
-                  {patients.filter(p => ["On Scene", "Transporting"].includes(p.status)).length}
+                  {patients.filter((p) => ["On Scene", "Transporting"].includes(p.status)).length}
                 </div>
                 <div className="text-sm text-orange-600">Active Cases</div>
               </div>
               <div className="bg-red-50 rounded-2xl p-4 border border-red-200">
                 <div className="text-2xl font-bold text-red-600">
-                  {patients.filter(p => p.priority === "Critical").length}
+                  {patients.filter((p) => p.priority === "Critical").length}
                 </div>
                 <div className="text-sm text-red-600">Critical Cases</div>
               </div>
               <div className="bg-green-50 rounded-2xl p-4 border border-green-200">
                 <div className="text-2xl font-bold text-green-600">
-                  {patients.filter(p => p.status === "Completed").length}
+                  {patients.filter((p) => p.status === "Completed").length}
                 </div>
                 <div className="text-sm text-green-600">Completed</div>
               </div>
@@ -343,21 +337,23 @@ function ParamedicPatients() {
                 />
               </div>
             </div>
-            
+
             <div className="flex gap-2">
               {[
                 { key: "all", label: "All Patients", count: patients.length },
-                { key: "active", label: "Active Cases", count: patients.filter(p => ["On Scene", "Transporting"].includes(p.status)).length },
-                { key: "critical", label: "Critical", count: patients.filter(p => p.priority === "Critical").length },
-                { key: "completed", label: "Completed", count: patients.filter(p => p.status === "Completed").length }
+                {
+                  key: "active",
+                  label: "Active Cases",
+                  count: patients.filter((p) => ["On Scene", "Transporting"].includes(p.status)).length
+                },
+                { key: "critical", label: "Critical", count: patients.filter((p) => p.priority === "Critical").length },
+                { key: "completed", label: "Completed", count: patients.filter((p) => p.status === "Completed").length }
               ].map((tab) => (
                 <button
                   key={tab.key}
                   onClick={() => setFilter(tab.key)}
                   className={`px-4 py-2 rounded-xl font-semibold transition-all duration-200 ${
-                    filter === tab.key
-                      ? "bg-red-600 text-white shadow-lg"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    filter === tab.key ? "bg-red-600 text-white shadow-lg" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                   }`}
                 >
                   {tab.label} ({tab.count})
@@ -388,9 +384,12 @@ function ParamedicPatients() {
               const patientStatus = getPatientStatus(patient);
               const latestVitals = getLatestVitals(patient);
               const latestTreatment = getLatestTreatment(patient);
-              
+
               return (
-                <div key={patient._id} className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden hover:shadow-2xl transition-all duration-300 group">
+                <div
+                  key={patient._id}
+                  className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden hover:shadow-2xl transition-all duration-300 group"
+                >
                   {/* Patient Header */}
                   <div className="p-8 border-b border-gray-100">
                     <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
@@ -401,11 +400,16 @@ function ParamedicPatients() {
                         <div>
                           <h2 className="text-3xl font-bold text-gray-900 mb-2">{patient.patientName || "Unknown Patient"}</h2>
                           <div className="flex items-center gap-4 mb-3">
-                            <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold border ${getPriorityColor(patient.priority)}`}>
+                            <span
+                              className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold border ${getPriorityColor(
+                                patient.priority
+                              )}`}
+                            >
                               {patient.priority === "Critical" && <Heart className="w-4 h-4" />}
                               {patient.priority}
                             </span>
-                            <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold border bg-${patientStatus.color}-100 text-${patientStatus.color}-700 border-${patientStatus.color}-200`}>
+                            {/* Note: dynamic Tailwind classes like bg-${...} need safelisting in your config */}
+                            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold border">
                               {patientStatus.status === "completed" && <CheckCircle className="w-4 h-4" />}
                               {patientStatus.status === "active" && <Activity className="w-4 h-4" />}
                               {patientStatus.status === "transporting" && <Clock className="w-4 h-4" />}
@@ -415,20 +419,26 @@ function ParamedicPatients() {
                           <div className="grid md:grid-cols-3 gap-4 text-sm">
                             <div className="flex items-center gap-2 text-gray-600">
                               <FileText className="w-4 h-4 text-blue-500" />
-                              <span><strong>Incident:</strong> {patient.incidentNumber}</span>
+                              <span>
+                                <strong>Incident:</strong> {patient.incidentNumber}
+                              </span>
                             </div>
                             <div className="flex items-center gap-2 text-gray-600">
                               <Calendar className="w-4 h-4 text-green-500" />
-                              <span><strong>Time:</strong> {new Date(patient.reportedAt).toLocaleString()}</span>
+                              <span>
+                                <strong>Time:</strong> {new Date(patient.reportedAt).toLocaleString()}
+                              </span>
                             </div>
                             <div className="flex items-center gap-2 text-gray-600">
                               <MapPin className="w-4 h-4 text-purple-500" />
-                              <span><strong>Location:</strong> {patient.address}</span>
+                              <span>
+                                <strong>Location:</strong> {patient.address}
+                              </span>
                             </div>
                           </div>
                         </div>
                       </div>
-                      
+
                       <div className="flex flex-col gap-3">
                         <button
                           onClick={() => {
@@ -507,9 +517,7 @@ function ParamedicPatients() {
                                   {latestTreatment.medication} - {latestTreatment.dosage}
                                 </p>
                               )}
-                              <p className="text-xs text-green-600">
-                                Route: {latestTreatment.route || "N/A"}
-                              </p>
+                              <p className="text-xs text-green-600">Route: {latestTreatment.route || "N/A"}</p>
                             </div>
                             <div className="text-xs text-green-600 text-center">
                               Administered: {new Date(latestTreatment.timestamp).toLocaleString()}
@@ -573,7 +581,7 @@ function ParamedicPatients() {
                   </button>
                 </div>
               </div>
-              
+
               <div className="p-8">
                 <div className="grid lg:grid-cols-2 gap-8">
                   {/* Patient Information */}
@@ -590,7 +598,9 @@ function ParamedicPatients() {
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-600">Age:</span>
-                          <span className="font-semibold">{selectedPatient.patientAge ? `${selectedPatient.patientAge} years` : "Unknown"}</span>
+                          <span className="font-semibold">
+                            {selectedPatient.patientAge ? `${selectedPatient.patientAge} years` : "Unknown"}
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-600">Gender:</span>
@@ -598,12 +608,17 @@ function ParamedicPatients() {
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-600">Priority:</span>
-                          <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                            selectedPatient.priority === "Critical" ? "bg-red-100 text-red-700" :
-                            selectedPatient.priority === "High" ? "bg-orange-100 text-orange-700" :
-                            selectedPatient.priority === "Medium" ? "bg-yellow-100 text-yellow-700" :
-                            "bg-green-100 text-green-700"
-                          }`}>
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                              selectedPatient.priority === "Critical"
+                                ? "bg-red-100 text-red-700"
+                                : selectedPatient.priority === "High"
+                                ? "bg-orange-100 text-orange-700"
+                                : selectedPatient.priority === "Medium"
+                                ? "bg-yellow-100 text-yellow-700"
+                                : "bg-green-100 text-green-700"
+                            }`}
+                          >
                             {selectedPatient.priority}
                           </span>
                         </div>
@@ -746,7 +761,7 @@ function ParamedicPatients() {
                     Download Patient Report
                   </button>
                   <button
-                    onClick={() => window.location.href = `/emergency/paramedic/${selectedPatient._id}`}
+                    onClick={() => (window.location.href = `/emergency/paramedic/${selectedPatient._id}`)}
                     className="flex items-center gap-3 bg-gradient-to-r from-red-600 to-red-700 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:from-red-700 hover:to-red-800 transition-all duration-200"
                   >
                     <Activity className="w-6 h-6" />
