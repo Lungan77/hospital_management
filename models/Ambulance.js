@@ -59,6 +59,34 @@ const AmbulanceSchema = new mongoose.Schema(
     nextMaintenance: { type: Date },
     maintenanceNotes: { type: String },
     
+    // Enhanced Maintenance Records
+    maintenanceRecords: [{
+      type: { type: String, required: true }, // e.g., "Routine Service", "Oil Change"
+      description: { type: String },
+      scheduledDate: { type: Date },
+      completedAt: { type: Date },
+      estimatedCost: { type: Number, default: 0 },
+      actualCost: { type: Number },
+      performedBy: { type: String }, // Technician or company name
+      priority: { type: String, enum: ["Low", "Medium", "High", "Critical"], default: "Medium" },
+      status: { type: String, enum: ["Scheduled", "In Progress", "Completed", "Cancelled"], default: "Scheduled" },
+      estimatedDuration: { type: String },
+      notes: { type: String },
+      completionNotes: { type: String },
+      createdAt: { type: Date, default: Date.now },
+      createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+      completedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+      partsUsed: [{
+        partName: { type: String },
+        partNumber: { type: String },
+        quantity: { type: Number, default: 1 },
+        cost: { type: Number, default: 0 }
+      }],
+      workPerformed: [{ type: String }], // Array of work items completed
+      nextServiceMileage: { type: Number }, // Mileage for next service
+      warrantyInfo: { type: String }
+    }],
+    
     // Vehicle Check Records
     vehicleChecks: [{
       checkItems: { type: Object }, // Stores the check results
