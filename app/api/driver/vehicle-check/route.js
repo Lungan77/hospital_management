@@ -10,6 +10,8 @@ export async function POST(req) {
     await connectDB();
     const { vehicleId, checkItems, notes, completedAt } = await req.json();
 
+    console.log("Vehicle check submission:", { vehicleId, checkItems, notes, completedAt });
+
     // Find ambulance assigned to this driver
     let ambulance = await Ambulance.findOne({
       "crew.memberId": auth.session.user.id,
@@ -27,6 +29,7 @@ export async function POST(req) {
       if (!ambulance) {
         return Response.json({ error: "No vehicle found" }, { status: 404 });
       }
+      console.log("Using test ambulance:", ambulance.callSign);
     }
 
     // Check for critical failures
@@ -39,6 +42,9 @@ export async function POST(req) {
 
     const criticalFailures = criticalItems.filter(item => checkItems[item] === "fail");
     const checkPassed = criticalFailures.length === 0;
+    
+    console.log("Critical failures:", criticalFailures);
+    console.log("Check passed:", checkPassed);
     
     if (criticalFailures.length > 0) {
       // Mark ambulance as out of service if critical items fail
@@ -59,10 +65,11 @@ export async function POST(req) {
     const vehicleCheck = {
       checkItems,
       notes,
-      completedAt: new Date(completedAt),
+      completedAt: completedAt ? new Date(completedAt) : new Date(),
       completedBy: auth.session.user.id,
       criticalFailures: criticalFailures.length,
-      passed: checkPassed
+      passed: checkPassed,
+      checkType: "Pre-Shift"
     };
 
     ambulance.vehicleChecks.push(vehicleCheck);
@@ -72,8 +79,10 @@ export async function POST(req) {
       ambulance.vehicleChecks = ambulance.vehicleChecks.slice(-20);
     }
 
-    ambulance.lastVehicleCheck = new Date(completedAt);
+    ambulance.lastVehicleCheck = completedAt ? new Date(completedAt) : new Date();
     await ambulance.save();
+
+    console.log("Vehicle check saved successfully");
 
     return Response.json({ 
       message: criticalFailures.length > 0 

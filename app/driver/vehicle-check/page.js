@@ -142,6 +142,7 @@ function VehicleCheck() {
     }
 
     setSaving(true);
+    setMessage("Saving vehicle check...");
     try {
       const res = await fetch("/api/driver/vehicle-check", {
         method: "POST",
@@ -150,18 +151,28 @@ function VehicleCheck() {
           vehicleId: vehicle?._id,
           checkItems,
           notes,
-          completedAt: new Date()
+          completedAt: new Date().toISOString()
         }),
       });
 
       const data = await res.json();
       if (res.ok) {
-        setMessage("Vehicle check completed successfully. Vehicle is ready for service.");
+        setMessage(`Vehicle check completed successfully. ${data.passed ? 'Vehicle is ready for service.' : 'Vehicle has issues - contact maintenance.'}`);
         setCheckComplete(true);
+        
+        // Update vehicle info if returned
+        if (data.ambulance) {
+          setVehicle(prev => ({
+            ...prev,
+            status: data.ambulance.status,
+            lastVehicleCheck: data.ambulance.lastVehicleCheck
+          }));
+        }
       } else {
         setMessage(data.error || "Error saving vehicle check");
       }
     } catch (error) {
+      console.error("Error saving vehicle check:", error);
       setMessage("Error saving vehicle check");
     } finally {
       setSaving(false);
