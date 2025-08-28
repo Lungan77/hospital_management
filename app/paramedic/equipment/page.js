@@ -140,20 +140,22 @@ function ParamedicEquipment() {
       return;
     }
 
+    setSaving(true);
     try {
       const res = await fetch("/api/ambulances/equipment/add", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...newEquipment,
-          addedBy: auth.session?.user?.id || "Paramedic"
+          addedBy: "Paramedic"
         }),
       });
 
       const data = await res.json();
       if (res.ok) {
         setMessage(data.message);
-        fetchEquipmentStatus();
+        // Refresh equipment data
+        await fetchEquipmentStatus();
         setShowAddModal(false);
         setNewEquipment({
           name: "",
@@ -167,7 +169,10 @@ function ParamedicEquipment() {
         setMessage(data.error);
       }
     } catch (error) {
+      console.error("Error adding equipment:", error);
       setMessage("Error adding equipment");
+    } finally {
+      setSaving(false);
     }
   };
 
