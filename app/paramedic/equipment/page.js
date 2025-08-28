@@ -652,9 +652,17 @@ function ParamedicEquipment() {
                 </button>
                 <button
                   onClick={addEquipment}
-                  className="flex-1 bg-gradient-to-r from-red-600 to-pink-600 text-white py-3 rounded-xl font-semibold hover:from-red-700 hover:to-pink-700 transition-all duration-200"
+                  disabled={saving || !newEquipment.name || !newEquipment.quantity}
+                  className="flex-1 bg-gradient-to-r from-red-600 to-pink-600 text-white py-3 rounded-xl font-semibold hover:from-red-700 hover:to-pink-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Add Equipment
+                  {saving ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      Adding...
+                    </div>
+                  ) : (
+                    "Add Equipment"
+                  )}
                 </button>
               </div>
             </div>
