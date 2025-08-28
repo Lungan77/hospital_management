@@ -52,21 +52,25 @@ export async function POST(req) {
         minQuantity: parseInt(minQuantity) || 1,
         status: status || "Operational",
         location: location || "Unknown",
+      console.log("Add equipment response:", data);
         expiryDate: expiryDate || null,
         lastChecked: new Date(),
-        lastUpdatedBy: auth.session.user.id
-      };
+        fetchEquipmentStatus();
+        checkLowStock();
       console.log("Updated existing equipment:", name);
     } else {
       // Add new equipment
       ambulance.equipment.push({
+    setMessage("Adding equipment...");
         name,
         quantity: parseInt(quantity),
         minQuantity: parseInt(minQuantity) || 1,
         status: status || "Operational",
         location: location || "Unknown",
         expiryDate: expiryDate || null,
-        lastChecked: new Date(),
+          quantity: parseInt(newEquipment.quantity),
+          minQuantity: parseInt(newEquipment.minQuantity),
+          addedBy: auth.session?.user?.id || "paramedic"
         addedBy: auth.session.user.id
       });
       console.log("Added new equipment:", name);
