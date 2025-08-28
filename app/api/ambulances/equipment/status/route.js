@@ -3,7 +3,7 @@ import Ambulance from "@/models/Ambulance";
 import { isAuthenticated } from "@/hoc/protectedRoute";
 
 export async function GET(req) {
-  const auth = await isAuthenticated(["paramedic", "driver", "admin", "dispatcher"]);
+  const auth = await isAuthenticated(req, ["paramedic", "driver", "admin", "dispatcher"]);
   if (auth.error) return Response.json({ error: auth.error }, { status: auth.status });
 
   try {
@@ -14,7 +14,7 @@ export async function GET(req) {
       "crew.memberId": auth.session.user.id
     });
 
-    console.log("🔍 Found ambulance for equipment status:", ambulance ? ambulance.callSign : "None");
+    console.log("Found ambulance for equipment status:", ambulance ? ambulance.callSign : "None");
     if (!ambulance) {
       // Return default equipment status for testing
       const defaultEquipment = {
@@ -39,18 +39,13 @@ export async function GET(req) {
         "Suction Unit": { quantity: 1, minQuantity: 1, location: "Side Compartment", expiryDate: null }
       };
       
-      console.log("📦 Returning default equipment status");
+      console.log("Returning default equipment status");
       return Response.json({ 
         equipment: defaultEquipment,
         inventory: defaultInventory,
         checkComplete: false,
         testMode: true
       }, { status: 200 });
-    }
-
-    // Initialize equipment array if it doesn't exist
-    if (!ambulance.equipment) {
-      ambulance.equipment = [];
     }
 
     // Convert equipment array to status object
@@ -63,12 +58,12 @@ export async function GET(req) {
         quantity: item.quantity || 1,
         minQuantity: item.minQuantity || 1,
         location: item.location || "Unknown",
-        expiryDate: item.expiryDate ? item.expiryDate.toISOString().split('T')[0] : null
+        expiryDate: item.expiryDate || null
       };
     });
 
-    console.log("📊 Equipment status:", equipmentStatus);
-    console.log("📋 Equipment inventory:", equipmentInventory);
+    console.log("Equipment status:", equipmentStatus);
+    console.log("Equipment inventory:", equipmentInventory);
     // Add default equipment if not present
     const requiredEquipment = [
       { name: "Defibrillator", defaultQty: 1, minQty: 1, location: "Main Compartment" },
