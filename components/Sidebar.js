@@ -73,6 +73,8 @@ export default function Sidebar() {
       { label: "ER Dashboard", href: "/emergency/er", icon: <Activity className="w-5 h-5" />, color: "text-orange-500" },
       { label: "Bed Management", href: "/beds/management", icon: <ClipboardCheck className="w-5 h-5" />, color: "text-cyan-500" },
       { label: "Housekeeping", href: "/housekeeping/dashboard", icon: <ClipboardCheck className="w-5 h-5" />, color: "text-yellow-500" },
+      { label: "Clinical Data", href: "/clinical/data-capture", icon: <Stethoscope className="w-5 h-5" />, color: "text-indigo-500" },
+      { label: "Treatment Consent", href: "/clinical/consent", icon: <FileText className="w-5 h-5" />, color: "text-pink-500" },
     ],
     receptionist: [
       { label: "Dashboard", href: "/dashboard", icon: <Home className="w-5 h-5" />, color: "text-blue-500" },
@@ -85,6 +87,8 @@ export default function Sidebar() {
       { label: "Record Vitals", href: "/nurse/vitals", icon: <HeartPulse className="w-5 h-5" />, color: "text-red-500" },
       { label: "Bed Management", href: "/beds/management", icon: <ClipboardCheck className="w-5 h-5" />, color: "text-cyan-500" },
       { label: "Housekeeping", href: "/housekeeping/dashboard", icon: <ClipboardCheck className="w-5 h-5" />, color: "text-yellow-500" },
+      { label: "Clinical Data", href: "/clinical/data-capture", icon: <Stethoscope className="w-5 h-5" />, color: "text-indigo-500" },
+      { label: "Treatment Consent", href: "/clinical/consent", icon: <FileText className="w-5 h-5" />, color: "text-pink-500" },
     ],
     labtech: [
       { label: "Dashboard", href: "/dashboard", icon: <Home className="w-5 h-5" />, color: "text-blue-500" },
