@@ -66,6 +66,8 @@ export default function Sidebar() {
     er: [
       { label: "Dashboard", href: "/dashboard", icon: <Home className="w-5 h-5" />, color: "text-blue-500" },
       { label: "Incoming Patients", href: "/er/incoming", icon: <Users className="w-5 h-5" />, color: "text-red-500" },
+      { label: "Patient Admission", href: "/er/admission", icon: <UserCheck className="w-5 h-5" />, color: "text-green-500" },
+      { label: "ER Patients", href: "/er/patients", icon: <Users className="w-5 h-5" />, color: "text-blue-500" },
       { label: "Patient Assessment", href: "/er/assessment", icon: <ClipboardCheck className="w-5 h-5" />, color: "text-green-500" },
       { label: "Handover Verification", href: "/er/handover", icon: <FileText className="w-5 h-5" />, color: "text-purple-500" },
       { label: "ER Dashboard", href: "/emergency/er", icon: <Activity className="w-5 h-5" />, color: "text-orange-500" },
