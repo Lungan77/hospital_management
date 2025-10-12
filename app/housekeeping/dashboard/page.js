@@ -479,7 +479,7 @@ function HousekeepingDashboard() {
               </div>
             </div>
             <div className="text-gray-600 font-medium">Completion Rate</div>
-            <div className="text-sm text-green-600 font-semibold">Today's progress</div>
+            <div className="text-sm text-green-600 font-semibold">Today&apos;s progress</div>
           </div>
 
           <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
