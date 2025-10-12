@@ -2,12 +2,12 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import withAuth from "@/hoc/withAuth";
-import { 
-  Stethoscope, 
-  Heart, 
-  Activity, 
-  User, 
-  FileText, 
+import {
+  Stethoscope,
+  Heart,
+  Activity,
+  User,
+  FileText,
   Shield,
   AlertTriangle,
   CheckCircle,
@@ -29,7 +29,8 @@ import {
   Pill,
   History,
   Search,
-  Filter
+  Filter,
+  BarChart3
 } from "lucide-react";
 
 function ClinicalDataCapture() {
@@ -88,7 +89,7 @@ function ClinicalDataCapture() {
       fetchPatientData();
       fetchClinicalData();
     }
-  }, [patientAdmissionId]);
+  }, [patientAdmissionId, fetchPatientData, fetchClinicalData]);
 
   const fetchPatientData = async () => {
     try {
@@ -661,7 +662,7 @@ function ClinicalDataCapture() {
             <div>
               <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-6 text-white">
                 <h2 className="text-2xl font-bold mb-2">Medical History</h2>
-                <p className="text-blue-100">Document patient's medical background and history</p>
+                <p className="text-blue-100">Document patient&apos;s medical background and history</p>
               </div>
               
               <div className="p-8 space-y-8">

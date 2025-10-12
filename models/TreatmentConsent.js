@@ -136,16 +136,16 @@ const TreatmentConsentSchema = new mongoose.Schema(
 );
 
 // Calculate overall consent status
-ClinicalDataSchema.methods.updateConsentStatus = function() {
+TreatmentConsentSchema.methods.updateConsentStatus = function() {
   const requiredConsents = [
     this.generalConsent.consentGiven,
     this.privacyConsent.hipaaAcknowledged,
     this.legalCompliance.patientRights,
     this.legalCompliance.financialResponsibility
   ];
-  
+
   const completedConsents = requiredConsents.filter(Boolean).length;
-  
+
   if (completedConsents === requiredConsents.length) {
     this.consentStatus.overallStatus = "Complete";
   } else if (completedConsents > 0) {
@@ -153,7 +153,7 @@ ClinicalDataSchema.methods.updateConsentStatus = function() {
   } else {
     this.consentStatus.overallStatus = "Pending";
   }
-  
+
   this.consentStatus.lastUpdated = new Date();
   return this.consentStatus.overallStatus;
 };
