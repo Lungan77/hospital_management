@@ -130,20 +130,8 @@ const PatientAdmissionSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Generate patient ID before saving
+// Generate admission number before saving
 PatientAdmissionSchema.pre("save", async function (next) {
-  if (!this.patientId) {
-    const date = new Date();
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-
-    // Use milliseconds and random component to ensure uniqueness
-    const timestamp = Date.now().toString();
-    const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-    this.patientId = `PT-${year}${month}${day}-${timestamp.slice(-6)}${random}`;
-  }
-
   if (!this.admissionNumber) {
     const date = new Date();
     const year = date.getFullYear();
