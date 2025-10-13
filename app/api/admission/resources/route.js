@@ -9,10 +9,11 @@ export async function POST(req) {
 
   try {
     await connectDB();
-    const { admissionId, resourceType, resourceData } = await req.json();
+    const body = await req.json();
+    const { admissionId, assignedDoctor, assignedNurse, resourceType, resourceData } = body;
 
-    if (!admissionId || !resourceType) {
-      return Response.json({ error: "Missing required fields" }, { status: 400 });
+    if (!admissionId) {
+      return Response.json({ error: "Admission ID is required" }, { status: 400 });
     }
 
     const admission = await PatientAdmission.findById(admissionId);
@@ -20,57 +21,59 @@ export async function POST(req) {
       return Response.json({ error: "Patient admission not found" }, { status: 404 });
     }
 
-    switch (resourceType) {
-      case "doctor":
-        admission.assignedDoctor = resourceData.doctorId;
-        break;
+    if (assignedDoctor !== undefined) {
+      admission.assignedDoctor = assignedDoctor;
+    }
 
-      case "nurse":
-        admission.assignedNurse = resourceData.nurseId;
-        break;
+    if (assignedNurse !== undefined) {
+      admission.assignedNurse = assignedNurse;
+    }
 
-      case "specialist":
-        if (!resourceData.specialistId || !resourceData.specialty) {
-          return Response.json({ error: "Specialist ID and specialty required" }, { status: 400 });
-        }
-        admission.assignedSpecialists.push({
-          specialistId: resourceData.specialistId,
-          specialty: resourceData.specialty,
-          assignedBy: auth.session.user.id,
-          notes: resourceData.notes || ""
-        });
-        break;
+    if (resourceType && resourceData) {
+      switch (resourceType) {
+        case "doctor":
+          admission.assignedDoctor = resourceData.doctorId;
+          break;
 
-      case "equipment":
-        if (!resourceData.equipmentType) {
-          return Response.json({ error: "Equipment type required" }, { status: 400 });
-        }
-        admission.assignedEquipment.push({
-          equipmentType: resourceData.equipmentType,
-          equipmentId: resourceData.equipmentId || `${resourceData.equipmentType}-${Date.now()}`,
-          assignedBy: auth.session.user.id,
-          notes: resourceData.notes || "",
-          status: "Active"
-        });
-        break;
+        case "nurse":
+          admission.assignedNurse = resourceData.nurseId;
+          break;
 
-      default:
-        return Response.json({ error: "Invalid resource type" }, { status: 400 });
+        case "specialist":
+          if (!resourceData.specialistId || !resourceData.specialty) {
+            return Response.json({ error: "Specialist ID and specialty required" }, { status: 400 });
+          }
+          admission.assignedSpecialists.push({
+            specialistId: resourceData.specialistId,
+            specialty: resourceData.specialty,
+            assignedBy: auth.session.user.id,
+            notes: resourceData.notes || ""
+          });
+          break;
+
+        case "equipment":
+          if (!resourceData.equipmentType) {
+            return Response.json({ error: "Equipment type required" }, { status: 400 });
+          }
+          admission.assignedEquipment.push({
+            equipmentType: resourceData.equipmentType,
+            equipmentId: resourceData.equipmentId || `${resourceData.equipmentType}-${Date.now()}`,
+            assignedBy: auth.session.user.id,
+            notes: resourceData.notes || "",
+            status: "Active"
+          });
+          break;
+
+        default:
+          return Response.json({ error: "Invalid resource type" }, { status: 400 });
+      }
     }
 
     await admission.save();
 
-    const populatedAdmission = await PatientAdmission.findById(admissionId)
-      .populate("assignedDoctor", "name")
-      .populate("assignedNurse", "name")
-      .populate("assignedSpecialists.specialistId", "name")
-      .populate("assignedSpecialists.assignedBy", "name")
-      .populate("assignedEquipment.assignedBy", "name")
-      .lean();
-
     return Response.json({
       message: "Resource assigned successfully",
-      admission: populatedAdmission
+      admission
     }, { status: 200 });
   } catch (error) {
     console.error("Error assigning resource:", error);
