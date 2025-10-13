@@ -12,67 +12,23 @@ export async function POST(req) {
     await connectDB();
     const admissionData = await req.json();
 
-    // Validate required fields
-    if (!admissionData.firstName || !admissionData.lastName || !admissionData.chiefComplaint || !admissionData.triageLevel) {
+    // Minimal validation - only check for absolutely required fields
+    if (!admissionData.firstName || !admissionData.lastName) {
       return Response.json({
-        error: "Missing required patient information",
-        missingFields: {
-          firstName: !admissionData.firstName,
-          lastName: !admissionData.lastName,
-          chiefComplaint: !admissionData.chiefComplaint,
-          triageLevel: !admissionData.triageLevel
-        }
+        error: "Missing patient name"
       }, { status: 400 });
     }
 
-    // Set defaults for admission fields if not provided
+    // Set defaults for required fields
     const admissionType = admissionData.admissionType || "Emergency";
-    const arrivalMethod = admissionData.arrivalMethod || "Ambulance";
+    const arrivalMethod = admissionData.arrivalMethod || "Walk-in";
+    const triageLevel = admissionData.triageLevel || "5 - Non-Urgent";
+    const chiefComplaint = admissionData.chiefComplaint || "General consultation";
 
-    // Validate required admission fields
-    if (!admissionType || !arrivalMethod) {
-      return Response.json({
-        error: "Missing required admission details",
-        missingFields: {
-          admissionType: !admissionType,
-          arrivalMethod: !arrivalMethod
-        }
-      }, { status: 400 });
-    }
-
-    // Validate enum values
-    const validAdmissionTypes = ["Emergency", "Scheduled", "Transfer", "Walk-in"];
-    const validArrivalMethods = ["Ambulance", "Private Vehicle", "Walk-in", "Transfer"];
-    const validTriageLevels = ["1 - Resuscitation", "2 - Emergency", "3 - Urgent", "4 - Less Urgent", "5 - Non-Urgent"];
-
-    if (!validAdmissionTypes.includes(admissionType)) {
-      return Response.json({
-        error: `Invalid admission type: ${admissionType}`,
-        validValues: validAdmissionTypes
-      }, { status: 400 });
-    }
-
-    if (!validArrivalMethods.includes(arrivalMethod)) {
-      return Response.json({
-        error: `Invalid arrival method: ${arrivalMethod}`,
-        validValues: validArrivalMethods
-      }, { status: 400 });
-    }
-
-    if (!validTriageLevels.includes(admissionData.triageLevel)) {
-      return Response.json({
-        error: `Invalid triage level: ${admissionData.triageLevel}`,
-        validValues: validTriageLevels
-      }, { status: 400 });
-    }
-
-    // Validate gender if provided
-    if (admissionData.gender && !["Male", "Female", "Other"].includes(admissionData.gender)) {
-      return Response.json({
-        error: `Invalid gender: ${admissionData.gender}`,
-        validValues: ["Male", "Female", "Other"]
-      }, { status: 400 });
-    }
+    // Clean up optional enum fields - convert empty strings to undefined
+    const gender = admissionData.gender && admissionData.gender.trim() !== ""
+      ? admissionData.gender
+      : undefined;
 
     // Convert string values to proper types for vital signs
     const vitalSigns = admissionData.vitalSigns ? {
@@ -95,18 +51,18 @@ export async function POST(req) {
       firstName: admissionData.firstName,
       lastName: admissionData.lastName,
       dateOfBirth: admissionData.dateOfBirth || undefined,
-      gender: admissionData.gender || undefined,
+      gender: gender,
       idNumber: admissionData.idNumber || undefined,
       phone: admissionData.phone || undefined,
       address: admissionData.address || undefined,
       emergencyContact: admissionData.emergencyContact || {},
       admissionType: admissionType,
       arrivalMethod: arrivalMethod,
-      triageLevel: admissionData.triageLevel,
+      triageLevel: triageLevel,
       triageNotes: admissionData.triageNotes || undefined,
       triageTime: new Date(),
       triageNurse: auth.session.user.id,
-      chiefComplaint: admissionData.chiefComplaint,
+      chiefComplaint: chiefComplaint,
       presentingSymptoms: admissionData.presentingSymptoms || undefined,
       painScale: admissionData.painScale ? Number(admissionData.painScale) : 0,
       allergies: admissionData.allergies || undefined,
@@ -130,114 +86,46 @@ export async function POST(req) {
     // If this is from an emergency, update the emergency record
     if (admissionData.emergencyId) {
       await Emergency.findByIdAndUpdate(admissionData.emergencyId, {
-        status: "Admitted to Hospital",
-        completedAt: new Date(),
-        erAssessment: {
-          triageLevel: admissionData.triageLevel,
-          chiefComplaint: admissionData.chiefComplaint,
-          presentingSymptoms: admissionData.presentingSymptoms,
-          allergies: admissionData.allergies,
-          currentMedications: admissionData.currentMedications,
-          medicalHistory: admissionData.medicalHistory,
-          erNotes: admissionData.triageNotes,
-          assignedBed: admissionData.assignedBed,
-          assignedNurse: admissionData.assignedNurse,
-          assignedDoctor: admissionData.assignedDoctor,
-          assessedBy: auth.session.user.id,
-          assessedAt: new Date()
-        }
+        status: "Admitted to ER",
+        erAdmissionCompleted: true,
+        admittedPatientId: admission._id
       });
     }
 
     return Response.json({
-      message: "Patient admitted successfully. You can now assign a bed from the Bed Management page.",
-      admission: {
-        _id: admission._id,
-        patientId: admission.patientId,
-        admissionNumber: admission.admissionNumber,
-        triageLevel: admission.triageLevel,
-        name: `${admission.firstName} ${admission.lastName}`
-      }
-    }, { status: 201 });
+      message: "Patient admitted successfully",
+      patientId: admission.patientId,
+      admissionId: admission._id
+    });
+
   } catch (error) {
-    console.error("Error admitting patient:", error);
-    console.error("Error details:", error.message);
-    console.error("Error stack:", error.stack);
-
-    // Handle validation errors
-    if (error.name === 'ValidationError') {
-      const validationErrors = Object.keys(error.errors).map(key => ({
-        field: key,
-        message: error.errors[key].message
-      }));
-      return Response.json({
-        error: "Validation failed",
-        validationErrors,
-        details: error.message
-      }, { status: 400 });
-    }
-
-    // Handle specific MongoDB errors
-    if (error.code === 11000) {
-      return Response.json({
-        error: "Duplicate patient record detected. Please try again."
-      }, { status: 400 });
-    }
-
+    console.error("Admission error:", error);
     return Response.json({
-      error: "Error admitting patient",
-      details: error.message,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      error: "Failed to admit patient",
+      details: error.message
     }, { status: 500 });
   }
 }
 
 export async function GET(req) {
-  const auth = await isAuthenticated(req, ["receptionist", "nurse", "er", "doctor", "admin", "ward_manager"]);
+  const auth = await isAuthenticated(req, ["receptionist", "nurse", "er", "doctor", "ward_manager"]);
   if (auth.error) return Response.json({ error: auth.error }, { status: auth.status });
 
   try {
     await connectDB();
 
-    const admissions = await PatientAdmission.find({
-      status: { $in: ["Admitted", "In Treatment", "Waiting"] }
-    })
-    .populate({
-      path: "triageNurse",
-      select: "name",
-      strictPopulate: false
-    })
-    .populate({
-      path: "admittedBy",
-      select: "name",
-      strictPopulate: false
-    })
-    .populate({
-      path: "assignedDoctor",
-      select: "name",
-      strictPopulate: false
-    })
-    .populate({
-      path: "assignedNurse",
-      select: "name",
-      strictPopulate: false
-    })
-    .populate({
-      path: "emergencyId",
-      select: "incidentNumber patientCondition handover",
-      strictPopulate: false
-    })
-    .sort({ arrivalTime: -1 })
-    .limit(50)
-    .lean();
+    const admissions = await PatientAdmission.find()
+      .populate("triageNurse", "firstName lastName")
+      .populate("assignedDoctor", "firstName lastName specialty")
+      .populate("assignedNurse", "firstName lastName")
+      .populate("admittedBy", "firstName lastName")
+      .sort({ createdAt: -1 })
+      .limit(50);
 
-    return Response.json({ admissions: admissions || [] }, { status: 200 });
+    return Response.json({ admissions });
+
   } catch (error) {
     console.error("Error fetching admissions:", error);
-    console.error("Error details:", error.message);
-    return Response.json({
-      error: "Error fetching admissions",
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined
-    }, { status: 500 });
+    return Response.json({ error: "Failed to fetch admissions" }, { status: 500 });
   }
 }
