@@ -121,6 +121,7 @@ export default function Sidebar() {
       { label: "Dashboard", href: "/ward-manager/dashboard", icon: <Home className="w-5 h-5" />, color: "text-blue-500" },
       { label: "Ward Management", href: "/ward-manager/wards", icon: <Building className="w-5 h-5" />, color: "text-teal-500" },
       { label: "Bed Management", href: "/beds/management", icon: <Bed className="w-5 h-5" />, color: "text-green-500" },
+      { label: "Patient Admission", href: "/er/admission", icon: <UserCheck className="w-5 h-5" />, color: "text-orange-500" },
       { label: "Housekeeping", href: "/housekeeping/dashboard", icon: <Sparkles className="w-5 h-5" />, color: "text-purple-500" },
     ],
   };

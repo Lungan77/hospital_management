@@ -1,13 +1,13 @@
 "use client";
 import { useState, useEffect } from "react";
 import withAuth from "@/hoc/withAuth";
-import { 
-  UserPlus, 
-  Heart, 
-  Activity, 
-  Clock, 
-  User, 
-  Phone, 
+import {
+  UserPlus,
+  Heart,
+  Activity,
+  Clock,
+  User,
+  Phone,
   MapPin,
   AlertTriangle,
   CheckCircle,
@@ -23,7 +23,8 @@ import {
   Plus,
   Thermometer,
   Droplets,
-  Zap
+  Zap,
+  Bed
 } from "lucide-react";
 
 function EmergencyAdmission() {
@@ -70,6 +71,10 @@ function EmergencyAdmission() {
 
   const [incomingPatients, setIncomingPatients] = useState([]);
   const [selectedEmergency, setSelectedEmergency] = useState(null);
+  const [wards, setWards] = useState([]);
+  const [availableBeds, setAvailableBeds] = useState([]);
+  const [selectedWardId, setSelectedWardId] = useState("");
+  const [selectedBedId, setSelectedBedId] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -77,8 +82,13 @@ function EmergencyAdmission() {
 
   useEffect(() => {
     fetchIncomingPatients();
+    fetchWards();
+    fetchBeds();
     // Set up real-time updates
-    const interval = setInterval(fetchIncomingPatients, 30000);
+    const interval = setInterval(() => {
+      fetchIncomingPatients();
+      fetchBeds();
+    }, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -92,6 +102,36 @@ function EmergencyAdmission() {
     } catch (error) {
       console.error("Error fetching incoming patients");
     }
+  };
+
+  const fetchWards = async () => {
+    try {
+      const res = await fetch("/api/wards");
+      const data = await res.json();
+      if (res.ok) {
+        setWards(data.wards || []);
+      }
+    } catch (error) {
+      console.error("Error fetching wards");
+    }
+  };
+
+  const fetchBeds = async () => {
+    try {
+      const res = await fetch("/api/beds");
+      const data = await res.json();
+      if (res.ok) {
+        const available = data.beds?.filter(bed => bed.status === "Available") || [];
+        setAvailableBeds(available);
+      }
+    } catch (error) {
+      console.error("Error fetching beds");
+    }
+  };
+
+  const handleWardChange = (wardId) => {
+    setSelectedWardId(wardId);
+    setSelectedBedId("");
   };
 
   const selectEmergencyPatient = (emergency) => {
@@ -161,13 +201,15 @@ function EmergencyAdmission() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...admissionData,
+          wardId: selectedWardId || null,
+          bedId: selectedBedId || null,
           emergencyId: selectedEmergency?._id || null
         }),
       });
 
       const data = await res.json();
       if (res.ok) {
-        setMessage(`Patient admitted successfully! Patient ID: ${data.admission.patientId}`);
+        setMessage(data.message);
         // Reset form
         setAdmissionData({
           firstName: "",
@@ -873,6 +915,58 @@ function EmergencyAdmission() {
                 </div>
               </div>
 
+              {/* Ward and Bed Assignment */}
+              <div>
+                <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                  <Bed className="w-6 h-6 text-blue-600" />
+                  Ward and Bed Assignment
+                </h3>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Select Ward *
+                    </label>
+                    <select
+                      value={selectedWardId}
+                      onChange={(e) => handleWardChange(e.target.value)}
+                      className="w-full p-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    >
+                      <option value="">Choose a ward...</option>
+                      {wards.map((ward) => (
+                        <option key={ward._id} value={ward._id}>
+                          {ward.wardName} - {ward.wardType} (Available: {ward.capacity?.availableBeds || 0})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Select Bed *
+                    </label>
+                    <select
+                      value={selectedBedId}
+                      onChange={(e) => setSelectedBedId(e.target.value)}
+                      disabled={!selectedWardId}
+                      className="w-full p-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    >
+                      <option value="">Choose a bed...</option>
+                      {availableBeds
+                        .filter(bed => bed.wardId?._id === selectedWardId)
+                        .map((bed) => (
+                          <option key={bed._id} value={bed._id}>
+                            {bed.bedNumber} - {bed.bedType}
+                          </option>
+                        ))}
+                    </select>
+                    {selectedWardId && availableBeds.filter(bed => bed.wardId?._id === selectedWardId).length === 0 && (
+                      <p className="text-sm text-red-600 mt-2">No available beds in this ward</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+
               {/* Final Actions */}
               <div className="flex gap-4">
                 <button
@@ -907,4 +1001,4 @@ function EmergencyAdmission() {
   );
 }
 
-export default withAuth(EmergencyAdmission, ["receptionist", "nurse", "er", "doctor"]);
+export default withAuth(EmergencyAdmission, ["receptionist", "nurse", "er", "doctor", "ward_manager"]);
