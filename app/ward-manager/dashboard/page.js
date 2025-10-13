@@ -269,6 +269,17 @@ function WardManagerDashboard() {
                 </div>
                 <ArrowRight className="w-5 h-5 text-orange-600 group-hover:translate-x-1 transition-transform" />
               </button>
+
+              <button
+                onClick={() => router.push("/ward-manager/resources")}
+                className="w-full flex items-center justify-between bg-teal-50 hover:bg-teal-100 p-4 rounded-xl transition-colors group"
+              >
+                <div className="flex items-center gap-3">
+                  <Users className="w-6 h-6 text-teal-600" />
+                  <span className="font-semibold text-gray-900">Manage Resources</span>
+                </div>
+                <ArrowRight className="w-5 h-5 text-teal-600 group-hover:translate-x-1 transition-transform" />
+              </button>
             </div>
           </div>
 
