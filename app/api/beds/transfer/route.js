@@ -11,6 +11,16 @@ export async function POST(req) {
     await connectDB();
     const { fromBedId, toBedId, reason, notes } = await req.json();
 
+    // Validate required fields
+    if (!fromBedId || !toBedId || !reason) {
+      return Response.json({ error: "Missing required fields: fromBedId, toBedId, and reason are required" }, { status: 400 });
+    }
+
+    // Prevent transferring to same bed
+    if (fromBedId === toBedId) {
+      return Response.json({ error: "Cannot transfer patient to the same bed" }, { status: 400 });
+    }
+
     // Validate source bed
     const fromBed = await Bed.findById(fromBedId)
       .populate("currentPatient")
@@ -20,7 +30,7 @@ export async function POST(req) {
     }
 
     if (fromBed.status !== "Occupied" || !fromBed.currentPatient) {
-      return Response.json({ error: "Source bed is not occupied" }, { status: 400 });
+      return Response.json({ error: "Source bed is not occupied or has no patient assigned" }, { status: 400 });
     }
 
     // Validate destination bed
@@ -30,10 +40,11 @@ export async function POST(req) {
     }
 
     if (toBed.status !== "Available") {
-      return Response.json({ error: "Destination bed is not available" }, { status: 400 });
+      return Response.json({ error: `Destination bed is not available (Current status: ${toBed.status})` }, { status: 400 });
     }
 
     const patient = fromBed.currentPatient;
+    const isWardTransfer = fromBed.wardId._id.toString() !== toBed.wardId._id.toString();
 
     // Update source bed - mark as needing cleaning
     const currentOccupancy = fromBed.occupancyHistory.find(
@@ -70,10 +81,12 @@ export async function POST(req) {
     await toBed.save();
 
     // Update patient record
-    await PatientAdmission.findByIdAndUpdate(patient._id, {
+    const updateData = {
       assignedBed: toBed.bedNumber,
       assignedWard: toBed.wardId.wardName
-    });
+    };
+
+    await PatientAdmission.findByIdAndUpdate(patient._id, updateData);
 
     // Update ward capacities
     await fromBed.wardId.updateCapacity();
@@ -81,18 +94,39 @@ export async function POST(req) {
       await toBed.wardId.updateCapacity();
     }
 
-    return Response.json({ 
-      message: `Patient ${patient.firstName} ${patient.lastName} transferred from ${fromBed.bedNumber} to ${toBed.bedNumber}`,
+    const transferMessage = isWardTransfer
+      ? `Patient ${patient.firstName} ${patient.lastName} transferred from ${fromBed.bedNumber} (${fromBed.wardId.wardName}) to ${toBed.bedNumber} (${toBed.wardId.wardName})`
+      : `Patient ${patient.firstName} ${patient.lastName} transferred from ${fromBed.bedNumber} to ${toBed.bedNumber} within ${toBed.wardId.wardName}`;
+
+    return Response.json({
+      message: transferMessage,
       transfer: {
-        from: fromBed.bedNumber,
-        to: toBed.bedNumber,
-        patient: `${patient.firstName} ${patient.lastName}`,
+        from: {
+          bed: fromBed.bedNumber,
+          ward: fromBed.wardId.wardName
+        },
+        to: {
+          bed: toBed.bedNumber,
+          ward: toBed.wardId.wardName
+        },
+        patient: {
+          id: patient._id,
+          name: `${patient.firstName} ${patient.lastName}`,
+          patientId: patient.patientId
+        },
         reason,
-        transferredAt: new Date()
+        notes,
+        isWardTransfer,
+        transferredAt: new Date(),
+        transferredBy: auth.session.user.id
       }
     }, { status: 200 });
   } catch (error) {
     console.error("Error transferring patient:", error);
-    return Response.json({ error: "Error transferring patient" }, { status: 500 });
+    console.error("Error details:", error.message);
+    return Response.json({
+      error: "Error transferring patient",
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    }, { status: 500 });
   }
 }

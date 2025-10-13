@@ -174,6 +174,8 @@ function BedManagement() {
       if (res.ok) {
         setMessage(data.message);
         fetchBedData();
+        fetchPatients();
+        fetchHandoverPatients();
         setShowTransferModal(false);
         setTransferData({ fromBedId: "", toBedId: "", reason: "", notes: "" });
       } else {
@@ -896,37 +898,67 @@ function BedManagement() {
               </div>
               
               <div className="p-6 space-y-6">
+                {transferData.fromBedId && (() => {
+                  const selectedFromBed = beds.find(b => b._id === transferData.fromBedId);
+                  return selectedFromBed && (
+                    <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
+                      <h3 className="font-semibold text-blue-900 mb-2">Transferring Patient</h3>
+                      <div className="text-sm space-y-1">
+                        <p className="text-blue-800">
+                          <strong>Patient:</strong> {selectedFromBed.currentPatient?.firstName} {selectedFromBed.currentPatient?.lastName}
+                        </p>
+                        <p className="text-blue-800">
+                          <strong>From:</strong> {selectedFromBed.bedNumber} - {selectedFromBed.wardId?.wardName}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })()}
+
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">From Bed</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">From Bed *</label>
                     <select
                       value={transferData.fromBedId}
                       onChange={(e) => setTransferData(prev => ({ ...prev, fromBedId: e.target.value }))}
                       className="w-full p-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="">Select current bed</option>
-                      {beds.filter(bed => bed.status === "Occupied").map((bed) => (
+                      {beds.filter(bed => bed.status === "Occupied" && bed.currentPatient).map((bed) => (
                         <option key={bed._id} value={bed._id}>
-                          {bed.bedNumber} - {bed.currentPatient?.firstName} {bed.currentPatient?.lastName}
+                          {bed.bedNumber} ({bed.wardId?.wardName}) - {bed.currentPatient?.firstName} {bed.currentPatient?.lastName}
                         </option>
                       ))}
                     </select>
                   </div>
-                  
+
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">To Bed</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">To Bed *</label>
                     <select
                       value={transferData.toBedId}
                       onChange={(e) => setTransferData(prev => ({ ...prev, toBedId: e.target.value }))}
                       className="w-full p-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="">Select destination bed</option>
-                      {beds.filter(bed => bed.status === "Available").map((bed) => (
+                      {beds.filter(bed => bed.status === "Available" && bed._id !== transferData.fromBedId).map((bed) => (
                         <option key={bed._id} value={bed._id}>
                           {bed.bedNumber} - {bed.wardId?.wardName} (Floor {bed.location?.floor}, Room {bed.location?.room})
                         </option>
                       ))}
                     </select>
+                    {transferData.toBedId && (() => {
+                      const selectedToBed = beds.find(b => b._id === transferData.toBedId);
+                      const selectedFromBed = beds.find(b => b._id === transferData.fromBedId);
+                      if (selectedToBed && selectedFromBed) {
+                        const isWardTransfer = selectedFromBed.wardId?._id !== selectedToBed.wardId?._id;
+                        return isWardTransfer && (
+                          <p className="mt-2 text-sm text-orange-600 font-medium flex items-center gap-1">
+                            <AlertTriangle className="w-4 h-4" />
+                            Ward transfer: {selectedFromBed.wardId?.wardName} → {selectedToBed.wardId?.wardName}
+                          </p>
+                        );
+                      }
+                    })()}
                   </div>
                 </div>
                 
