@@ -60,6 +60,8 @@ export async function POST(req) {
       assignedWard: admissionData.assignedWard || undefined,
       assignedDoctor: admissionData.assignedDoctor || undefined,
       assignedNurse: admissionData.assignedNurse || undefined,
+      assignedSpecialists: [],
+      assignedEquipment: [],
       admittedBy: auth.session.user.id,
       insurance: admissionData.insurance || {},
       emergencyId: admissionData.emergencyId || undefined
