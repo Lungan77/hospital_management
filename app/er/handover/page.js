@@ -67,12 +67,18 @@ function ERHandoverVerification() {
       });
 
       const data = await res.json();
-      setMessage(data.message || data.error);
-      
+
       if (res.ok) {
+        const admissionInfo = data.patientAdmission ?
+          `\n\nPatient automatically admitted:\n- Patient ID: ${data.patientAdmission.patientId}\n- Admission #: ${data.patientAdmission.admissionNumber}\n- Name: ${data.patientAdmission.name}\n- Status: ${data.patientAdmission.status}`
+          : '';
+
+        setMessage(data.message + admissionInfo);
         fetchHandovers();
         setSelectedHandover(null);
         setVerificationNotes("");
+      } else {
+        setMessage(data.error);
       }
     } catch (error) {
       setMessage("Error verifying handover");
