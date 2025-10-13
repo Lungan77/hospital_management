@@ -14,10 +14,10 @@ const EmergencySchema = new mongoose.Schema(
       required: true, 
       default: "Medium" 
     },
-    status: { 
-      type: String, 
-      enum: ["Reported", "Dispatched", "En Route", "On Scene", "Transporting", "Completed", "Cancelled"], 
-      default: "Reported" 
+    status: {
+      type: String,
+      enum: ["Reported", "Dispatched", "En Route", "On Scene", "Transporting", "Arrived", "In Treatment", "Completed", "Cancelled"],
+      default: "Reported"
     },
     
     // Caller Information
