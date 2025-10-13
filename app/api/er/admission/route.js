@@ -14,7 +14,64 @@ export async function POST(req) {
 
     // Validate required fields
     if (!admissionData.firstName || !admissionData.lastName || !admissionData.chiefComplaint || !admissionData.triageLevel) {
-      return Response.json({ error: "Missing required fields" }, { status: 400 });
+      return Response.json({
+        error: "Missing required patient information",
+        missingFields: {
+          firstName: !admissionData.firstName,
+          lastName: !admissionData.lastName,
+          chiefComplaint: !admissionData.chiefComplaint,
+          triageLevel: !admissionData.triageLevel
+        }
+      }, { status: 400 });
+    }
+
+    // Set defaults for admission fields if not provided
+    const admissionType = admissionData.admissionType || "Emergency";
+    const arrivalMethod = admissionData.arrivalMethod || "Ambulance";
+
+    // Validate required admission fields
+    if (!admissionType || !arrivalMethod) {
+      return Response.json({
+        error: "Missing required admission details",
+        missingFields: {
+          admissionType: !admissionType,
+          arrivalMethod: !arrivalMethod
+        }
+      }, { status: 400 });
+    }
+
+    // Validate enum values
+    const validAdmissionTypes = ["Emergency", "Scheduled", "Transfer", "Walk-in"];
+    const validArrivalMethods = ["Ambulance", "Private Vehicle", "Walk-in", "Transfer"];
+    const validTriageLevels = ["1 - Resuscitation", "2 - Emergency", "3 - Urgent", "4 - Less Urgent", "5 - Non-Urgent"];
+
+    if (!validAdmissionTypes.includes(admissionType)) {
+      return Response.json({
+        error: `Invalid admission type: ${admissionType}`,
+        validValues: validAdmissionTypes
+      }, { status: 400 });
+    }
+
+    if (!validArrivalMethods.includes(arrivalMethod)) {
+      return Response.json({
+        error: `Invalid arrival method: ${arrivalMethod}`,
+        validValues: validArrivalMethods
+      }, { status: 400 });
+    }
+
+    if (!validTriageLevels.includes(admissionData.triageLevel)) {
+      return Response.json({
+        error: `Invalid triage level: ${admissionData.triageLevel}`,
+        validValues: validTriageLevels
+      }, { status: 400 });
+    }
+
+    // Validate gender if provided
+    if (admissionData.gender && !["Male", "Female", "Other"].includes(admissionData.gender)) {
+      return Response.json({
+        error: `Invalid gender: ${admissionData.gender}`,
+        validValues: ["Male", "Female", "Other"]
+      }, { status: 400 });
     }
 
     // Convert string values to proper types for vital signs
@@ -43,8 +100,8 @@ export async function POST(req) {
       phone: admissionData.phone || undefined,
       address: admissionData.address || undefined,
       emergencyContact: admissionData.emergencyContact || {},
-      admissionType: admissionData.admissionType,
-      arrivalMethod: admissionData.arrivalMethod,
+      admissionType: admissionType,
+      arrivalMethod: arrivalMethod,
       triageLevel: admissionData.triageLevel,
       triageNotes: admissionData.triageNotes || undefined,
       triageTime: new Date(),
