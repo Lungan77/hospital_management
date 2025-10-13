@@ -17,18 +17,52 @@ export async function POST(req) {
       return Response.json({ error: "Missing required fields" }, { status: 400 });
     }
 
+    // Convert string values to proper types for vital signs
+    const vitalSigns = admissionData.vitalSigns ? {
+      bloodPressure: admissionData.vitalSigns.bloodPressure || undefined,
+      heartRate: admissionData.vitalSigns.heartRate ? Number(admissionData.vitalSigns.heartRate) : undefined,
+      temperature: admissionData.vitalSigns.temperature ? Number(admissionData.vitalSigns.temperature) : undefined,
+      respiratoryRate: admissionData.vitalSigns.respiratoryRate ? Number(admissionData.vitalSigns.respiratoryRate) : undefined,
+      oxygenSaturation: admissionData.vitalSigns.oxygenSaturation ? Number(admissionData.vitalSigns.oxygenSaturation) : undefined,
+      weight: admissionData.vitalSigns.weight ? Number(admissionData.vitalSigns.weight) : undefined,
+      height: admissionData.vitalSigns.height ? Number(admissionData.vitalSigns.height) : undefined,
+      recordedBy: auth.session.user.id,
+      recordedAt: new Date()
+    } : {
+      recordedBy: auth.session.user.id,
+      recordedAt: new Date()
+    };
 
     // Create patient admission record
     const admission = new PatientAdmission({
-      ...admissionData,
+      firstName: admissionData.firstName,
+      lastName: admissionData.lastName,
+      dateOfBirth: admissionData.dateOfBirth || undefined,
+      gender: admissionData.gender || undefined,
+      idNumber: admissionData.idNumber || undefined,
+      phone: admissionData.phone || undefined,
+      address: admissionData.address || undefined,
+      emergencyContact: admissionData.emergencyContact || {},
+      admissionType: admissionData.admissionType,
+      arrivalMethod: admissionData.arrivalMethod,
+      triageLevel: admissionData.triageLevel,
+      triageNotes: admissionData.triageNotes || undefined,
       triageTime: new Date(),
       triageNurse: auth.session.user.id,
+      chiefComplaint: admissionData.chiefComplaint,
+      presentingSymptoms: admissionData.presentingSymptoms || undefined,
+      painScale: admissionData.painScale ? Number(admissionData.painScale) : 0,
+      allergies: admissionData.allergies || undefined,
+      currentMedications: admissionData.currentMedications || undefined,
+      medicalHistory: admissionData.medicalHistory || undefined,
+      vitalSigns: vitalSigns,
+      assignedBed: admissionData.assignedBed || undefined,
+      assignedWard: admissionData.assignedWard || undefined,
+      assignedDoctor: admissionData.assignedDoctor || undefined,
+      assignedNurse: admissionData.assignedNurse || undefined,
       admittedBy: auth.session.user.id,
-      vitalSigns: {
-        ...admissionData.vitalSigns,
-        recordedBy: auth.session.user.id,
-        recordedAt: new Date()
-      }
+      insurance: admissionData.insurance || {},
+      emergencyId: admissionData.emergencyId || undefined
     });
 
     // Save to generate IDs via pre-save hook
@@ -69,6 +103,20 @@ export async function POST(req) {
   } catch (error) {
     console.error("Error admitting patient:", error);
     console.error("Error details:", error.message);
+    console.error("Error stack:", error.stack);
+
+    // Handle validation errors
+    if (error.name === 'ValidationError') {
+      const validationErrors = Object.keys(error.errors).map(key => ({
+        field: key,
+        message: error.errors[key].message
+      }));
+      return Response.json({
+        error: "Validation failed",
+        validationErrors,
+        details: error.message
+      }, { status: 400 });
+    }
 
     // Handle specific MongoDB errors
     if (error.code === 11000) {
@@ -79,7 +127,8 @@ export async function POST(req) {
 
     return Response.json({
       error: "Error admitting patient",
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      details: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     }, { status: 500 });
   }
 }
