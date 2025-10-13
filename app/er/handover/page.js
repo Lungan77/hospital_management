@@ -112,17 +112,19 @@ function ERHandoverVerification() {
     setAdmitting(true);
     try {
       const emergency = admittingPatient;
-      const latestVitals = emergency.vitalSigns?.[emergency.vitalSigns.length - 1] || {};
+      const latestVitals = emergency.vitalSigns && emergency.vitalSigns.length > 0
+        ? emergency.vitalSigns[emergency.vitalSigns.length - 1]
+        : {};
 
       const admissionData = {
         firstName: emergency.patientName?.split(' ')[0] || 'Unknown',
         lastName: emergency.patientName?.split(' ').slice(1).join(' ') || 'Patient',
         gender: emergency.patientGender || 'Other',
-        phone: emergency.callerPhone,
+        phone: emergency.callerPhone || '',
         emergencyContact: {
-          name: emergency.callerName,
+          name: emergency.callerName || 'Emergency Contact',
           relationship: emergency.callerRelation || 'Unknown',
-          phone: emergency.callerPhone
+          phone: emergency.callerPhone || ''
         },
         admissionType: 'Emergency',
         arrivalMethod: 'Ambulance',
@@ -132,13 +134,13 @@ function ERHandoverVerification() {
         currentMedications: emergency.currentMedications || '',
         medicalHistory: emergency.medicalHistory || '',
         triageLevel: triageLevel,
-        triageNotes: emergency.handover?.paramedicSummary || emergency.patientCondition,
+        triageNotes: (emergency.handover && emergency.handover.paramedicSummary) || emergency.patientCondition || '',
         vitalSigns: {
-          bloodPressure: latestVitals.bloodPressure,
-          heartRate: latestVitals.heartRate,
-          temperature: latestVitals.temperature,
-          respiratoryRate: latestVitals.respiratoryRate,
-          oxygenSaturation: latestVitals.oxygenSaturation
+          bloodPressure: latestVitals.bloodPressure || '',
+          heartRate: latestVitals.heartRate ? String(latestVitals.heartRate) : '',
+          temperature: latestVitals.temperature ? String(latestVitals.temperature) : '',
+          respiratoryRate: latestVitals.respiratoryRate ? String(latestVitals.respiratoryRate) : '',
+          oxygenSaturation: latestVitals.oxygenSaturation ? String(latestVitals.oxygenSaturation) : ''
         },
         wardId: selectedWardId,
         bedId: selectedBedId,
@@ -162,7 +164,8 @@ function ERHandoverVerification() {
         setMessage(data.error || "Error admitting patient");
       }
     } catch (error) {
-      setMessage("Error admitting patient");
+      console.error("Error admitting patient:", error);
+      setMessage("Error admitting patient: " + (error.message || "Unknown error"));
     } finally {
       setAdmitting(false);
     }
