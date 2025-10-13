@@ -67,70 +67,75 @@ function EmergencyAdmission() {
     }
   });
 
-  const [incomingPatients, setIncomingPatients] = useState([]);
-  const [selectedEmergency, setSelectedEmergency] = useState(null);
+  const [handoverPatients, setHandoverPatients] = useState([]);
+  const [selectedHandover, setSelectedHandover] = useState(null);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [step, setStep] = useState(1);
 
   useEffect(() => {
-    fetchIncomingPatients();
+    fetchHandoverPatients();
     // Set up real-time updates
     const interval = setInterval(() => {
-      fetchIncomingPatients();
+      fetchHandoverPatients();
     }, 30000);
     return () => clearInterval(interval);
   }, []);
 
-  const fetchIncomingPatients = async () => {
+  const fetchHandoverPatients = async () => {
     try {
-      const res = await fetch("/api/er/incoming");
+      const res = await fetch("/api/er/handovers");
       const data = await res.json();
       if (res.ok) {
-        setIncomingPatients(data.patients || []);
+        const verifiedHandovers = (data.handovers || []).filter(h => h.erVerified && !h.admitted);
+        setHandoverPatients(verifiedHandovers);
       }
     } catch (error) {
-      console.error("Error fetching incoming patients");
+      console.error("Error fetching handover patients");
     }
   };
 
 
-  const selectEmergencyPatient = (emergency) => {
-    setSelectedEmergency(emergency);
-    // Pre-populate form with emergency data
+  const selectHandoverPatient = (handover) => {
+    setSelectedHandover(handover);
+    // Pre-populate form with handover data
     setAdmissionData(prev => ({
       ...prev,
-      firstName: emergency.patientName?.split(' ')[0] || "",
-      lastName: emergency.patientName?.split(' ').slice(1).join(' ') || "",
-      gender: emergency.patientGender || "",
-      chiefComplaint: emergency.chiefComplaint || emergency.patientCondition || "",
-      presentingSymptoms: emergency.symptoms || "",
-      medicalHistory: emergency.medicalHistory || "",
-      allergies: emergency.allergies || "",
-      currentMedications: emergency.currentMedications || "",
+      firstName: handover.firstName || "",
+      lastName: handover.lastName || "",
+      dateOfBirth: handover.dateOfBirth || "",
+      gender: handover.gender || "",
+      phone: handover.phone || "",
+      address: handover.address || "",
+      chiefComplaint: handover.chiefComplaint || "",
+      presentingSymptoms: handover.presentingSymptoms || "",
+      medicalHistory: handover.medicalHistory || "",
+      allergies: handover.allergies || "",
+      currentMedications: handover.currentMedications || "",
+      triageLevel: handover.triageLevel || "",
       admissionType: "Emergency",
-      arrivalMethod: "Ambulance"
+      arrivalMethod: "Ambulance",
+      emergencyId: handover.emergencyId?._id || handover.emergencyId
     }));
-    
+
     // Pre-populate vitals if available
-    if (emergency.vitalSigns && emergency.vitalSigns.length > 0) {
-      const latestVitals = emergency.vitalSigns[emergency.vitalSigns.length - 1];
+    if (handover.vitalSigns) {
       setAdmissionData(prev => ({
         ...prev,
         vitalSigns: {
-          bloodPressure: latestVitals.bloodPressure || "",
-          heartRate: latestVitals.heartRate?.toString() || "",
-          temperature: latestVitals.temperature?.toString() || "",
-          respiratoryRate: latestVitals.respiratoryRate?.toString() || "",
-          oxygenSaturation: latestVitals.oxygenSaturation?.toString() || "",
+          bloodPressure: handover.vitalSigns.bloodPressure || "",
+          heartRate: handover.vitalSigns.heartRate?.toString() || "",
+          temperature: handover.vitalSigns.temperature?.toString() || "",
+          respiratoryRate: handover.vitalSigns.respiratoryRate?.toString() || "",
+          oxygenSaturation: handover.vitalSigns.oxygenSaturation?.toString() || "",
           weight: "",
           height: ""
         },
-        painScale: latestVitals.painScale || 0
+        painScale: handover.painScale || 0
       }));
     }
-    
+
     setStep(2);
   };
 
@@ -161,10 +166,7 @@ function EmergencyAdmission() {
       const res = await fetch("/api/er/admission", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...admissionData,
-          emergencyId: selectedEmergency?._id || null
-        }),
+        body: JSON.stringify(admissionData),
       });
 
       const data = await res.json();
@@ -201,9 +203,9 @@ function EmergencyAdmission() {
           },
           insurance: { provider: "", policyNumber: "", groupNumber: "" }
         });
-        setSelectedEmergency(null);
+        setSelectedHandover(null);
         setStep(1);
-        fetchIncomingPatients();
+        fetchHandoverPatients();
       } else {
         setMessage(data.error || "Error admitting patient");
       }
@@ -296,57 +298,62 @@ function EmergencyAdmission() {
         {/* Step 1: Select Patient Source */}
         {step === 1 && (
           <div className="grid lg:grid-cols-2 gap-8">
-            {/* Incoming EMS Patients */}
+            {/* Verified Handover Patients */}
             <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
-              <div className="bg-gradient-to-r from-red-600 to-red-700 p-6 text-white">
+              <div className="bg-gradient-to-r from-green-600 to-green-700 p-6 text-white">
                 <h2 className="text-2xl font-bold mb-2 flex items-center gap-3">
-                  <Truck className="w-8 h-8" />
-                  Incoming EMS Patients
+                  <CheckCircle className="w-8 h-8" />
+                  Verified Handover Patients
                 </h2>
-                <p className="text-red-100">Patients arriving via ambulance</p>
+                <p className="text-green-100">Patients ready for admission after ER verification</p>
               </div>
 
               <div className="p-6">
-                {incomingPatients.length === 0 ? (
+                {handoverPatients.length === 0 ? (
                   <div className="text-center py-12">
-                    <Truck className="w-24 h-24 text-gray-300 mx-auto mb-6" />
-                    <h3 className="text-xl font-bold text-gray-800 mb-2">No Incoming Patients</h3>
-                    <p className="text-gray-600">No patients currently being transported</p>
+                    <CheckCircle className="w-24 h-24 text-gray-300 mx-auto mb-6" />
+                    <h3 className="text-xl font-bold text-gray-800 mb-2">No Verified Handovers</h3>
+                    <p className="text-gray-600">No patients currently ready for admission</p>
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {incomingPatients.map((patient) => (
+                    {handoverPatients.map((patient) => (
                       <div
                         key={patient._id}
-                        onClick={() => selectEmergencyPatient(patient)}
-                        className="p-6 border-2 border-gray-200 rounded-2xl cursor-pointer hover:border-red-300 hover:bg-red-50 transition-all duration-200"
+                        onClick={() => selectHandoverPatient(patient)}
+                        className="p-6 border-2 border-gray-200 rounded-2xl cursor-pointer hover:border-green-300 hover:bg-green-50 transition-all duration-200"
                       >
                         <div className="flex justify-between items-start mb-4">
                           <div>
-                            <h3 className="font-bold text-lg text-gray-900">{patient.incidentNumber}</h3>
-                            <p className="text-gray-600">{patient.patientName || "Unknown Patient"}</p>
+                            <h3 className="font-bold text-lg text-gray-900">{patient.firstName} {patient.lastName}</h3>
+                            <p className="text-gray-600">Patient ID: {patient.patientId}</p>
                           </div>
                           <div className="flex gap-2">
-                            <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-semibold border ${getPriorityColor(patient.priority)}`}>
-                              {patient.priority === "Critical" && <Heart className="w-3 h-3" />}
-                              {patient.priority}
+                            <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-semibold border ${getTriageColor(patient.triageLevel)}`}>
+                              {patient.triageLevel}
                             </span>
                           </div>
                         </div>
-                        
+
                         <div className="grid md:grid-cols-2 gap-4 text-sm">
                           <div className="flex items-center gap-2 text-gray-600">
                             <Clock className="w-4 h-4 text-blue-500" />
-                            <span>Arrived: {patient.arrivedHospitalAt ? new Date(patient.arrivedHospitalAt).toLocaleString() : "En Route"}</span>
+                            <span>Handover: {new Date(patient.handoverTime).toLocaleString()}</span>
                           </div>
                           <div className="flex items-center gap-2 text-gray-600">
-                            <MapPin className="w-4 h-4 text-purple-500" />
-                            <span>{patient.address}</span>
+                            <Stethoscope className="w-4 h-4 text-purple-500" />
+                            <span>{patient.chiefComplaint}</span>
                           </div>
                         </div>
-                        
-                        <div className="mt-4 p-3 bg-gray-50 rounded-xl">
-                          <p className="text-gray-700 text-sm">{patient.patientCondition}</p>
+
+                        <div className="mt-4 p-3 bg-green-50 rounded-lg border border-green-200">
+                          <div className="flex items-center gap-2 text-green-700 mb-1">
+                            <CheckCircle className="w-4 h-4" />
+                            <span className="text-sm font-semibold">ER Verified by {patient.erVerifiedBy?.name || 'ER Staff'}</span>
+                          </div>
+                          {patient.emergencyId?.incidentNumber && (
+                            <p className="text-xs text-gray-600">Incident: {patient.emergencyId.incidentNumber}</p>
+                          )}
                         </div>
                       </div>
                     ))}
