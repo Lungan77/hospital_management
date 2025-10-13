@@ -4,7 +4,7 @@ import PatientAdmission from "@/models/PatientAdmission";
 import { isAuthenticated } from "@/hoc/protectedRoute";
 
 export async function POST(req) {
-  const auth = await isAuthenticated(req, ["nurse", "admin", "er"]);
+  const auth = await isAuthenticated(req, ["nurse", "admin", "er", "ward_manager"]);
   if (auth.error) return Response.json({ error: auth.error }, { status: auth.status });
 
   try {

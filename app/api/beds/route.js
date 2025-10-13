@@ -4,7 +4,7 @@ import Ward from "@/models/Ward";
 import { isAuthenticated } from "@/hoc/protectedRoute";
 
 export async function GET(req) {
-  const auth = await isAuthenticated(req, ["receptionist", "nurse", "admin", "er"]);
+  const auth = await isAuthenticated(req, ["receptionist", "nurse", "admin", "er", "ward_manager"]);
   if (auth.error) return Response.json({ error: auth.error }, { status: auth.status });
 
   try {
@@ -24,7 +24,7 @@ export async function GET(req) {
 }
 
 export async function POST(req) {
-  const auth = await isAuthenticated(req, ["admin", "nurse"]);
+  const auth = await isAuthenticated(req, ["admin", "nurse", "ward_manager"]);
   if (auth.error) return Response.json({ error: auth.error }, { status: auth.status });
 
   try {

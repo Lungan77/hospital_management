@@ -3,7 +3,7 @@ import Bed from "@/models/Bed";
 import { isAuthenticated } from "@/hoc/protectedRoute";
 
 export async function PUT(req) {
-  const auth = await isAuthenticated(req, ["receptionist", "nurse", "admin", "er"]);
+  const auth = await isAuthenticated(req, ["receptionist", "nurse", "admin", "er", "ward_manager"]);
   if (auth.error) return Response.json({ error: auth.error }, { status: auth.status });
 
   try {

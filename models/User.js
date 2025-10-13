@@ -13,10 +13,10 @@ const UserSchema = new mongoose.Schema(
     idNumber: { type: String, required: true },
     phone: { type: String, required: true },
     gender: { type: String, enum: ["Male", "Female", "Other"], required: true },
-    role: { 
-      type: String, 
-      enum: ["admin", "doctor", "nurse", "receptionist", "patient", "labtech", "dispatcher", "driver", "paramedic", "er"], 
-      required: true 
+    role: {
+      type: String,
+      enum: ["admin", "doctor", "nurse", "receptionist", "patient", "labtech", "dispatcher", "driver", "paramedic", "er", "ward_manager"],
+      required: true
     },
     password: { type: String, required: true }, 
   },

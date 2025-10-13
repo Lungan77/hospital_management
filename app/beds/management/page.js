@@ -1048,4 +1048,4 @@ function BedManagement() {
   );
 }
 
-export default withAuth(BedManagement, ["receptionist", "nurse", "admin", "er"]);
+export default withAuth(BedManagement, ["receptionist", "nurse", "admin", "er", "ward_manager"]);

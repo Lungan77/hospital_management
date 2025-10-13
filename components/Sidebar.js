@@ -24,6 +24,9 @@ import {
   Truck,
   Wrench,
   Phone,
+  Building,
+  Bed,
+  Sparkles,
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -113,6 +116,12 @@ export default function Sidebar() {
       { label: "Appointments", href: "/appointments", icon: <Calendar className="w-5 h-5" />, color: "text-green-500" },
       { label: "Diagnosis", href: "/diagnosis/", icon: <ClipboardCheck className="w-5 h-5" />, color: "text-purple-500" },
       { label: "Bills", href: "/bills/my", icon: <CreditCard className="w-5 h-5" />, color: "text-orange-500" },
+    ],
+    ward_manager: [
+      { label: "Dashboard", href: "/ward-manager/dashboard", icon: <Home className="w-5 h-5" />, color: "text-blue-500" },
+      { label: "Bed Management", href: "/beds/management", icon: <Bed className="w-5 h-5" />, color: "text-green-500" },
+      { label: "Housekeeping", href: "/housekeeping/dashboard", icon: <Sparkles className="w-5 h-5" />, color: "text-purple-500" },
+      { label: "Ward Overview", href: "/beds/management", icon: <Building className="w-5 h-5" />, color: "text-teal-500" },
     ],
   };
 
