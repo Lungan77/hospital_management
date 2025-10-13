@@ -51,8 +51,6 @@ function EmergencyAdmission() {
     medicalHistory: "",
     triageLevel: "",
     triageNotes: "",
-    assignedBed: "",
-    assignedWard: "",
     vitalSigns: {
       bloodPressure: "",
       heartRate: "",
@@ -71,10 +69,6 @@ function EmergencyAdmission() {
 
   const [incomingPatients, setIncomingPatients] = useState([]);
   const [selectedEmergency, setSelectedEmergency] = useState(null);
-  const [wards, setWards] = useState([]);
-  const [availableBeds, setAvailableBeds] = useState([]);
-  const [selectedWardId, setSelectedWardId] = useState("");
-  const [selectedBedId, setSelectedBedId] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -82,12 +76,9 @@ function EmergencyAdmission() {
 
   useEffect(() => {
     fetchIncomingPatients();
-    fetchWards();
-    fetchBeds();
     // Set up real-time updates
     const interval = setInterval(() => {
       fetchIncomingPatients();
-      fetchBeds();
     }, 30000);
     return () => clearInterval(interval);
   }, []);
@@ -104,35 +95,6 @@ function EmergencyAdmission() {
     }
   };
 
-  const fetchWards = async () => {
-    try {
-      const res = await fetch("/api/wards");
-      const data = await res.json();
-      if (res.ok) {
-        setWards(data.wards || []);
-      }
-    } catch (error) {
-      console.error("Error fetching wards");
-    }
-  };
-
-  const fetchBeds = async () => {
-    try {
-      const res = await fetch("/api/beds");
-      const data = await res.json();
-      if (res.ok) {
-        const available = data.beds?.filter(bed => bed.status === "Available") || [];
-        setAvailableBeds(available);
-      }
-    } catch (error) {
-      console.error("Error fetching beds");
-    }
-  };
-
-  const handleWardChange = (wardId) => {
-    setSelectedWardId(wardId);
-    setSelectedBedId("");
-  };
 
   const selectEmergencyPatient = (emergency) => {
     setSelectedEmergency(emergency);
@@ -201,8 +163,6 @@ function EmergencyAdmission() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...admissionData,
-          wardId: selectedWardId || null,
-          bedId: selectedBedId || null,
           emergencyId: selectedEmergency?._id || null
         }),
       });
@@ -230,8 +190,6 @@ function EmergencyAdmission() {
           medicalHistory: "",
           triageLevel: "",
           triageNotes: "",
-          assignedBed: "",
-          assignedWard: "",
           vitalSigns: {
             bloodPressure: "",
             heartRate: "",
@@ -760,42 +718,6 @@ function EmergencyAdmission() {
                 </div>
               </div>
 
-              {/* Assignment */}
-              <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                  <MapPin className="w-6 h-6 text-orange-600" />
-                  Hospital Assignment
-                </h3>
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Assigned Bed</label>
-                    <input
-                      type="text"
-                      value={admissionData.assignedBed}
-                      onChange={(e) => handleInputChange('assignedBed', e.target.value)}
-                      className="w-full p-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                      placeholder="e.g., ER-12, ICU-5"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Assigned Ward</label>
-                    <select
-                      value={admissionData.assignedWard}
-                      onChange={(e) => handleInputChange('assignedWard', e.target.value)}
-                      className="w-full p-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                    >
-                      <option value="">Select Ward</option>
-                      <option value="Emergency Department">Emergency Department</option>
-                      <option value="Intensive Care Unit">Intensive Care Unit</option>
-                      <option value="Medical Ward">Medical Ward</option>
-                      <option value="Surgical Ward">Surgical Ward</option>
-                      <option value="Pediatric Ward">Pediatric Ward</option>
-                      <option value="Maternity Ward">Maternity Ward</option>
-                      <option value="Observation">Observation</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
 
               {/* Triage Notes */}
               <div>
@@ -867,10 +789,6 @@ function EmergencyAdmission() {
                       <p className="text-orange-700 font-medium">Pain Scale</p>
                       <p className="text-orange-900">{admissionData.painScale}/10</p>
                     </div>
-                    <div>
-                      <p className="text-orange-700 font-medium">Assigned Bed</p>
-                      <p className="text-orange-900">{admissionData.assignedBed || "To be assigned"}</p>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -915,56 +833,6 @@ function EmergencyAdmission() {
                 </div>
               </div>
 
-              {/* Ward and Bed Assignment */}
-              <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                  <Bed className="w-6 h-6 text-blue-600" />
-                  Ward and Bed Assignment
-                </h3>
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Select Ward *
-                    </label>
-                    <select
-                      value={selectedWardId}
-                      onChange={(e) => handleWardChange(e.target.value)}
-                      className="w-full p-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    >
-                      <option value="">Choose a ward...</option>
-                      {wards.map((ward) => (
-                        <option key={ward._id} value={ward._id}>
-                          {ward.wardName} - {ward.wardType} (Available: {ward.capacity?.availableBeds || 0})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Select Bed *
-                    </label>
-                    <select
-                      value={selectedBedId}
-                      onChange={(e) => setSelectedBedId(e.target.value)}
-                      disabled={!selectedWardId}
-                      className="w-full p-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                    >
-                      <option value="">Choose a bed...</option>
-                      {availableBeds
-                        .filter(bed => bed.wardId?._id === selectedWardId)
-                        .map((bed) => (
-                          <option key={bed._id} value={bed._id}>
-                            {bed.bedNumber} - {bed.bedType}
-                          </option>
-                        ))}
-                    </select>
-                    {selectedWardId && availableBeds.filter(bed => bed.wardId?._id === selectedWardId).length === 0 && (
-                      <p className="text-sm text-red-600 mt-2">No available beds in this ward</p>
-                    )}
-                  </div>
-                </div>
-              </div>
 
 
               {/* Final Actions */}

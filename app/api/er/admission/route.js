@@ -1,8 +1,6 @@
 import { connectDB } from "@/lib/mongodb";
 import PatientAdmission from "@/models/PatientAdmission";
 import Emergency from "@/models/Emergency";
-import Bed from "@/models/Bed";
-import Ward from "@/models/Ward";
 import { isAuthenticated } from "@/hoc/protectedRoute";
 
 export async function POST(req) {
@@ -18,36 +16,10 @@ export async function POST(req) {
       return Response.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    // Validate bed assignment if wardId and bedId are provided
-    let assignedBed = null;
-    let assignedWard = null;
-    let bedToAssign = null;
-
-    if (admissionData.bedId && admissionData.wardId) {
-      const bed = await Bed.findById(admissionData.bedId).populate("wardId");
-
-      if (!bed) {
-        return Response.json({ error: "Bed not found" }, { status: 404 });
-      }
-
-      if (bed.status !== "Available") {
-        return Response.json({ error: "Bed is not available" }, { status: 400 });
-      }
-
-      if (bed.wardId._id.toString() !== admissionData.wardId) {
-        return Response.json({ error: "Bed does not belong to the selected ward" }, { status: 400 });
-      }
-
-      assignedBed = bed.bedNumber;
-      assignedWard = bed.wardId.wardName;
-      bedToAssign = bed;
-    }
 
     // Create patient admission record
     const admission = new PatientAdmission({
       ...admissionData,
-      assignedBed: assignedBed || admissionData.assignedBed,
-      assignedWard: assignedWard || admissionData.assignedWard,
       triageTime: new Date(),
       triageNurse: auth.session.user.id,
       admittedBy: auth.session.user.id,
@@ -60,26 +32,6 @@ export async function POST(req) {
 
     // Save to generate IDs via pre-save hook
     await admission.save();
-
-    // Now update bed with patient information (only after patient is successfully created)
-    if (bedToAssign) {
-      bedToAssign.status = "Occupied";
-      bedToAssign.currentPatient = admission._id;
-      bedToAssign.assignedAt = new Date();
-      bedToAssign.assignedBy = auth.session.user.id;
-
-      // Add to occupancy history
-      bedToAssign.occupancyHistory.push({
-        patientId: admission._id,
-        admittedAt: new Date(),
-        assignedBy: auth.session.user.id
-      });
-
-      await bedToAssign.save();
-
-      // Update ward capacity
-      await bedToAssign.wardId.updateCapacity();
-    }
 
     // If this is from an emergency, update the emergency record
     if (admissionData.emergencyId) {
@@ -104,14 +56,12 @@ export async function POST(req) {
     }
 
     return Response.json({
-      message: "Patient admitted successfully" + (assignedBed ? ` and assigned to bed ${assignedBed} in ${assignedWard}` : ""),
+      message: "Patient admitted successfully. You can now assign a bed from the Bed Management page.",
       admission: {
         _id: admission._id,
         patientId: admission.patientId,
         admissionNumber: admission.admissionNumber,
         triageLevel: admission.triageLevel,
-        assignedBed: admission.assignedBed,
-        assignedWard: admission.assignedWard,
         name: `${admission.firstName} ${admission.lastName}`
       }
     }, { status: 201 });
