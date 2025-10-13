@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const PatientAdmissionSchema = new mongoose.Schema(
   {
-    patientId: { type: String, required: true, unique: true }, // Generated unique ID
+    patientId: { type: String, required: false, unique: true }, // Generated unique ID
     emergencyId: { type: mongoose.Schema.Types.ObjectId, ref: "Emergency" }, // Link to emergency if from EMS
     
     // Patient Information
