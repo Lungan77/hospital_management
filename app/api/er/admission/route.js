@@ -18,9 +18,10 @@ export async function POST(req) {
       return Response.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    // Handle bed assignment if wardId and bedId are provided
+    // Validate bed assignment if wardId and bedId are provided
     let assignedBed = null;
     let assignedWard = null;
+    let bedToAssign = null;
 
     if (admissionData.bedId && admissionData.wardId) {
       const bed = await Bed.findById(admissionData.bedId).populate("wardId");
@@ -39,14 +40,7 @@ export async function POST(req) {
 
       assignedBed = bed.bedNumber;
       assignedWard = bed.wardId.wardName;
-
-      // Mark bed as occupied
-      bed.status = "Occupied";
-      bed.assignedAt = new Date();
-      bed.assignedBy = auth.session.user.id;
-
-      // We'll set currentPatient after admission is created
-      await bed.save();
+      bedToAssign = bed;
     }
 
     // Create patient admission record
@@ -67,24 +61,24 @@ export async function POST(req) {
     // Save to generate IDs via pre-save hook
     await admission.save();
 
-    // Update bed with patient information
-    if (admissionData.bedId) {
-      await Bed.findByIdAndUpdate(admissionData.bedId, {
-        currentPatient: admission._id,
-        $push: {
-          occupancyHistory: {
-            patientId: admission._id,
-            admittedAt: new Date(),
-            assignedBy: auth.session.user.id
-          }
-        }
+    // Now update bed with patient information (only after patient is successfully created)
+    if (bedToAssign) {
+      bedToAssign.status = "Occupied";
+      bedToAssign.currentPatient = admission._id;
+      bedToAssign.assignedAt = new Date();
+      bedToAssign.assignedBy = auth.session.user.id;
+
+      // Add to occupancy history
+      bedToAssign.occupancyHistory.push({
+        patientId: admission._id,
+        admittedAt: new Date(),
+        assignedBy: auth.session.user.id
       });
 
+      await bedToAssign.save();
+
       // Update ward capacity
-      const ward = await Ward.findById(admissionData.wardId);
-      if (ward) {
-        await ward.updateCapacity();
-      }
+      await bedToAssign.wardId.updateCapacity();
     }
 
     // If this is from an emergency, update the emergency record

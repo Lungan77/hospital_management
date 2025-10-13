@@ -12,6 +12,11 @@ export async function POST(req) {
     await connectDB();
     const { bedId, patientId } = await req.json();
 
+    // Validate required fields
+    if (!bedId || !patientId) {
+      return Response.json({ error: "Missing required fields: bedId and patientId are required" }, { status: 400 });
+    }
+
     // Validate bed exists and is available
     const bed = await Bed.findById(bedId).populate("wardId");
     if (!bed) {
@@ -19,7 +24,7 @@ export async function POST(req) {
     }
 
     if (bed.status !== "Available") {
-      return Response.json({ error: "Bed is not available" }, { status: 400 });
+      return Response.json({ error: `Bed is not available (Current status: ${bed.status})` }, { status: 400 });
     }
 
     // Validate patient exists and is not already assigned
@@ -29,15 +34,21 @@ export async function POST(req) {
     }
 
     if (patient.assignedBed) {
-      return Response.json({ error: "Patient is already assigned to a bed" }, { status: 400 });
+      return Response.json({ error: `Patient is already assigned to bed ${patient.assignedBed}` }, { status: 400 });
     }
 
-    // Assign bed to patient
+    // Update patient record FIRST
+    patient.assignedBed = bed.bedNumber;
+    patient.assignedWard = bed.wardId.wardName;
+    patient.status = "In Treatment";
+    await patient.save();
+
+    // Now assign bed to patient (only after patient is successfully updated)
     bed.status = "Occupied";
     bed.currentPatient = patientId;
     bed.assignedAt = new Date();
     bed.assignedBy = auth.session.user.id;
-    
+
     // Add to occupancy history
     bed.occupancyHistory.push({
       patientId: patientId,
@@ -46,12 +57,6 @@ export async function POST(req) {
     });
 
     await bed.save();
-
-    // Update patient record
-    patient.assignedBed = bed.bedNumber;
-    patient.assignedWard = bed.wardId.wardName;
-    patient.status = "In Treatment";
-    await patient.save();
 
     // Update ward capacity
     await bed.wardId.updateCapacity();
@@ -63,6 +68,10 @@ export async function POST(req) {
     }, { status: 200 });
   } catch (error) {
     console.error("Error assigning bed:", error);
-    return Response.json({ error: "Error assigning bed" }, { status: 500 });
+    console.error("Error details:", error.message);
+    return Response.json({
+      error: "Error assigning bed",
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    }, { status: 500 });
   }
 }
