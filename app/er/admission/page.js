@@ -88,7 +88,11 @@ function EmergencyAdmission() {
       const res = await fetch("/api/er/handovers");
       const data = await res.json();
       if (res.ok) {
-        const verifiedHandovers = (data.handovers || []).filter(h => h.erVerified && !h.admitted);
+        const verifiedHandovers = (data.handovers || []).filter(h =>
+          h.handover?.completed &&
+          h.handover?.verified &&
+          h.status !== "Admitted to Hospital"
+        );
         setHandoverPatients(verifiedHandovers);
       }
     } catch (error) {
@@ -97,42 +101,41 @@ function EmergencyAdmission() {
   };
 
 
-  const selectHandoverPatient = (handover) => {
-    setSelectedHandover(handover);
-    // Pre-populate form with handover data
+  const selectHandoverPatient = (emergency) => {
+    setSelectedHandover(emergency);
+    // Pre-populate form with emergency/handover data
+    const nameParts = emergency.patientName?.split(' ') || ['', ''];
     setAdmissionData(prev => ({
       ...prev,
-      firstName: handover.firstName || "",
-      lastName: handover.lastName || "",
-      dateOfBirth: handover.dateOfBirth || "",
-      gender: handover.gender || "",
-      phone: handover.phone || "",
-      address: handover.address || "",
-      chiefComplaint: handover.chiefComplaint || "",
-      presentingSymptoms: handover.presentingSymptoms || "",
-      medicalHistory: handover.medicalHistory || "",
-      allergies: handover.allergies || "",
-      currentMedications: handover.currentMedications || "",
-      triageLevel: handover.triageLevel || "",
+      firstName: nameParts[0] || "",
+      lastName: nameParts.slice(1).join(' ') || "",
+      gender: emergency.patientGender || "",
+      address: emergency.address || "",
+      chiefComplaint: emergency.chiefComplaint || emergency.patientCondition || "",
+      presentingSymptoms: emergency.symptoms || "",
+      medicalHistory: emergency.medicalHistory || "",
+      allergies: emergency.allergies || "",
+      currentMedications: emergency.currentMedications || "",
       admissionType: "Emergency",
       arrivalMethod: "Ambulance",
-      emergencyId: handover.emergencyId?._id || handover.emergencyId
+      emergencyId: emergency._id
     }));
 
     // Pre-populate vitals if available
-    if (handover.vitalSigns) {
+    if (emergency.vitalSigns && emergency.vitalSigns.length > 0) {
+      const latestVitals = emergency.vitalSigns[emergency.vitalSigns.length - 1];
       setAdmissionData(prev => ({
         ...prev,
         vitalSigns: {
-          bloodPressure: handover.vitalSigns.bloodPressure || "",
-          heartRate: handover.vitalSigns.heartRate?.toString() || "",
-          temperature: handover.vitalSigns.temperature?.toString() || "",
-          respiratoryRate: handover.vitalSigns.respiratoryRate?.toString() || "",
-          oxygenSaturation: handover.vitalSigns.oxygenSaturation?.toString() || "",
+          bloodPressure: latestVitals.bloodPressure || "",
+          heartRate: latestVitals.heartRate?.toString() || "",
+          temperature: latestVitals.temperature?.toString() || "",
+          respiratoryRate: latestVitals.respiratoryRate?.toString() || "",
+          oxygenSaturation: latestVitals.oxygenSaturation?.toString() || "",
           weight: "",
           height: ""
         },
-        painScale: handover.painScale || 0
+        painScale: latestVitals.painScale || 0
       }));
     }
 
@@ -325,12 +328,12 @@ function EmergencyAdmission() {
                       >
                         <div className="flex justify-between items-start mb-4">
                           <div>
-                            <h3 className="font-bold text-lg text-gray-900">{patient.firstName} {patient.lastName}</h3>
-                            <p className="text-gray-600">Patient ID: {patient.patientId}</p>
+                            <h3 className="font-bold text-lg text-gray-900">{patient.patientName || "Unknown Patient"}</h3>
+                            <p className="text-gray-600">Incident: {patient.incidentNumber}</p>
                           </div>
                           <div className="flex gap-2">
-                            <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-semibold border ${getTriageColor(patient.triageLevel)}`}>
-                              {patient.triageLevel}
+                            <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-semibold border ${getPriorityColor(patient.priority)}`}>
+                              {patient.priority}
                             </span>
                           </div>
                         </div>
@@ -338,22 +341,22 @@ function EmergencyAdmission() {
                         <div className="grid md:grid-cols-2 gap-4 text-sm">
                           <div className="flex items-center gap-2 text-gray-600">
                             <Clock className="w-4 h-4 text-blue-500" />
-                            <span>Handover: {new Date(patient.handoverTime).toLocaleString()}</span>
+                            <span>Handover: {new Date(patient.handover?.handoverTime).toLocaleString()}</span>
                           </div>
                           <div className="flex items-center gap-2 text-gray-600">
                             <Stethoscope className="w-4 h-4 text-purple-500" />
-                            <span>{patient.chiefComplaint}</span>
+                            <span>{patient.chiefComplaint || patient.patientCondition}</span>
                           </div>
                         </div>
 
                         <div className="mt-4 p-3 bg-green-50 rounded-lg border border-green-200">
                           <div className="flex items-center gap-2 text-green-700 mb-1">
                             <CheckCircle className="w-4 h-4" />
-                            <span className="text-sm font-semibold">ER Verified by {patient.erVerifiedBy?.name || 'ER Staff'}</span>
+                            <span className="text-sm font-semibold">ER Verified by {patient.handover?.verifiedBy?.name || 'ER Staff'}</span>
                           </div>
-                          {patient.emergencyId?.incidentNumber && (
-                            <p className="text-xs text-gray-600">Incident: {patient.emergencyId.incidentNumber}</p>
-                          )}
+                          <p className="text-xs text-gray-600 mt-1">
+                            {patient.handover?.paramedicSummary || patient.patientCondition}
+                          </p>
                         </div>
                       </div>
                     ))}
