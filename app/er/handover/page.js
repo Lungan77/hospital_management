@@ -1,12 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
 import withAuth from "@/hoc/withAuth";
-import { 
-  FileText, 
-  CheckCircle, 
-  Clock, 
-  User, 
-  Activity, 
+import {
+  FileText,
+  CheckCircle,
+  Clock,
+  User,
+  Activity,
   Heart,
   AlertTriangle,
   Truck,
@@ -18,7 +18,10 @@ import {
   Save,
   RefreshCw,
   Search,
-  Filter
+  Filter,
+  UserPlus,
+  Bed,
+  X
 } from "lucide-react";
 
 function ERHandoverVerification() {
@@ -30,11 +33,24 @@ function ERHandoverVerification() {
   const [searchTerm, setSearchTerm] = useState("");
   const [verificationNotes, setVerificationNotes] = useState("");
   const [verifying, setVerifying] = useState(false);
+  const [showAdmitModal, setShowAdmitModal] = useState(false);
+  const [admittingPatient, setAdmittingPatient] = useState(null);
+  const [wards, setWards] = useState([]);
+  const [availableBeds, setAvailableBeds] = useState([]);
+  const [selectedWardId, setSelectedWardId] = useState("");
+  const [selectedBedId, setSelectedBedId] = useState("");
+  const [triageLevel, setTriageLevel] = useState("");
+  const [admitting, setAdmitting] = useState(false);
 
   useEffect(() => {
     fetchHandovers();
+    fetchWards();
+    fetchBeds();
     // Set up real-time updates
-    const interval = setInterval(fetchHandovers, 30000);
+    const interval = setInterval(() => {
+      fetchHandovers();
+      fetchBeds();
+    }, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -51,6 +67,104 @@ function ERHandoverVerification() {
       setMessage("Error loading handover data");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchWards = async () => {
+    try {
+      const res = await fetch("/api/wards");
+      const data = await res.json();
+      if (res.ok) {
+        setWards(data.wards || []);
+      }
+    } catch (error) {
+      console.error("Error fetching wards");
+    }
+  };
+
+  const fetchBeds = async () => {
+    try {
+      const res = await fetch("/api/beds");
+      const data = await res.json();
+      if (res.ok) {
+        const available = data.beds?.filter(bed => bed.status === "Available") || [];
+        setAvailableBeds(available);
+      }
+    } catch (error) {
+      console.error("Error fetching beds");
+    }
+  };
+
+  const openAdmitModal = (handover) => {
+    setAdmittingPatient(handover);
+    setTriageLevel("2 - Emergency");
+    setSelectedWardId("");
+    setSelectedBedId("");
+    setShowAdmitModal(true);
+  };
+
+  const handleAdmitPatient = async () => {
+    if (!selectedWardId || !selectedBedId || !triageLevel) {
+      setMessage("Please select ward, bed, and triage level");
+      return;
+    }
+
+    setAdmitting(true);
+    try {
+      const emergency = admittingPatient;
+      const latestVitals = emergency.vitalSigns?.[emergency.vitalSigns.length - 1] || {};
+
+      const admissionData = {
+        firstName: emergency.patientName?.split(' ')[0] || 'Unknown',
+        lastName: emergency.patientName?.split(' ').slice(1).join(' ') || 'Patient',
+        gender: emergency.patientGender || 'Other',
+        phone: emergency.callerPhone,
+        emergencyContact: {
+          name: emergency.callerName,
+          relationship: emergency.callerRelation || 'Unknown',
+          phone: emergency.callerPhone
+        },
+        admissionType: 'Emergency',
+        arrivalMethod: 'Ambulance',
+        chiefComplaint: emergency.chiefComplaint || emergency.patientCondition || 'Emergency admission',
+        presentingSymptoms: emergency.symptoms || '',
+        allergies: emergency.allergies || '',
+        currentMedications: emergency.currentMedications || '',
+        medicalHistory: emergency.medicalHistory || '',
+        triageLevel: triageLevel,
+        triageNotes: emergency.handover?.paramedicSummary || emergency.patientCondition,
+        vitalSigns: {
+          bloodPressure: latestVitals.bloodPressure,
+          heartRate: latestVitals.heartRate,
+          temperature: latestVitals.temperature,
+          respiratoryRate: latestVitals.respiratoryRate,
+          oxygenSaturation: latestVitals.oxygenSaturation
+        },
+        wardId: selectedWardId,
+        bedId: selectedBedId,
+        emergencyId: emergency._id
+      };
+
+      const res = await fetch("/api/er/admission", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(admissionData),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setMessage(data.message);
+        fetchHandovers();
+        fetchBeds();
+        setShowAdmitModal(false);
+        setAdmittingPatient(null);
+      } else {
+        setMessage(data.error || "Error admitting patient");
+      }
+    } catch (error) {
+      setMessage("Error admitting patient");
+    } finally {
+      setAdmitting(false);
     }
   };
 
@@ -296,13 +410,22 @@ function ERHandoverVerification() {
                         Review Handover
                       </button>
                       {!handover.handover?.verified && (
-                        <button
-                          onClick={() => verifyHandover(handover._id)}
-                          className="flex items-center gap-2 bg-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors"
-                        >
-                          <CheckCircle className="w-5 h-5" />
-                          Verify Handover
-                        </button>
+                        <>
+                          <button
+                            onClick={() => verifyHandover(handover._id)}
+                            className="flex items-center gap-2 bg-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors"
+                          >
+                            <CheckCircle className="w-5 h-5" />
+                            Verify Handover
+                          </button>
+                          <button
+                            onClick={() => openAdmitModal(handover)}
+                            className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors"
+                          >
+                            <UserPlus className="w-5 h-5" />
+                            Admit Patient
+                          </button>
+                        </>
                       )}
                     </div>
                   </div>
@@ -506,6 +629,146 @@ function ERHandoverVerification() {
           </div>
         )}
       </div>
+
+      {/* Admit Patient Modal */}
+      {showAdmitModal && admittingPatient && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white">
+              <h2 className="text-2xl font-bold text-gray-900">Admit Patient from Handover</h2>
+              <button
+                onClick={() => {
+                  setShowAdmitModal(false);
+                  setAdmittingPatient(null);
+                }}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X className="w-6 h-6 text-gray-600" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {/* Patient Information */}
+              <div className="bg-blue-50 rounded-xl p-4">
+                <h3 className="font-bold text-blue-900 mb-3">Patient Information</h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="font-semibold text-blue-700">Name:</span>
+                    <p className="text-blue-900">{admittingPatient.patientName || 'Unknown'}</p>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-blue-700">Condition:</span>
+                    <p className="text-blue-900">{admittingPatient.patientCondition}</p>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-blue-700">Emergency Type:</span>
+                    <p className="text-blue-900">{admittingPatient.type}</p>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-blue-700">Priority:</span>
+                    <p className="text-blue-900">{admittingPatient.priority}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Triage Level */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Triage Level *
+                </label>
+                <select
+                  value={triageLevel}
+                  onChange={(e) => setTriageLevel(e.target.value)}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Select triage level...</option>
+                  <option value="1 - Resuscitation">1 - Resuscitation (Immediate)</option>
+                  <option value="2 - Emergency">2 - Emergency (10 minutes)</option>
+                  <option value="3 - Urgent">3 - Urgent (30 minutes)</option>
+                  <option value="4 - Less Urgent">4 - Less Urgent (60 minutes)</option>
+                  <option value="5 - Non-Urgent">5 - Non-Urgent (120 minutes)</option>
+                </select>
+              </div>
+
+              {/* Ward Selection */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Select Ward *
+                </label>
+                <select
+                  value={selectedWardId}
+                  onChange={(e) => {
+                    setSelectedWardId(e.target.value);
+                    setSelectedBedId("");
+                  }}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Choose a ward...</option>
+                  {wards.map((ward) => (
+                    <option key={ward._id} value={ward._id}>
+                      {ward.wardName} - {ward.wardType} (Available: {ward.capacity?.availableBeds || 0})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Bed Selection */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Select Bed *
+                </label>
+                <select
+                  value={selectedBedId}
+                  onChange={(e) => setSelectedBedId(e.target.value)}
+                  disabled={!selectedWardId}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                >
+                  <option value="">Choose a bed...</option>
+                  {availableBeds
+                    .filter(bed => bed.wardId?._id === selectedWardId)
+                    .map((bed) => (
+                      <option key={bed._id} value={bed._id}>
+                        {bed.bedNumber} - {bed.bedType}
+                      </option>
+                    ))}
+                </select>
+                {selectedWardId && availableBeds.filter(bed => bed.wardId?._id === selectedWardId).length === 0 && (
+                  <p className="text-sm text-red-600 mt-2">No available beds in this ward</p>
+                )}
+              </div>
+            </div>
+
+            <div className="p-6 border-t border-gray-200 flex gap-3 sticky bottom-0 bg-white">
+              <button
+                onClick={() => {
+                  setShowAdmitModal(false);
+                  setAdmittingPatient(null);
+                }}
+                className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAdmitPatient}
+                disabled={admitting || !selectedWardId || !selectedBedId || !triageLevel}
+                className="flex-1 flex items-center justify-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50"
+              >
+                {admitting ? (
+                  <>
+                    <RefreshCw className="w-5 h-5 animate-spin" />
+                    Admitting...
+                  </>
+                ) : (
+                  <>
+                    <UserPlus className="w-5 h-5" />
+                    Admit Patient
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
