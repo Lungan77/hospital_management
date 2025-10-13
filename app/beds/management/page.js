@@ -602,18 +602,50 @@ function BedManagement() {
                       Current Patient
                     </h4>
                     <div className="space-y-2 text-sm">
-                      <p className="text-blue-700">
-                        <strong>Name:</strong> {bed.currentPatient.firstName} {bed.currentPatient.lastName}
-                      </p>
-                      <p className="text-blue-700">
-                        <strong>ID:</strong> {bed.currentPatient.patientId}
-                      </p>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="text-blue-700">
+                            <strong>Name:</strong> {bed.currentPatient.firstName} {bed.currentPatient.lastName}
+                          </p>
+                          <p className="text-blue-700">
+                            <strong>ID:</strong> {bed.currentPatient.patientId}
+                          </p>
+                        </div>
+                        {bed.currentPatient.triageLevel && (
+                          <span className={`text-xs px-2 py-1 rounded-full font-semibold ${
+                            bed.currentPatient.triageLevel.includes('1') ? 'bg-red-100 text-red-700' :
+                            bed.currentPatient.triageLevel.includes('2') ? 'bg-orange-100 text-orange-700' :
+                            bed.currentPatient.triageLevel.includes('3') ? 'bg-yellow-100 text-yellow-700' :
+                            'bg-green-100 text-green-700'
+                          }`}>
+                            {bed.currentPatient.triageLevel}
+                          </span>
+                        )}
+                      </div>
                       <p className="text-blue-700">
                         <strong>Admitted:</strong> {bed.assignedAt ? new Date(bed.assignedAt).toLocaleString() : "Unknown"}
                       </p>
                       <p className="text-blue-700">
-                        <strong>Condition:</strong> {bed.currentPatient.chiefComplaint}
+                        <strong>Condition:</strong> {bed.currentPatient.chiefComplaint || "Not specified"}
                       </p>
+                      {bed.currentPatient.status && (
+                        <p className="text-blue-700">
+                          <strong>Status:</strong> <span className="font-semibold">{bed.currentPatient.status}</span>
+                        </p>
+                      )}
+                      {bed.assignedBy?.name && (
+                        <p className="text-blue-600 text-xs pt-2 border-t border-blue-200">
+                          Assigned by: {bed.assignedBy.name}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ) : bed.status === "Occupied" ? (
+                  <div className="p-6 border-b border-gray-100 bg-red-50">
+                    <div className="text-center py-4">
+                      <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-2" />
+                      <p className="text-red-600 font-semibold text-sm">Error: Bed marked as Occupied without patient</p>
+                      <p className="text-red-500 text-xs mt-1">This bed status needs correction</p>
                     </div>
                   </div>
                 ) : (
@@ -667,8 +699,8 @@ function BedManagement() {
                         Assign Patient
                       </button>
                     )}
-                    
-                    {bed.status === "Occupied" && (
+
+                    {bed.status === "Occupied" && bed.currentPatient && (
                       <>
                         <button
                           onClick={() => dischargeBed(bed._id)}
@@ -689,7 +721,17 @@ function BedManagement() {
                         </button>
                       </>
                     )}
-                    
+
+                    {bed.status === "Occupied" && !bed.currentPatient && (
+                      <button
+                        onClick={() => updateBedStatus(bed._id, "Available")}
+                        className="col-span-2 bg-red-50 text-red-600 py-3 px-4 rounded-xl text-sm font-semibold hover:bg-red-100 transition-colors flex items-center justify-center gap-2"
+                      >
+                        <AlertTriangle className="w-4 h-4" />
+                        Fix Status - Mark Available
+                      </button>
+                    )}
+
                     {bed.status === "Cleaning" && (
                       <button
                         onClick={() => updateBedStatus(bed._id, "Available")}
@@ -699,14 +741,16 @@ function BedManagement() {
                         Mark Clean
                       </button>
                     )}
-                    
-                    <button
-                      onClick={() => updateBedStatus(bed._id, "Maintenance")}
-                      className="bg-orange-50 text-orange-600 py-3 px-4 rounded-xl text-sm font-semibold hover:bg-orange-100 transition-colors flex items-center justify-center gap-2"
-                    >
-                      <Wrench className="w-4 h-4" />
-                      Maintenance
-                    </button>
+
+                    {bed.status !== "Occupied" && (
+                      <button
+                        onClick={() => updateBedStatus(bed._id, "Maintenance")}
+                        className="bg-orange-50 text-orange-600 py-3 px-4 rounded-xl text-sm font-semibold hover:bg-orange-100 transition-colors flex items-center justify-center gap-2"
+                      >
+                        <Wrench className="w-4 h-4" />
+                        Maintenance
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

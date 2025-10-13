@@ -15,6 +15,20 @@ export async function PUT(req) {
       return Response.json({ error: "Bed not found" }, { status: 404 });
     }
 
+    // Prevent setting status to Occupied without a patient
+    if (status === "Occupied" && !bed.currentPatient) {
+      return Response.json({
+        error: "Cannot mark bed as Occupied without assigning a patient. Please use the bed assignment feature."
+      }, { status: 400 });
+    }
+
+    // Prevent changing status if bed is occupied
+    if (bed.status === "Occupied" && bed.currentPatient && status !== "Occupied") {
+      return Response.json({
+        error: "Cannot change status of occupied bed. Please discharge the patient first."
+      }, { status: 400 });
+    }
+
     const previousStatus = bed.status;
     bed.status = status;
 
@@ -69,6 +83,10 @@ export async function PUT(req) {
     }, { status: 200 });
   } catch (error) {
     console.error("Error updating bed status:", error);
-    return Response.json({ error: "Error updating bed status" }, { status: 500 });
+    console.error("Error details:", error.message);
+    return Response.json({
+      error: "Error updating bed status",
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    }, { status: 500 });
   }
 }

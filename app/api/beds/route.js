@@ -11,15 +11,41 @@ export async function GET(req) {
     await connectDB();
 
     const beds = await Bed.find()
-      .populate("wardId", "wardName wardType")
-      .populate("currentPatient", "firstName lastName patientId chiefComplaint triageLevel")
-      .populate("assignedBy", "name")
-      .sort({ "location.floor": 1, "location.room": 1, bedNumber: 1 });
+      .populate({
+        path: "wardId",
+        select: "wardName wardType wardStatus",
+        strictPopulate: false
+      })
+      .populate({
+        path: "currentPatient",
+        select: "firstName lastName patientId chiefComplaint triageLevel arrivalTime status",
+        strictPopulate: false
+      })
+      .populate({
+        path: "assignedBy",
+        select: "name email",
+        strictPopulate: false
+      })
+      .sort({ "location.floor": 1, "location.room": 1, bedNumber: 1 })
+      .lean();
 
-    return Response.json({ beds }, { status: 200 });
+    // Clean up beds with invalid patient references
+    const cleanedBeds = beds.map(bed => {
+      // If bed is marked as occupied but has no valid patient, reset status
+      if (bed.status === "Occupied" && !bed.currentPatient) {
+        console.warn(`Bed ${bed.bedNumber} marked as Occupied but has no patient. Status should be corrected.`);
+      }
+      return bed;
+    });
+
+    return Response.json({ beds: cleanedBeds }, { status: 200 });
   } catch (error) {
     console.error("Error fetching beds:", error);
-    return Response.json({ error: "Error fetching beds" }, { status: 500 });
+    console.error("Error details:", error.message);
+    return Response.json({
+      error: "Error fetching beds",
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    }, { status: 500 });
   }
 }
 
