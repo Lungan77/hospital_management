@@ -382,12 +382,45 @@ function EmergencyAdmission() {
                   <p className="text-gray-600 mb-8">Start registration for patients arriving without EMS</p>
                   <button
                     onClick={() => {
-                      setSelectedEmergency(null);
-                      setAdmissionData(prev => ({
-                        ...prev,
+                      setSelectedHandover(null);
+                      setAdmissionData({
+                        firstName: "",
+                        lastName: "",
+                        dateOfBirth: "",
+                        gender: "",
+                        idNumber: "",
+                        phone: "",
+                        address: "",
+                        emergencyContact: {
+                          name: "",
+                          relationship: "",
+                          phone: ""
+                        },
                         admissionType: "Walk-in",
-                        arrivalMethod: "Walk-in"
-                      }));
+                        arrivalMethod: "Walk-in",
+                        chiefComplaint: "",
+                        presentingSymptoms: "",
+                        painScale: 0,
+                        allergies: "",
+                        currentMedications: "",
+                        medicalHistory: "",
+                        triageLevel: "",
+                        triageNotes: "",
+                        vitalSigns: {
+                          bloodPressure: "",
+                          heartRate: "",
+                          temperature: "",
+                          respiratoryRate: "",
+                          oxygenSaturation: "",
+                          weight: "",
+                          height: ""
+                        },
+                        insurance: {
+                          provider: "",
+                          policyNumber: "",
+                          groupNumber: ""
+                        }
+                      });
                       setStep(2);
                     }}
                     className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-4 rounded-2xl font-semibold text-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg hover:shadow-blue-500/25 transform hover:scale-105"
