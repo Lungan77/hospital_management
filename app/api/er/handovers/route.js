@@ -14,14 +14,31 @@ export async function GET(req) {
       "handover.completed": true,
       arrivedHospitalAt: { $exists: true }
     })
-    .populate("ambulanceId", "callSign vehicleNumber")
-    .populate("dispatcherId", "name")
-    .populate("handover.receivingStaff", "name")
-    .sort({ arrivedHospitalAt: -1 });
+    .populate({
+      path: "ambulanceId",
+      select: "callSign vehicleNumber",
+      strictPopulate: false
+    })
+    .populate({
+      path: "dispatcherId",
+      select: "name",
+      strictPopulate: false
+    })
+    .populate({
+      path: "handover.receivingStaff",
+      select: "name",
+      strictPopulate: false
+    })
+    .sort({ arrivedHospitalAt: -1 })
+    .lean();
 
-    return Response.json({ handovers }, { status: 200 });
+    return Response.json({ handovers: handovers || [] }, { status: 200 });
   } catch (error) {
     console.error("Error fetching handovers:", error);
-    return Response.json({ error: "Error fetching handovers" }, { status: 500 });
+    console.error("Error details:", error.message);
+    return Response.json({
+      error: "Error fetching handovers",
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    }, { status: 500 });
   }
 }
