@@ -68,6 +68,31 @@ const PatientAdmissionSchema = new mongoose.Schema(
     assignedWard: { type: String },
     assignedDoctor: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     assignedNurse: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    assignedSpecialists: [{
+      specialistId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+      specialty: { type: String },
+      assignedAt: { type: Date, default: Date.now },
+      assignedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+      notes: { type: String }
+    }],
+
+    // Critical Equipment and Resources
+    assignedEquipment: [{
+      equipmentType: {
+        type: String,
+        enum: ["Ventilator", "Monitor", "Oxygen", "IV Pump", "Defibrillator", "Suction", "Other"]
+      },
+      equipmentId: { type: String },
+      assignedAt: { type: Date, default: Date.now },
+      assignedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+      status: {
+        type: String,
+        enum: ["Active", "Removed", "Maintenance"],
+        default: "Active"
+      },
+      notes: { type: String },
+      removedAt: { type: Date }
+    }],
     
     // Status Tracking
     status: { 
