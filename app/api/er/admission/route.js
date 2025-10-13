@@ -50,7 +50,7 @@ export async function POST(req) {
     }
 
     // Create patient admission record
-    const admission = await PatientAdmission.create({
+    const admission = new PatientAdmission({
       ...admissionData,
       assignedBed: assignedBed || admissionData.assignedBed,
       assignedWard: assignedWard || admissionData.assignedWard,
@@ -63,6 +63,9 @@ export async function POST(req) {
         recordedAt: new Date()
       }
     });
+
+    // Save to generate IDs via pre-save hook
+    await admission.save();
 
     // Update bed with patient information
     if (admissionData.bedId) {
@@ -120,7 +123,19 @@ export async function POST(req) {
     }, { status: 201 });
   } catch (error) {
     console.error("Error admitting patient:", error);
-    return Response.json({ error: "Error admitting patient" }, { status: 500 });
+    console.error("Error details:", error.message);
+
+    // Handle specific MongoDB errors
+    if (error.code === 11000) {
+      return Response.json({
+        error: "Duplicate patient record detected. Please try again."
+      }, { status: 400 });
+    }
+
+    return Response.json({
+      error: "Error admitting patient",
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    }, { status: 500 });
   }
 }
 
@@ -134,16 +149,42 @@ export async function GET(req) {
     const admissions = await PatientAdmission.find({
       status: { $in: ["Admitted", "In Treatment", "Waiting"] }
     })
-    .populate("triageNurse", "name")
-    .populate("admittedBy", "name")
-    .populate("assignedDoctor", "name")
-    .populate("assignedNurse", "name")
+    .populate({
+      path: "triageNurse",
+      select: "name",
+      strictPopulate: false
+    })
+    .populate({
+      path: "admittedBy",
+      select: "name",
+      strictPopulate: false
+    })
+    .populate({
+      path: "assignedDoctor",
+      select: "name",
+      strictPopulate: false
+    })
+    .populate({
+      path: "assignedNurse",
+      select: "name",
+      strictPopulate: false
+    })
+    .populate({
+      path: "emergencyId",
+      select: "incidentNumber patientCondition handover",
+      strictPopulate: false
+    })
     .sort({ arrivalTime: -1 })
-    .limit(50);
+    .limit(50)
+    .lean();
 
-    return Response.json({ admissions }, { status: 200 });
+    return Response.json({ admissions: admissions || [] }, { status: 200 });
   } catch (error) {
     console.error("Error fetching admissions:", error);
-    return Response.json({ error: "Error fetching admissions" }, { status: 500 });
+    console.error("Error details:", error.message);
+    return Response.json({
+      error: "Error fetching admissions",
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    }, { status: 500 });
   }
 }
