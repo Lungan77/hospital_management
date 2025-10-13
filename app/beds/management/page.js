@@ -31,6 +31,7 @@ function BedManagement() {
   const [beds, setBeds] = useState([]);
   const [wards, setWards] = useState([]);
   const [patients, setPatients] = useState([]);
+  const [handoverPatients, setHandoverPatients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [filter, setFilter] = useState("all");
@@ -61,10 +62,12 @@ function BedManagement() {
     fetchBedData();
     fetchWards();
     fetchPatients();
+    fetchHandoverPatients();
     // Set up real-time updates
     const interval = setInterval(() => {
       fetchBedData();
       fetchPatients();
+      fetchHandoverPatients();
     }, 30000);
     return () => clearInterval(interval);
   }, []);
@@ -109,6 +112,18 @@ function BedManagement() {
     }
   };
 
+  const fetchHandoverPatients = async () => {
+    try {
+      const res = await fetch("/api/er/unassigned-patients");
+      const data = await res.json();
+      if (res.ok) {
+        setHandoverPatients(data.patients || []);
+      }
+    } catch (error) {
+      console.error("Error fetching handover patients");
+    }
+  };
+
   const assignBed = async () => {
     if (!selectedBed || !selectedPatient) {
       setMessage("Please select both a bed and a patient");
@@ -130,6 +145,7 @@ function BedManagement() {
         setMessage(data.message);
         fetchBedData();
         fetchPatients();
+        fetchHandoverPatients();
         setShowAssignModal(false);
         setSelectedBed(null);
         setSelectedPatient("");
@@ -183,6 +199,7 @@ function BedManagement() {
         setMessage(data.message);
         fetchBedData();
         fetchPatients();
+        fetchHandoverPatients();
       } else {
         setMessage(data.error);
       }
@@ -331,6 +348,7 @@ function BedManagement() {
                   onClick={() => {
                     fetchBedData();
                     fetchPatients();
+                    fetchHandoverPatients();
                   }}
                   className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors"
                 >
@@ -727,18 +745,70 @@ function BedManagement() {
                 
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Select Patient</label>
-                  <select
-                    value={selectedPatient}
-                    onChange={(e) => setSelectedPatient(e.target.value)}
-                    className="w-full p-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Choose a patient</option>
-                    {patients.filter(p => !p.assignedBed).map((patient) => (
-                      <option key={patient._id} value={patient._id}>
-                        {patient.firstName} {patient.lastName} - {patient.chiefComplaint} (Triage: {patient.triageLevel})
-                      </option>
-                    ))}
-                  </select>
+
+                  {handoverPatients.length > 0 && (
+                    <div className="mb-4 p-4 bg-green-50 rounded-xl border border-green-200">
+                      <div className="flex items-center gap-2 mb-3">
+                        <CheckCircle className="w-5 h-5 text-green-600" />
+                        <h4 className="font-semibold text-green-800">Verified Handover Patients ({handoverPatients.length})</h4>
+                      </div>
+                      <div className="space-y-2 max-h-60 overflow-y-auto">
+                        {handoverPatients.map((patient) => (
+                          <div
+                            key={patient._id}
+                            onClick={() => setSelectedPatient(patient._id)}
+                            className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                              selectedPatient === patient._id
+                                ? "border-green-500 bg-green-100"
+                                : "border-green-200 bg-white hover:border-green-400 hover:bg-green-50"
+                            }`}
+                          >
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <p className="font-semibold text-gray-900">
+                                  {patient.firstName} {patient.lastName}
+                                </p>
+                                <p className="text-sm text-gray-600">ID: {patient.patientId}</p>
+                                <p className="text-sm text-gray-600">Complaint: {patient.chiefComplaint}</p>
+                                <p className="text-sm font-medium text-orange-600">Triage: {patient.triageLevel}</p>
+                              </div>
+                              <div className="text-xs text-green-600 font-semibold bg-green-100 px-2 py-1 rounded">
+                                ER Verified
+                              </div>
+                            </div>
+                            {patient.emergencyId?.incidentNumber && (
+                              <p className="text-xs text-gray-500 mt-1">Incident: {patient.emergencyId.incidentNumber}</p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {patients.filter(p => !p.assignedBed && !handoverPatients.find(hp => hp._id === p._id)).length > 0 && (
+                    <div>
+                      <h4 className="font-semibold text-gray-700 mb-2 text-sm">Other Unassigned Patients</h4>
+                      <select
+                        value={selectedPatient}
+                        onChange={(e) => setSelectedPatient(e.target.value)}
+                        className="w-full p-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="">Choose a patient</option>
+                        {patients.filter(p => !p.assignedBed && !handoverPatients.find(hp => hp._id === p._id)).map((patient) => (
+                          <option key={patient._id} value={patient._id}>
+                            {patient.firstName} {patient.lastName} - {patient.chiefComplaint} (Triage: {patient.triageLevel})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  {handoverPatients.length === 0 && patients.filter(p => !p.assignedBed).length === 0 && (
+                    <div className="p-6 text-center bg-gray-50 rounded-xl border border-gray-200">
+                      <User className="w-12 h-12 text-gray-300 mx-auto mb-2" />
+                      <p className="text-gray-600">No unassigned patients available</p>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="flex gap-4">
