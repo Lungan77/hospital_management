@@ -1,4 +1,4 @@
-patientIdimport { connectDB } from "@/lib/mongodb";
+import { connectDB } from "@/lib/mongodb";
 import PatientAdmission from "@/models/PatientAdmission";
 import Emergency from "@/models/Emergency";
 import { isAuthenticated } from "@/hoc/protectedRoute";
