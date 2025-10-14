@@ -85,7 +85,7 @@ export async function GET(req) {
     }
 
     const treatmentPlans = await TreatmentPlan.find({ patientAdmissionId })
-      .populate("doctorId", "firstName lastName")
+      .populate("doctorId", "name title email")
       .populate("patientAdmissionId", "firstName lastName admissionNumber")
       .sort({ createdAt: -1 });
 
