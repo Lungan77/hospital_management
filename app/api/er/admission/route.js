@@ -1,4 +1,4 @@
-import { connectDB } from "@/lib/mongodb";
+patientIdimport { connectDB } from "@/lib/mongodb";
 import PatientAdmission from "@/models/PatientAdmission";
 import Emergency from "@/models/Emergency";
 import { isAuthenticated } from "@/hoc/protectedRoute";
@@ -48,6 +48,7 @@ export async function POST(req) {
 
     // Create patient admission record
     const admission = new PatientAdmission({
+      patientId: admissionData.idNumber,
       firstName: admissionData.firstName,
       lastName: admissionData.lastName,
       dateOfBirth: admissionData.dateOfBirth || undefined,
