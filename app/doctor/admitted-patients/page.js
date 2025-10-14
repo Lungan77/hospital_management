@@ -209,16 +209,28 @@ function AdmittedPatients() {
                   )}
 
                   <div className="mt-6 pt-6 border-t border-gray-200">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        router.push(`/doctor/treatment-plan/${patient._id}`);
-                      }}
-                      className="w-full bg-gradient-to-r from-blue-600 to-green-600 text-white py-4 rounded-2xl font-bold text-lg hover:from-blue-700 hover:to-green-700 transition-all duration-200 shadow-lg hover:shadow-blue-500/25 flex items-center justify-center gap-3"
-                    >
-                      <FileText className="w-5 h-5" />
-                      Manage Treatment Plan
-                    </button>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push(`/patient/care/${patient._id}`);
+                        }}
+                        className="bg-gradient-to-r from-green-600 to-teal-600 text-white py-4 rounded-2xl font-bold text-lg hover:from-green-700 hover:to-teal-700 transition-all duration-200 shadow-lg hover:shadow-green-500/25 flex items-center justify-center gap-3"
+                      >
+                        <Activity className="w-5 h-5" />
+                        Medications & Procedures
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push(`/doctor/treatment-plan/${patient._id}`);
+                        }}
+                        className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 rounded-2xl font-bold text-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-blue-500/25 flex items-center justify-center gap-3"
+                      >
+                        <FileText className="w-5 h-5" />
+                        Treatment Plan
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
