@@ -27,6 +27,7 @@ import {
   Building,
   Bed,
   Sparkles,
+  Shield,
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -46,6 +47,7 @@ export default function Sidebar() {
     doctor: [
       { label: "Dashboard", href: "/dashboard", icon: <Home className="w-5 h-5" />, color: "text-blue-500" },
       { label: "Admitted Patients", href: "/doctor/admitted-patients", icon: <Bed className="w-5 h-5" />, color: "text-red-500" },
+      { label: "Infection Control", href: "/infection-control/dashboard", icon: <Shield className="w-5 h-5" />, color: "text-red-500" },
       { label: "Time Slots", href: "/doctor/timeslots", icon: <Calendar className="w-5 h-5" />, color: "text-indigo-500" },
       { label: "Appointments", href: "/appointments/", icon: <ClipboardList className="w-5 h-5" />, color: "text-emerald-500" },
       { label: "Diagnosis", href: "/diagnosis/", icon: <ClipboardCheck className="w-5 h-5" />, color: "text-orange-500" },
@@ -89,6 +91,7 @@ export default function Sidebar() {
     nurse: [
       { label: "Dashboard", href: "/dashboard", icon: <Home className="w-5 h-5" />, color: "text-blue-500" },
       { label: "Record Vitals", href: "/nurse/vitals", icon: <HeartPulse className="w-5 h-5" />, color: "text-red-500" },
+      { label: "Infection Control", href: "/infection-control/dashboard", icon: <Shield className="w-5 h-5" />, color: "text-red-500" },
       { label: "Bed Management", href: "/beds/management", icon: <ClipboardCheck className="w-5 h-5" />, color: "text-cyan-500" },
       { label: "Housekeeping", href: "/housekeeping/dashboard", icon: <ClipboardCheck className="w-5 h-5" />, color: "text-yellow-500" },
       { label: "Clinical Data", href: "/clinical/data-capture", icon: <Stethoscope className="w-5 h-5" />, color: "text-indigo-500" },
@@ -122,6 +125,7 @@ export default function Sidebar() {
       { label: "Dashboard", href: "/ward-manager/dashboard", icon: <Home className="w-5 h-5" />, color: "text-blue-500" },
       { label: "Ward Management", href: "/ward-manager/wards", icon: <Building className="w-5 h-5" />, color: "text-teal-500" },
       { label: "Bed Management", href: "/beds/management", icon: <Bed className="w-5 h-5" />, color: "text-green-500" },
+      { label: "Infection Control", href: "/infection-control/dashboard", icon: <Shield className="w-5 h-5" />, color: "text-red-500" },
       { label: "Resource Management", href: "/ward-manager/resources", icon: <Users className="w-5 h-5" />, color: "text-cyan-500" },
       { label: "Patient Admission", href: "/er/admission", icon: <UserCheck className="w-5 h-5" />, color: "text-orange-500" },
       { label: "Housekeeping", href: "/housekeeping/dashboard", icon: <Sparkles className="w-5 h-5" />, color: "text-purple-500" },
