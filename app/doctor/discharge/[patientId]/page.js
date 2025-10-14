@@ -14,7 +14,9 @@ import {
   Calendar,
   Home,
   Plus,
-  Trash2
+  Trash2,
+  Download,
+  Printer
 } from "lucide-react";
 
 function DischargePatientPage({ params }) {
@@ -137,7 +139,17 @@ function DischargePatientPage({ params }) {
   };
 
   const handleDischarge = async () => {
-    if (!confirm("Are you sure you want to discharge this patient? This action cannot be undone.")) {
+    if (!dischargeData.finalDiagnosis) {
+      setMessage("Please provide a final diagnosis");
+      return;
+    }
+
+    if (!dischargeData.hospitalCourse) {
+      setMessage("Please provide hospital course details");
+      return;
+    }
+
+    if (!confirm("Are you sure you want to discharge this patient? This action will generate the discharge summary and update the patient status.")) {
       return;
     }
 
@@ -145,7 +157,7 @@ function DischargePatientPage({ params }) {
     setMessage("");
 
     try {
-      const res = await fetch("/api/discharge", {
+      const res = await fetch("/api/discharge/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -157,18 +169,183 @@ function DischargePatientPage({ params }) {
       const data = await res.json();
 
       if (res.ok) {
-        setMessage("Patient discharged successfully!");
+        setMessage("Patient discharged successfully! Discharge summary created.");
+
+        generatePDF(data.dischargeSummary);
+
         setTimeout(() => {
           router.push("/doctor/admitted-patients");
-        }, 2000);
+        }, 3000);
       } else {
         setMessage(data.error || "Error discharging patient");
       }
     } catch (error) {
+      console.error("Error discharging patient:", error);
       setMessage("Error discharging patient");
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const generatePDF = (summary) => {
+    if (typeof window === 'undefined') return;
+
+    import('jspdf').then((module) => {
+      const jsPDF = module.default;
+      const doc = new jsPDF();
+
+      let yPos = 20;
+      const lineHeight = 7;
+      const margin = 20;
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const contentWidth = pageWidth - (margin * 2);
+
+      doc.setFontSize(18);
+      doc.setFont(undefined, 'bold');
+      doc.text('DISCHARGE SUMMARY', pageWidth / 2, yPos, { align: 'center' });
+      yPos += 15;
+
+      doc.setFontSize(10);
+      doc.setFont(undefined, 'normal');
+
+      const addSection = (title, content, isBold = false) => {
+        if (yPos > 270) {
+          doc.addPage();
+          yPos = 20;
+        }
+        doc.setFont(undefined, 'bold');
+        doc.text(title, margin, yPos);
+        yPos += lineHeight;
+        doc.setFont(undefined, isBold ? 'bold' : 'normal');
+
+        if (typeof content === 'string' && content) {
+          const lines = doc.splitTextToSize(content, contentWidth);
+          lines.forEach(line => {
+            if (yPos > 270) {
+              doc.addPage();
+              yPos = 20;
+            }
+            doc.text(line, margin, yPos);
+            yPos += lineHeight;
+          });
+        }
+        yPos += 3;
+      };
+
+      addSection('Patient Name:', `${patient.firstName} ${patient.lastName}`);
+      addSection('Admission Number:', patient.admissionNumber);
+      addSection('Admission Date:', new Date(summary.admissionDate).toLocaleDateString());
+      addSection('Discharge Date:', new Date(summary.dischargeDate).toLocaleDateString());
+      addSection('Length of Stay:', `${summary.lengthOfStay} days`);
+      yPos += 5;
+
+      addSection('FINAL DIAGNOSIS:', summary.finalDiagnosis);
+
+      if (summary.secondaryDiagnoses && summary.secondaryDiagnoses.length > 0) {
+        addSection('Secondary Diagnoses:', summary.secondaryDiagnoses.join(', '));
+      }
+
+      addSection('HOSPITAL COURSE:', summary.hospitalCourse);
+      addSection('CONDITION AT DISCHARGE:', summary.conditionAtDischarge);
+
+      if (summary.dischargeMedications && summary.dischargeMedications.length > 0) {
+        yPos += 5;
+        doc.setFont(undefined, 'bold');
+        doc.text('DISCHARGE MEDICATIONS:', margin, yPos);
+        yPos += lineHeight;
+        doc.setFont(undefined, 'normal');
+
+        summary.dischargeMedications.forEach((med, index) => {
+          if (yPos > 270) {
+            doc.addPage();
+            yPos = 20;
+          }
+          doc.text(`${index + 1}. ${med.medicationName} - ${med.dosage}, ${med.frequency}`, margin + 5, yPos);
+          yPos += lineHeight;
+          if (med.instructions) {
+            const lines = doc.splitTextToSize(`   Instructions: ${med.instructions}`, contentWidth - 10);
+            lines.forEach(line => {
+              if (yPos > 270) {
+                doc.addPage();
+                yPos = 20;
+              }
+              doc.text(line, margin + 5, yPos);
+              yPos += lineHeight;
+            });
+          }
+        });
+      }
+
+      if (summary.dietaryInstructions) {
+        yPos += 5;
+        addSection('DIETARY INSTRUCTIONS:', summary.dietaryInstructions);
+      }
+
+      if (summary.activityRestrictions) {
+        addSection('ACTIVITY RESTRICTIONS:', summary.activityRestrictions);
+      }
+
+      if (summary.followUpCare && summary.followUpCare.required) {
+        yPos += 5;
+        doc.setFont(undefined, 'bold');
+        doc.text('FOLLOW-UP CARE:', margin, yPos);
+        yPos += lineHeight;
+        doc.setFont(undefined, 'normal');
+
+        if (summary.followUpCare.appointmentDate) {
+          doc.text(`Appointment Date: ${new Date(summary.followUpCare.appointmentDate).toLocaleDateString()}`, margin + 5, yPos);
+          yPos += lineHeight;
+        }
+        if (summary.followUpCare.appointmentWith) {
+          doc.text(`Appointment With: ${summary.followUpCare.appointmentWith}`, margin + 5, yPos);
+          yPos += lineHeight;
+        }
+        if (summary.followUpCare.instructions) {
+          const lines = doc.splitTextToSize(`Instructions: ${summary.followUpCare.instructions}`, contentWidth - 10);
+          lines.forEach(line => {
+            if (yPos > 270) {
+              doc.addPage();
+              yPos = 20;
+            }
+            doc.text(line, margin + 5, yPos);
+            yPos += lineHeight;
+          });
+        }
+      }
+
+      if (summary.warningSignsToReport && summary.warningSignsToReport.length > 0) {
+        yPos += 5;
+        doc.setFont(undefined, 'bold');
+        doc.text('WARNING SIGNS TO REPORT:', margin, yPos);
+        yPos += lineHeight;
+        doc.setFont(undefined, 'normal');
+
+        summary.warningSignsToReport.forEach((sign, index) => {
+          if (yPos > 270) {
+            doc.addPage();
+            yPos = 20;
+          }
+          doc.text(`• ${sign}`, margin + 5, yPos);
+          yPos += lineHeight;
+        });
+      }
+
+      if (summary.patientEducation) {
+        yPos += 5;
+        addSection('PATIENT EDUCATION:', summary.patientEducation);
+      }
+
+      yPos += 10;
+      if (yPos > 250) {
+        doc.addPage();
+        yPos = 20;
+      }
+      doc.setFontSize(8);
+      doc.text(`Generated on: ${new Date().toLocaleString()}`, margin, yPos);
+      doc.text('This is an official discharge summary', margin, yPos + 5);
+
+      doc.save(`Discharge_Summary_${patient.admissionNumber}_${new Date().toISOString().split('T')[0]}.pdf`);
+    });
   };
 
   if (loading) {
