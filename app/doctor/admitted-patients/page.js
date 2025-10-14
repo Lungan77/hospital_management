@@ -19,6 +19,7 @@ import {
 
 function AdmittedPatients() {
   const [patients, setPatients] = useState([]);
+  const [treatmentPlans, setTreatmentPlans] = useState({});
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const router = useRouter();
@@ -33,12 +34,29 @@ function AdmittedPatients() {
       const data = await res.json();
       if (res.ok) {
         setPatients(data.patients);
+        await fetchTreatmentPlans(data.patients);
       }
     } catch (error) {
       console.error("Error fetching patients:", error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchTreatmentPlans = async (patientsList) => {
+    const plans = {};
+    for (const patient of patientsList) {
+      try {
+        const res = await fetch(`/api/doctor/treatment-plans?patientAdmissionId=${patient._id}`);
+        const data = await res.json();
+        if (res.ok && data.treatmentPlans?.length > 0) {
+          plans[patient._id] = data.treatmentPlans[0];
+        }
+      } catch (error) {
+        console.error(`Error fetching treatment plan for ${patient._id}:`, error);
+      }
+    }
+    setTreatmentPlans(plans);
   };
 
   const filteredPatients = patients.filter(patient =>
@@ -206,7 +224,7 @@ function AdmittedPatients() {
                   )}
 
                   {patient.alerts && patient.alerts.length > 0 && (
-                    <div className="flex items-start gap-2 p-4 bg-red-50 rounded-2xl border border-red-200">
+                    <div className="flex items-start gap-2 p-4 bg-red-50 rounded-2xl border border-red-200 mb-4">
                       <AlertCircle className="w-5 h-5 text-red-600 mt-0.5" />
                       <div>
                         <h4 className="text-sm font-semibold text-red-700 mb-1">Alerts</h4>
@@ -217,6 +235,89 @@ function AdmittedPatients() {
                             </p>
                           ))}
                         </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {treatmentPlans[patient._id] && (
+                    <div className="p-5 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-2xl border border-blue-200 mb-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <FileText className="w-5 h-5 text-blue-600" />
+                        <h4 className="text-sm font-bold text-blue-900">Active Treatment Plan</h4>
+                        <span className={`ml-auto px-3 py-1 rounded-full text-xs font-semibold ${
+                          treatmentPlans[patient._id].status === "Active"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-gray-100 text-gray-700"
+                        }`}>
+                          {treatmentPlans[patient._id].status}
+                        </span>
+                      </div>
+
+                      {treatmentPlans[patient._id].treatmentGoals && (
+                        <div className="mb-3">
+                          <p className="text-xs font-semibold text-blue-700 mb-1">Treatment Goals</p>
+                          <p className="text-sm text-blue-900">{treatmentPlans[patient._id].treatmentGoals}</p>
+                        </div>
+                      )}
+
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+                        {treatmentPlans[patient._id].medications?.length > 0 && (
+                          <div className="text-center p-3 bg-white rounded-xl border border-blue-100">
+                            <p className="text-2xl font-bold text-blue-600">{treatmentPlans[patient._id].medications.length}</p>
+                            <p className="text-xs text-gray-600 font-semibold">Medications</p>
+                          </div>
+                        )}
+                        {treatmentPlans[patient._id].procedures?.length > 0 && (
+                          <div className="text-center p-3 bg-white rounded-xl border border-green-100">
+                            <p className="text-2xl font-bold text-green-600">{treatmentPlans[patient._id].procedures.length}</p>
+                            <p className="text-xs text-gray-600 font-semibold">Procedures</p>
+                          </div>
+                        )}
+                        {treatmentPlans[patient._id].diagnosticTests?.length > 0 && (
+                          <div className="text-center p-3 bg-white rounded-xl border border-red-100">
+                            <p className="text-2xl font-bold text-red-600">{treatmentPlans[patient._id].diagnosticTests.length}</p>
+                            <p className="text-xs text-gray-600 font-semibold">Tests</p>
+                          </div>
+                        )}
+                        {treatmentPlans[patient._id].consultations?.length > 0 && (
+                          <div className="text-center p-3 bg-white rounded-xl border border-purple-100">
+                            <p className="text-2xl font-bold text-purple-600">{treatmentPlans[patient._id].consultations.length}</p>
+                            <p className="text-xs text-gray-600 font-semibold">Consultations</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {treatmentPlans[patient._id].medications?.length > 0 && (
+                        <div className="mb-3">
+                          <p className="text-xs font-semibold text-blue-700 mb-2">Current Medications</p>
+                          <div className="space-y-2">
+                            {treatmentPlans[patient._id].medications.slice(0, 3).map((med, idx) => (
+                              <div key={idx} className="flex items-center justify-between p-2 bg-white rounded-lg border border-blue-100">
+                                <div>
+                                  <p className="text-sm font-semibold text-gray-900">{med.name}</p>
+                                  <p className="text-xs text-gray-600">{med.dosage} - {med.frequency}</p>
+                                </div>
+                                <span className="text-xs font-medium text-blue-600">{med.route}</span>
+                              </div>
+                            ))}
+                            {treatmentPlans[patient._id].medications.length > 3 && (
+                              <p className="text-xs text-blue-600 font-medium text-center">
+                                +{treatmentPlans[patient._id].medications.length - 3} more
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {treatmentPlans[patient._id].expectedDuration && (
+                        <div className="p-3 bg-white rounded-lg border border-blue-100">
+                          <p className="text-xs font-semibold text-gray-700">Expected Duration</p>
+                          <p className="text-sm font-bold text-blue-900">{treatmentPlans[patient._id].expectedDuration}</p>
+                        </div>
+                      )}
+
+                      <div className="mt-3 pt-3 border-t border-blue-200 text-xs text-gray-600">
+                        Created: {new Date(treatmentPlans[patient._id].createdAt).toLocaleString()}
                       </div>
                     </div>
                   )}
