@@ -1,6 +1,8 @@
 import { connectDB } from "@/lib/mongodb";
 import PatientAdmission from "@/models/PatientAdmission";
 import { isAuthenticated } from "@/hoc/protectedRoute";
+import Emergency from "@/models/Emergency";
+import User from "@/models/User";
 
 export async function GET(req) {
   const auth = await isAuthenticated(req, ["doctor"]);
