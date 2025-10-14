@@ -38,7 +38,7 @@ function ResourceManagement() {
   const fetchData = async () => {
     try {
       const [patientsRes, doctorsRes, nursesRes] = await Promise.all([
-        fetch("/api/er/admission"),
+        fetch("/api/admission/resources"),
         fetch("/api/doctors"),
         fetch("/api/staff/available?role=nurse")
       ]);
@@ -47,8 +47,8 @@ function ResourceManagement() {
       const doctorsData = await doctorsRes.json();
       const nursesData = await nursesRes.json();
 
-      if (patientsRes.ok && patientsData.admissions) {
-        setPatients(patientsData.admissions);
+      if (patientsRes.ok && patientsData.patients) {
+        setPatients(patientsData.patients);
       }
       if (doctorsRes.ok && doctorsData.doctors) {
         setDoctors(doctorsData.doctors);
@@ -270,7 +270,9 @@ function ResourceManagement() {
                         )}
                       </div>
                       <div className="text-gray-700 mb-3">
-                        {patient.assignedDoctor || "Not assigned"}
+                        {patient.assignedDoctor ?
+                          `Dr. ${patient.assignedDoctor.firstName} ${patient.assignedDoctor.lastName}` :
+                          "Not assigned"}
                       </div>
                       <button
                         onClick={() => openAssignModal(patient, "doctor")}
@@ -294,7 +296,9 @@ function ResourceManagement() {
                         )}
                       </div>
                       <div className="text-gray-700 mb-3">
-                        {patient.assignedNurse || "Not assigned"}
+                        {patient.assignedNurse ?
+                          `${patient.assignedNurse.firstName} ${patient.assignedNurse.lastName}` :
+                          "Not assigned"}
                       </div>
                       <button
                         onClick={() => openAssignModal(patient, "nurse")}

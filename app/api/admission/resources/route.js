@@ -146,24 +146,50 @@ export async function GET(req) {
     await connectDB();
     const { searchParams } = new URL(req.url);
     const admissionId = searchParams.get("admissionId");
+    const patientId = searchParams.get("patientId");
 
-    if (!admissionId) {
-      return Response.json({ error: "Admission ID required" }, { status: 400 });
+    if (patientId) {
+      const admission = await PatientAdmission.findById(patientId)
+        .populate("assignedDoctor", "firstName lastName email role")
+        .populate("assignedNurse", "firstName lastName email role")
+        .populate("assignedSpecialists.specialistId", "firstName lastName email role")
+        .populate("assignedSpecialists.assignedBy", "firstName lastName")
+        .populate("assignedEquipment.assignedBy", "firstName lastName")
+        .lean();
+
+      if (!admission) {
+        return Response.json({ error: "Patient admission not found" }, { status: 404 });
+      }
+
+      return Response.json({ patients: [admission] }, { status: 200 });
     }
 
-    const admission = await PatientAdmission.findById(admissionId)
-      .populate("assignedDoctor", "name email role")
-      .populate("assignedNurse", "name email role")
-      .populate("assignedSpecialists.specialistId", "name email role")
-      .populate("assignedSpecialists.assignedBy", "name")
-      .populate("assignedEquipment.assignedBy", "name")
+    if (admissionId) {
+      const admission = await PatientAdmission.findById(admissionId)
+        .populate("assignedDoctor", "firstName lastName email role")
+        .populate("assignedNurse", "firstName lastName email role")
+        .populate("assignedSpecialists.specialistId", "firstName lastName email role")
+        .populate("assignedSpecialists.assignedBy", "firstName lastName")
+        .populate("assignedEquipment.assignedBy", "firstName lastName")
+        .lean();
+
+      if (!admission) {
+        return Response.json({ error: "Patient admission not found" }, { status: 404 });
+      }
+
+      return Response.json({ admission }, { status: 200 });
+    }
+
+    const patients = await PatientAdmission.find({
+      status: { $in: ["Admitted", "In Treatment", "Waiting"] }
+    })
+      .populate("assignedDoctor", "firstName lastName email role")
+      .populate("assignedNurse", "firstName lastName email role")
+      .populate("assignedSpecialists.specialistId", "firstName lastName email role")
+      .sort({ arrivalTime: -1 })
       .lean();
 
-    if (!admission) {
-      return Response.json({ error: "Patient admission not found" }, { status: 404 });
-    }
-
-    return Response.json({ admission }, { status: 200 });
+    return Response.json({ patients }, { status: 200 });
   } catch (error) {
     console.error("Error fetching resources:", error);
     return Response.json({
