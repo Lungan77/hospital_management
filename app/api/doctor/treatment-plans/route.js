@@ -2,6 +2,7 @@ import { connectDB } from "@/lib/mongodb";
 import TreatmentPlan from "@/models/TreatmentPlan";
 import PatientAdmission from "@/models/PatientAdmission";
 import { isAuthenticated } from "@/hoc/protectedRoute";
+import User from "@/models/User";
 
 export async function POST(req) {
   const auth = await isAuthenticated(req, ["doctor"]);
