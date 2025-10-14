@@ -13,7 +13,8 @@ import {
   Calendar,
   Phone,
   ChevronRight,
-  FileText
+  FileText,
+  Home
 } from "lucide-react";
 
 function AdmittedPatients() {
@@ -209,7 +210,7 @@ function AdmittedPatients() {
                   )}
 
                   <div className="mt-6 pt-6 border-t border-gray-200">
-                    <div className="grid md:grid-cols-2 gap-4">
+                    <div className="grid md:grid-cols-3 gap-4">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -225,10 +226,20 @@ function AdmittedPatients() {
                           e.stopPropagation();
                           router.push(`/doctor/treatment-plan/${patient._id}`);
                         }}
-                        className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 rounded-2xl font-bold text-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-blue-500/25 flex items-center justify-center gap-3"
+                        className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-4 rounded-2xl font-bold text-lg hover:from-blue-700 hover:to-cyan-700 transition-all duration-200 shadow-lg hover:shadow-blue-500/25 flex items-center justify-center gap-3"
                       >
                         <FileText className="w-5 h-5" />
                         Treatment Plan
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push(`/doctor/discharge/${patient._id}`);
+                        }}
+                        className="bg-gradient-to-r from-orange-600 to-red-600 text-white py-4 rounded-2xl font-bold text-lg hover:from-orange-700 hover:to-red-700 transition-all duration-200 shadow-lg hover:shadow-orange-500/25 flex items-center justify-center gap-3"
+                      >
+                        <Home className="w-5 h-5" />
+                        Discharge Patient
                       </button>
                     </div>
                   </div>
