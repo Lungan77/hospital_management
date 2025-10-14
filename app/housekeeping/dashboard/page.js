@@ -515,4 +515,4 @@ function HousekeepingDashboard() {
   );
 }
 
-export default withAuth(HousekeepingDashboard, ["admin", "nurse", "receptionist"]);
+export default withAuth(HousekeepingDashboard, ["admin", "nurse", "receptionist", "ward_manager"]);

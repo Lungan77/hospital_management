@@ -249,6 +249,17 @@ function WardManagerDashboard() {
               </button>
 
               <button
+                onClick={() => router.push("/housekeeping/dashboard")}
+                className="w-full flex items-center justify-between bg-yellow-50 hover:bg-yellow-100 p-4 rounded-xl transition-colors group"
+              >
+                <div className="flex items-center gap-3">
+                  <Sparkles className="w-6 h-6 text-yellow-600" />
+                  <span className="font-semibold text-gray-900">Housekeeping Management</span>
+                </div>
+                <ArrowRight className="w-5 h-5 text-yellow-600 group-hover:translate-x-1 transition-transform" />
+              </button>
+
+              <button
                 onClick={() => router.push("/beds/management")}
                 className="w-full flex items-center justify-between bg-purple-50 hover:bg-purple-100 p-4 rounded-xl transition-colors group"
               >
