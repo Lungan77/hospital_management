@@ -14,7 +14,8 @@ import {
   Phone,
   ChevronRight,
   FileText,
-  Home
+  Home,
+  Utensils
 } from "lucide-react";
 
 function AdmittedPatients() {
@@ -323,7 +324,7 @@ function AdmittedPatients() {
                   )}
 
                   <div className="mt-6 pt-6 border-t border-gray-200">
-                    <div className="grid md:grid-cols-3 gap-4">
+                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -343,6 +344,16 @@ function AdmittedPatients() {
                       >
                         <FileText className="w-5 h-5" />
                         Treatment Plan
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push(`/meal-planning/${patient._id}`);
+                        }}
+                        className="bg-gradient-to-r from-yellow-600 to-orange-600 text-white py-4 rounded-2xl font-bold text-lg hover:from-yellow-700 hover:to-orange-700 transition-all duration-200 shadow-lg hover:shadow-yellow-500/25 flex items-center justify-center gap-3"
+                      >
+                        <Utensils className="w-5 h-5" />
+                        Meal Planning
                       </button>
                       <button
                         onClick={(e) => {
