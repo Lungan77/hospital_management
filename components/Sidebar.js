@@ -45,6 +45,7 @@ export default function Sidebar() {
     ],
     doctor: [
       { label: "Dashboard", href: "/dashboard", icon: <Home className="w-5 h-5" />, color: "text-blue-500" },
+      { label: "Admitted Patients", href: "/doctor/admitted-patients", icon: <Bed className="w-5 h-5" />, color: "text-red-500" },
       { label: "Time Slots", href: "/doctor/timeslots", icon: <Calendar className="w-5 h-5" />, color: "text-indigo-500" },
       { label: "Appointments", href: "/appointments/", icon: <ClipboardList className="w-5 h-5" />, color: "text-emerald-500" },
       { label: "Diagnosis", href: "/diagnosis/", icon: <ClipboardCheck className="w-5 h-5" />, color: "text-orange-500" },
