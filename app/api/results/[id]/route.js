@@ -6,7 +6,7 @@ import Appointment from '@/models/Appointment';
 import User from '@/models/User';
 
 export const GET = async (req, { params }) => {
-  const { id } = params;
+  const { id } = await params;
 
   const { session, error, status } = await isAuthenticated(req, ['labtech', 'doctor']);
   if (error) {

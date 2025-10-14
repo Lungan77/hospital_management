@@ -8,7 +8,7 @@ export async function PUT(req, { params }) {
 
   try {
     await connectDB();
-    const { id } = params;
+    const { id } = await params;
     const updateData = await req.json();
 
     // Validate required fields
@@ -83,7 +83,7 @@ export async function DELETE(req, { params }) {
 
   try {
     await connectDB();
-    const { id } = params;
+    const { id } = await params;
 
     const ambulance = await Ambulance.findById(id);
     if (!ambulance) {
@@ -121,7 +121,7 @@ export async function GET(req, { params }) {
 
   try {
     await connectDB();
-    const { id } = params;
+    const { id } = await params;
 
     const ambulance = await Ambulance.findById(id)
       .populate("crew.memberId", "name email role")

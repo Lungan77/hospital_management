@@ -4,7 +4,7 @@ import { connectDB } from "@/lib/mongodb";
 export async function GET(req, { params }) {
     try {
       await connectDB();
-      const { appointmentId } = params;
+      const { appointmentId } = await params;
   
       const diagnosis = await Diagnosis.findOne({ appointmentId }).populate("doctorId", "name");
   

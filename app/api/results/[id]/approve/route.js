@@ -9,7 +9,8 @@ export async function POST(req, { params }) {
   await connectDB();
 
   try {
-    const testResult = await TestResult.findById(params.id)
+    const { id } = await params;
+    const testResult = await TestResult.findById(id)
       .populate({
         path: 'testOrderId',
         populate: {

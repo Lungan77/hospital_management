@@ -8,7 +8,7 @@ export async function GET(req, { params }) {
 
   try {
     await connectDB();
-    const { patientId } = params;
+    const { patientId } = await params;
 
     const patient = await Emergency.findById(patientId)
       .populate("ambulanceId", "callSign vehicleNumber")
@@ -39,7 +39,7 @@ export async function PUT(req, { params }) {
 
   try {
     await connectDB();
-    const { patientId } = params;
+    const { patientId } = await params;
     const updates = await req.json();
 
     const patient = await Emergency.findByIdAndUpdate(

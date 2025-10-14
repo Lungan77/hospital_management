@@ -8,7 +8,7 @@ export async function GET(req, { params }) {
 
   try {
     await connectDB();
-    const { patientId } = params;
+    const { patientId } = await params;
 
     const consent = await TreatmentConsent.findOne({ patientAdmissionId: patientId })
       .populate("generalConsent.witnessedBy", "name")

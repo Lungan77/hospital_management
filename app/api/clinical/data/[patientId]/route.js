@@ -8,7 +8,7 @@ export async function GET(req, { params }) {
 
   try {
     await connectDB();
-    const { patientId } = params;
+    const { patientId } = await params;
 
     const clinicalData = await ClinicalData.findOne({ patientAdmissionId: patientId })
       .populate("vitalSigns.recordedBy", "name")

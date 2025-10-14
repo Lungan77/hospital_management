@@ -8,7 +8,8 @@ export async function GET(req, { params }) {
 
   try {
     await connectDB();
-    const appointment = await Appointment.findById(params.appointmentId).populate("patientId", "name");
+    const { appointmentId } = await params;
+    const appointment = await Appointment.findById(appointmentId).populate("patientId", "name");
     if (!appointment) return Response.json({ error: "Appointment not found" }, { status: 404 });
 
     return Response.json({ appointment }, { status: 200 });

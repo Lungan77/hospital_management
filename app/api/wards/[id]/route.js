@@ -9,7 +9,7 @@ export async function GET(req, { params }) {
 
   try {
     await connectDB();
-    const { id } = params;
+    const { id } = await params;
 
     const ward = await Ward.findById(id)
       .populate("staff.wardManager", "name email")
@@ -38,7 +38,7 @@ export async function PUT(req, { params }) {
 
   try {
     await connectDB();
-    const { id } = params;
+    const { id } = await params;
     const updates = await req.json();
 
     const ward = await Ward.findById(id);
@@ -65,7 +65,7 @@ export async function DELETE(req, { params }) {
 
   try {
     await connectDB();
-    const { id } = params;
+    const { id } = await params;
 
     const bedsInWard = await Bed.countDocuments({ wardId: id, status: "Occupied" });
     if (bedsInWard > 0) {

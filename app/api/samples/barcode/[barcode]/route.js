@@ -10,7 +10,7 @@ export async function GET(req, { params }) {
   try {
     await connectDB();
 
-    const barcode = params.barcode;
+    const { barcode } = await params;
     const sample = await Sample.findOne({ barcode })
         .populate("storage.history.storedBy", "name email")
         .lean();
