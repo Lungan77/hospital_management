@@ -19,7 +19,7 @@ export async function GET(req) {
     }
 
     const staff = await User.find(query)
-      .select("name email role specialty")
+      .select("name email role specialty title phone")
       .sort({ name: 1 })
       .lean();
 

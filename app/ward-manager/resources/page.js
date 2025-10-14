@@ -53,8 +53,8 @@ function ResourceManagement() {
       if (doctorsRes.ok && doctorsData.doctors) {
         setDoctors(doctorsData.doctors);
       }
-      if (nursesRes.ok && nursesData.staff) {
-        setNurses(nursesData.staff);
+      if (nursesRes.ok && nursesData.allStaff) {
+        setNurses(nursesData.allStaff);
       }
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -352,15 +352,18 @@ function ResourceManagement() {
                         key={doctor._id}
                         onClick={() => handleAssignResource(doctor._id, "doctor")}
                         disabled={submitting}
-                        className="w-full flex items-center justify-between p-4 border-2 border-gray-200 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition-all disabled:opacity-50"
+                        className="w-full flex items-center justify-between p-5 border-2 border-gray-200 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition-all disabled:opacity-50"
                       >
-                        <div className="text-left">
-                          <div className="font-semibold text-gray-900">
-                            Dr. {doctor.firstName} {doctor.lastName}
+                        <div className="text-left flex-1">
+                          <div className="font-bold text-gray-900 text-lg mb-1">
+                            {doctor.title && doctor.title !== "None" ? `${doctor.title}. ` : ""}{doctor.name}
                           </div>
-                          <div className="text-sm text-gray-600">{doctor.specialty || "General"}</div>
+                          <div className="text-sm text-blue-600 font-medium mb-1">{doctor.email}</div>
+                          {doctor.phone && (
+                            <div className="text-xs text-gray-500">{doctor.phone}</div>
+                          )}
                         </div>
-                        <CheckCircle className="w-6 h-6 text-blue-600" />
+                        <CheckCircle className="w-6 h-6 text-blue-600 flex-shrink-0 ml-4" />
                       </button>
                     ))
                   ) : (
@@ -376,15 +379,18 @@ function ResourceManagement() {
                         key={nurse._id}
                         onClick={() => handleAssignResource(nurse._id, "nurse")}
                         disabled={submitting}
-                        className="w-full flex items-center justify-between p-4 border-2 border-gray-200 rounded-xl hover:border-purple-500 hover:bg-purple-50 transition-all disabled:opacity-50"
+                        className="w-full flex items-center justify-between p-5 border-2 border-gray-200 rounded-xl hover:border-purple-500 hover:bg-purple-50 transition-all disabled:opacity-50"
                       >
-                        <div className="text-left">
-                          <div className="font-semibold text-gray-900">
-                            {nurse.firstName} {nurse.lastName}
+                        <div className="text-left flex-1">
+                          <div className="font-bold text-gray-900 text-lg mb-1">
+                            {nurse.title && nurse.title !== "None" ? `${nurse.title}. ` : ""}{nurse.name}
                           </div>
-                          <div className="text-sm text-gray-600">{nurse.role || "Nurse"}</div>
+                          <div className="text-sm text-purple-600 font-medium mb-1">{nurse.email}</div>
+                          {nurse.phone && (
+                            <div className="text-xs text-gray-500">{nurse.phone}</div>
+                          )}
                         </div>
-                        <CheckCircle className="w-6 h-6 text-purple-600" />
+                        <CheckCircle className="w-6 h-6 text-purple-600 flex-shrink-0 ml-4" />
                       </button>
                     ))
                   ) : (
