@@ -119,6 +119,7 @@ export default function Sidebar() {
       { label: "Dashboard", href: "/dashboard", icon: <Home className="w-5 h-5" />, color: "text-blue-500" },
       { label: "Appointments", href: "/appointments", icon: <Calendar className="w-5 h-5" />, color: "text-green-500" },
       { label: "Diagnosis", href: "/diagnosis/", icon: <ClipboardCheck className="w-5 h-5" />, color: "text-purple-500" },
+      { label: "Discharge Reports", href: "/patient/discharge", icon: <FileText className="w-5 h-5" />, color: "text-teal-500" },
       { label: "Bills", href: "/bills/my", icon: <CreditCard className="w-5 h-5" />, color: "text-orange-500" },
     ],
     ward_manager: [
