@@ -130,6 +130,11 @@ export default function Sidebar() {
       { label: "Patient Admission", href: "/er/admission", icon: <UserCheck className="w-5 h-5" />, color: "text-orange-500" },
       { label: "Housekeeping", href: "/housekeeping/dashboard", icon: <Sparkles className="w-5 h-5" />, color: "text-purple-500" },
     ],
+    housekeeper: [
+      { label: "Dashboard", href: "/dashboard", icon: <Home className="w-5 h-5" />, color: "text-blue-500" },
+      { label: "Housekeeping", href: "/housekeeping/dashboard", icon: <Sparkles className="w-5 h-5" />, color: "text-yellow-500" },
+      { label: "Bed Status", href: "/beds/management", icon: <Bed className="w-5 h-5" />, color: "text-green-500" },
+    ],
   };
 
   const role = session?.user?.role;

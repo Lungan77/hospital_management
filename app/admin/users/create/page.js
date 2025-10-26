@@ -246,6 +246,7 @@ function AddUser() {
                       <option value="dispatcher">Dispatcher</option>
                       <option value="er">ER Staff</option>
                       <option value="ward_manager">Ward Manager</option>
+                      <option value="housekeeper">Housekeeper</option>
                     </select>
                   </div>
 
