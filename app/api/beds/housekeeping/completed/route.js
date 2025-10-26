@@ -1,5 +1,6 @@
 import { connectDB } from "@/lib/mongodb";
 import Bed from "@/models/Bed";
+import Ward from "@models/Ward";
 import { isAuthenticated } from "@/hoc/protectedRoute";
 
 export async function GET(req) {
