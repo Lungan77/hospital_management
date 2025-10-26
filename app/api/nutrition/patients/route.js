@@ -14,7 +14,7 @@ export async function GET(req) {
     const admittedPatients = await Emergency.find({
       status: { $in: ["Admitted", "In Treatment"] }
     })
-      .populate("patientId", "name email phone gender")
+      .populate("patientId")
       .sort({ admissionDate: -1 })
       .lean();
 
