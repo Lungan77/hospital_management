@@ -1,24 +1,15 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import dbConnect from "@/lib/mongodb";
+import { connectDB } from "@/lib/mongodb";
 import PatientAdmission from "@/models/PatientAdmission";
 import MealPlan from "@/models/MealPlan";
-import User from "@/models/User";
 import NutritionalAssessment from "@/models/NutritionalAssessment";
+import { isAuthenticated } from "@/hoc/protectedRoute";
 
 export async function GET(req) {
+  const auth = await isAuthenticated(req, ["dietician", "doctor", "nurse", "admin"]);
+  if (auth.error) return Response.json({ error: auth.error }, { status: auth.status });
+
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    if (!["dietician", "doctor", "nurse", "admin"].includes(session.user.role)) {
-      return NextResponse.json({ error: "Access denied" }, { status: 403 });
-    }
-
-    await dbConnect();
+    await connectDB();
 
     const admittedPatients = await PatientAdmission.find({
       status: { $in: ["Admitted", "In Treatment"] }
@@ -108,12 +99,12 @@ export async function GET(req) {
       activeMealPlans: enrichedPatients.filter(p => p.latestMealPlan).length
     };
 
-    return NextResponse.json({
+    return Response.json({
       patients: enrichedPatients,
       stats
     }, { status: 200 });
   } catch (error) {
     console.error("Error fetching nutrition patients:", error);
-    return NextResponse.json({ error: "Failed to fetch patients" }, { status: 500 });
+    return Response.json({ error: "Failed to fetch patients" }, { status: 500 });
   }
 }
