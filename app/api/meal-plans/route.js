@@ -1,18 +1,14 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import dbConnect from "@/lib/mongodb";
+import { connectDB } from "@/lib/mongodb";
 import MealPlan from "@/models/MealPlan";
-import Emergency from "@/models/Emergency";
+import PatientAdmission from "@/models/PatientAdmission";
+import { isAuthenticated } from "@/hoc/protectedRoute";
 
 export async function GET(req) {
-  try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  const auth = await isAuthenticated(req, ["dietician", "doctor", "nurse", "admin"]);
+  if (auth.error) return Response.json({ error: auth.error }, { status: auth.status });
 
-    await dbConnect();
+  try {
+    await connectDB();
 
     const { searchParams } = new URL(req.url);
     const patientAdmissionId = searchParams.get("patientAdmissionId");
@@ -41,10 +37,10 @@ export async function GET(req) {
 
     const mealPlans = await MealPlan.find(query).sort({ planDate: -1 }).lean();
 
-    return NextResponse.json({ mealPlans });
+    return Response.json({ mealPlans });
   } catch (error) {
     console.error("Error fetching meal plans:", error);
-    return NextResponse.json(
+    return Response.json(
       { error: "Failed to fetch meal plans" },
       { status: 500 }
     );
@@ -52,40 +48,35 @@ export async function GET(req) {
 }
 
 export async function POST(req) {
+  const auth = await isAuthenticated(req, ["dietician", "doctor", "nurse"]);
+  if (auth.error) return Response.json({ error: auth.error }, { status: auth.status });
+
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    if (!["doctor", "nurse"].includes(session.user.role)) {
-      return NextResponse.json({ error: "Access denied" }, { status: 403 });
-    }
-
-    await dbConnect();
+    await connectDB();
 
     const data = await req.json();
 
-    const patient = await Emergency.findById(data.patientAdmissionId);
+    const patient = await PatientAdmission.findById(data.patientAdmissionId);
     if (!patient) {
-      return NextResponse.json({ error: "Patient not found" }, { status: 404 });
+      return Response.json({ error: "Patient admission not found" }, { status: 404 });
     }
 
     const mealPlan = await MealPlan.create({
       ...data,
+      admissionModel: "PatientAdmission",
       patientName: `${patient.firstName} ${patient.lastName}`,
       admissionNumber: patient.admissionNumber,
       createdBy: {
-        userId: session.user.id,
-        name: session.user.name,
-        role: session.user.role,
+        userId: auth.session.user.id,
+        name: auth.session.user.name,
+        role: auth.session.user.role,
       },
     });
 
-    return NextResponse.json({ mealPlan }, { status: 201 });
+    return Response.json({ mealPlan }, { status: 201 });
   } catch (error) {
     console.error("Error creating meal plan:", error);
-    return NextResponse.json(
+    return Response.json(
       { error: "Failed to create meal plan" },
       { status: 500 }
     );

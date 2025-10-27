@@ -1,29 +1,25 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import dbConnect from "@/lib/mongodb";
+import { connectDB } from "@/lib/mongodb";
 import MealPlan from "@/models/MealPlan";
+import { isAuthenticated } from "@/hoc/protectedRoute";
 
 export async function GET(req, { params }) {
-  try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  const auth = await isAuthenticated(req, ["dietician", "doctor", "nurse", "admin"]);
+  if (auth.error) return Response.json({ error: auth.error }, { status: auth.status });
 
-    await dbConnect();
+  try {
+    await connectDB();
 
     const { id } = await params;
     const mealPlan = await MealPlan.findById(id).lean();
 
     if (!mealPlan) {
-      return NextResponse.json({ error: "Meal plan not found" }, { status: 404 });
+      return Response.json({ error: "Meal plan not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ mealPlan });
+    return Response.json({ mealPlan });
   } catch (error) {
     console.error("Error fetching meal plan:", error);
-    return NextResponse.json(
+    return Response.json(
       { error: "Failed to fetch meal plan" },
       { status: 500 }
     );
@@ -31,17 +27,11 @@ export async function GET(req, { params }) {
 }
 
 export async function PUT(req, { params }) {
+  const auth = await isAuthenticated(req, ["dietician", "doctor", "nurse"]);
+  if (auth.error) return Response.json({ error: auth.error }, { status: auth.status });
+
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    if (!["doctor", "nurse"].includes(session.user.role)) {
-      return NextResponse.json({ error: "Access denied" }, { status: 403 });
-    }
-
-    await dbConnect();
+    await connectDB();
 
     const { id } = await params;
     const data = await req.json();
@@ -51,9 +41,9 @@ export async function PUT(req, { params }) {
       {
         ...data,
         lastModifiedBy: {
-          userId: session.user.id,
-          name: session.user.name,
-          role: session.user.role,
+          userId: auth.session.user.id,
+          name: auth.session.user.name,
+          role: auth.session.user.role,
         },
         lastModifiedAt: new Date(),
       },
@@ -61,13 +51,13 @@ export async function PUT(req, { params }) {
     );
 
     if (!mealPlan) {
-      return NextResponse.json({ error: "Meal plan not found" }, { status: 404 });
+      return Response.json({ error: "Meal plan not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ mealPlan });
+    return Response.json({ mealPlan });
   } catch (error) {
     console.error("Error updating meal plan:", error);
-    return NextResponse.json(
+    return Response.json(
       { error: "Failed to update meal plan" },
       { status: 500 }
     );
@@ -75,29 +65,23 @@ export async function PUT(req, { params }) {
 }
 
 export async function DELETE(req, { params }) {
+  const auth = await isAuthenticated(req, ["dietician", "doctor", "nurse", "admin"]);
+  if (auth.error) return Response.json({ error: auth.error }, { status: auth.status });
+
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    if (!["doctor", "nurse"].includes(session.user.role)) {
-      return NextResponse.json({ error: "Access denied" }, { status: 403 });
-    }
-
-    await dbConnect();
+    await connectDB();
 
     const { id } = await params;
     const mealPlan = await MealPlan.findByIdAndDelete(id);
 
     if (!mealPlan) {
-      return NextResponse.json({ error: "Meal plan not found" }, { status: 404 });
+      return Response.json({ error: "Meal plan not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ message: "Meal plan deleted successfully" });
+    return Response.json({ message: "Meal plan deleted successfully" });
   } catch (error) {
     console.error("Error deleting meal plan:", error);
-    return NextResponse.json(
+    return Response.json(
       { error: "Failed to delete meal plan" },
       { status: 500 }
     );
