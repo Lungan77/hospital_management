@@ -224,7 +224,7 @@ function MealPlanningPage({ params }) {
       if (res.ok) {
         setMessage("Meal plan saved successfully!");
         fetchExistingPlans();
-        setTimeout(() => router.push("/doctor/admitted-patients"), 2000);
+        setTimeout(() => router.push("/dietician/meal-plans"), 2000);
       } else {
         setMessage(data.error || "Error saving meal plan");
       }
@@ -255,7 +255,7 @@ function MealPlanningPage({ params }) {
           <h2 className="text-2xl font-bold text-gray-800 mb-2">Patient Not Found</h2>
           <p className="text-gray-600 mb-6">Unable to load patient information</p>
           <button
-            onClick={() => router.push("/doctor/admitted-patients")}
+            onClick={() => router.push("/nutrition/patients")}
             className="px-6 py-3 bg-orange-600 text-white rounded-xl font-semibold hover:bg-orange-700 transition-colors"
           >
             Back to Patients
@@ -282,7 +282,7 @@ function MealPlanningPage({ params }) {
               </div>
             </div>
             <button
-              onClick={() => router.push("/doctor/admitted-patients")}
+              onClick={() => router.push("/nutrition/patients")}
               className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-300 transition-colors"
             >
               Back
@@ -962,4 +962,4 @@ function NutritionalRequirements({ requirements, onChange }) {
   );
 }
 
-export default withAuth(MealPlanningPage, ["doctor", "nurse"]);
+export default withAuth(MealPlanningPage, ["dietician", "doctor", "nurse"]);
