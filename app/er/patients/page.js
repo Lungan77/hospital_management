@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import withAuth from "@/hoc/withAuth";
 import { 
   Users, 
@@ -25,6 +26,7 @@ import {
 } from "lucide-react";
 
 function ERPatients() {
+  const router = useRouter();
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
@@ -293,6 +295,15 @@ function ERPatients() {
                         <Eye className="w-5 h-5" />
                         View Details
                       </button>
+                      {(patient.status === "In Treatment" || patient.status === "Admitted") && (
+                        <button
+                          onClick={() => router.push(`/patient/care/${patient._id}`)}
+                          className="flex items-center gap-2 bg-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors"
+                        >
+                          <Stethoscope className="w-5 h-5" />
+                          Assess Patient
+                        </button>
+                      )}
                       <div className="flex gap-2">
                         <button
                           onClick={() => updatePatientStatus(patient._id, "In Treatment")}
