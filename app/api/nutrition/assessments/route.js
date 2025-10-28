@@ -18,7 +18,7 @@ export async function POST(req) {
 
     const assessment = await NutritionalAssessment.create({
       ...data,
-      patientId: admission.patientId || auth.session.user.id,
+      patientId: auth.session.user.id,
       assessedBy: auth.session.user.id
     });
 
@@ -28,7 +28,10 @@ export async function POST(req) {
     }, { status: 201 });
   } catch (error) {
     console.error("Error creating nutritional assessment:", error);
-    return Response.json({ error: "Failed to create assessment" }, { status: 500 });
+    return Response.json({
+      error: "Failed to create assessment",
+      details: error.message
+    }, { status: 500 });
   }
 }
 
@@ -58,6 +61,9 @@ export async function GET(req) {
     return Response.json({ assessments }, { status: 200 });
   } catch (error) {
     console.error("Error fetching nutritional assessments:", error);
-    return Response.json({ error: "Failed to fetch assessments" }, { status: 500 });
+    return Response.json({
+      error: "Failed to fetch assessments",
+      details: error.message
+    }, { status: 500 });
   }
 }
