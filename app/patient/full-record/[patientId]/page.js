@@ -126,219 +126,201 @@ function FullPatientRecordPage({ params }) {
 
         <div ref={printRef} className="print-content">
           <div className="print-header">
-            <h1 className="text-4xl font-bold text-center mb-2">Complete Patient Medical Record</h1>
-            <p className="text-center text-gray-600 mb-6">Generated on {new Date().toLocaleString()}</p>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-6">
-            <div className="flex items-center gap-3 mb-6">
-              <User className="w-8 h-8 text-blue-600" />
-              <h2 className="text-3xl font-bold text-gray-900">Patient Information</h2>
-            </div>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div className="bg-blue-50 rounded-xl p-4">
-                <p className="text-sm text-blue-600 font-semibold mb-1">Full Name</p>
-                <p className="text-lg font-bold text-blue-900">
-                  {patient.firstName} {patient.lastName}
-                </p>
-              </div>
-              <div className="bg-green-50 rounded-xl p-4">
-                <p className="text-sm text-green-600 font-semibold mb-1">Admission Number</p>
-                <p className="text-lg font-bold text-green-900">{patient.admissionNumber}</p>
-              </div>
-              <div className="bg-purple-50 rounded-xl p-4">
-                <p className="text-sm text-purple-600 font-semibold mb-1">Patient ID</p>
-                <p className="text-lg font-bold text-purple-900">{patient.patientId}</p>
-              </div>
-              <div className="bg-orange-50 rounded-xl p-4">
-                <p className="text-sm text-orange-600 font-semibold mb-1">Date of Birth</p>
-                <p className="text-lg font-bold text-orange-900">
-                  {patient.dateOfBirth ? new Date(patient.dateOfBirth).toLocaleDateString() : "N/A"}
-                </p>
-              </div>
-              <div className="bg-red-50 rounded-xl p-4">
-                <p className="text-sm text-red-600 font-semibold mb-1">Gender</p>
-                <p className="text-lg font-bold text-red-900">{patient.gender || "N/A"}</p>
-              </div>
-              <div className="bg-teal-50 rounded-xl p-4">
-                <p className="text-sm text-teal-600 font-semibold mb-1">Blood Type</p>
-                <p className="text-lg font-bold text-teal-900">{patient.bloodType || "N/A"}</p>
-              </div>
-              <div className="bg-cyan-50 rounded-xl p-4">
-                <p className="text-sm text-cyan-600 font-semibold mb-1">Admission Date</p>
-                <p className="text-lg font-bold text-cyan-900">
-                  {new Date(patient.arrivalTime).toLocaleString()}
-                </p>
-              </div>
-              <div className="bg-yellow-50 rounded-xl p-4">
-                <p className="text-sm text-yellow-600 font-semibold mb-1">Status</p>
-                <p className="text-lg font-bold text-yellow-900">{patient.status}</p>
-              </div>
-              <div className="bg-pink-50 rounded-xl p-4">
-                <p className="text-sm text-pink-600 font-semibold mb-1">Ward/Bed</p>
-                <p className="text-lg font-bold text-pink-900">
-                  {patient.assignedWard} - {patient.assignedBed || "N/A"}
-                </p>
-              </div>
-            </div>
-
-            {patient.chiefComplaint && (
-              <div className="mt-6 p-6 bg-red-50 rounded-xl border-l-4 border-red-500">
-                <p className="text-sm text-red-600 font-semibold mb-2">Chief Complaint</p>
-                <p className="text-lg text-red-900">{patient.chiefComplaint}</p>
-              </div>
-            )}
-
-            {patient.presentingSymptoms && (
-              <div className="mt-4 p-6 bg-orange-50 rounded-xl border-l-4 border-orange-500">
-                <p className="text-sm text-orange-600 font-semibold mb-2">Presenting Symptoms</p>
-                <p className="text-lg text-orange-900">{patient.presentingSymptoms}</p>
-              </div>
-            )}
-
-            {patient.medicalHistory && (
-              <div className="mt-4 p-6 bg-blue-50 rounded-xl border-l-4 border-blue-500">
-                <p className="text-sm text-blue-600 font-semibold mb-2">Medical History</p>
-                <p className="text-lg text-blue-900">{patient.medicalHistory}</p>
-              </div>
-            )}
-
-            {patient.allergies && (
-              <div className="mt-4 p-6 bg-red-50 rounded-xl border-l-4 border-red-500">
-                <p className="text-sm text-red-600 font-semibold mb-2">Allergies</p>
-                <div className="flex flex-wrap gap-2">
-                  {Array.isArray(patient.allergies) ? (
-                    patient.allergies.map((allergy, i) => (
-                      <span key={i} className="bg-red-200 text-red-800 px-3 py-1 rounded-full font-semibold">
-                        {allergy}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="bg-red-200 text-red-800 px-3 py-1 rounded-full font-semibold">
-                      {patient.allergies}
-                    </span>
-                  )}
+            <div className="border-b-4 border-blue-900 pb-4 mb-6">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h1 className="text-4xl font-bold text-blue-900 mb-1">MEDICAL RECORD</h1>
+                  <p className="text-lg text-gray-700 font-semibold">Complete Patient Documentation</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-gray-600 font-semibold">Document ID</p>
+                  <p className="text-lg font-bold text-blue-900">{patient.admissionNumber}</p>
+                  <p className="text-xs text-gray-500 mt-2">Generated: {new Date().toLocaleDateString()}</p>
+                  <p className="text-xs text-gray-500">{new Date().toLocaleTimeString()}</p>
                 </div>
               </div>
-            )}
+            </div>
+          </div>
+
+          <div className="medical-section mb-8">
+            <div className="section-header">
+              <h2 className="section-title">I. PATIENT DEMOGRAPHICS</h2>
+            </div>
+            <div className="section-content">
+              <table className="info-table">
+                <tbody>
+                  <tr>
+                    <td className="label-cell">Full Name:</td>
+                    <td className="value-cell font-bold">{patient.firstName} {patient.lastName}</td>
+                    <td className="label-cell">Patient ID:</td>
+                    <td className="value-cell">{patient.patientId}</td>
+                  </tr>
+                  <tr>
+                    <td className="label-cell">Admission Number:</td>
+                    <td className="value-cell font-bold">{patient.admissionNumber}</td>
+                    <td className="label-cell">Date of Birth:</td>
+                    <td className="value-cell">
+                      {patient.dateOfBirth ? new Date(patient.dateOfBirth).toLocaleDateString() : "N/A"}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="label-cell">Gender:</td>
+                    <td className="value-cell">{patient.gender || "N/A"}</td>
+                    <td className="label-cell">Blood Type:</td>
+                    <td className="value-cell font-bold text-red-700">{patient.bloodType || "N/A"}</td>
+                  </tr>
+                  <tr>
+                    <td className="label-cell">Admission Date:</td>
+                    <td className="value-cell">{new Date(patient.arrivalTime).toLocaleString()}</td>
+                    <td className="label-cell">Current Status:</td>
+                    <td className="value-cell font-semibold">{patient.status}</td>
+                  </tr>
+                  <tr>
+                    <td className="label-cell">Ward Assignment:</td>
+                    <td className="value-cell">{patient.assignedWard}</td>
+                    <td className="label-cell">Bed Number:</td>
+                    <td className="value-cell">{patient.assignedBed || "N/A"}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="medical-section mb-8">
+            <div className="section-header">
+              <h2 className="section-title">II. CLINICAL PRESENTATION</h2>
+            </div>
+            <div className="section-content space-y-4">
+              {patient.chiefComplaint && (
+                <div className="clinical-note">
+                  <p className="clinical-label">Chief Complaint:</p>
+                  <p className="clinical-value">{patient.chiefComplaint}</p>
+                </div>
+              )}
+
+              {patient.presentingSymptoms && (
+                <div className="clinical-note">
+                  <p className="clinical-label">Presenting Symptoms:</p>
+                  <p className="clinical-value">{patient.presentingSymptoms}</p>
+                </div>
+              )}
+
+              {patient.medicalHistory && (
+                <div className="clinical-note">
+                  <p className="clinical-label">Medical History:</p>
+                  <p className="clinical-value">{patient.medicalHistory}</p>
+                </div>
+              )}
+
+              {patient.allergies && (
+                <div className="clinical-note alert-box">
+                  <p className="clinical-label text-red-700">⚠ ALLERGIES:</p>
+                  <p className="clinical-value font-bold text-red-800">
+                    {Array.isArray(patient.allergies)
+                      ? patient.allergies.join(", ")
+                      : patient.allergies}
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
 
           {dailyAssessments && dailyAssessments.length > 0 && (
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-6 page-break">
-              <div className="flex items-center gap-3 mb-6">
-                <Stethoscope className="w-8 h-8 text-green-600" />
-                <h2 className="text-3xl font-bold text-gray-900">Daily Assessments</h2>
-                <span className="ml-2 px-3 py-1 bg-green-100 text-green-700 rounded-full font-semibold">
-                  {dailyAssessments.length} assessments
-                </span>
+            <div className="medical-section mb-8 page-break">
+              <div className="section-header">
+                <h2 className="section-title">III. DAILY CLINICAL ASSESSMENTS ({dailyAssessments.length})</h2>
               </div>
+              <div className="section-content">
 
-              <div className="space-y-6">
-                {dailyAssessments.map((assessment) => (
-                  <div key={assessment._id} className="border border-gray-200 rounded-xl p-6">
-                    <div className="flex justify-between items-start mb-4">
+              <div className="space-y-4">
+                {dailyAssessments.map((assessment, index) => (
+                  <div key={assessment._id} className="border-l-4 border-blue-600 bg-gray-50 p-4 rounded">
+                    <div className="flex justify-between items-start mb-3">
                       <div>
-                        <p className="text-xl font-bold text-gray-900">
-                          {new Date(assessment.assessmentDate).toLocaleDateString()} at{" "}
-                          {new Date(assessment.assessmentDate).toLocaleTimeString()}
-                        </p>
-                        <p className="text-sm text-gray-600 mt-1">
-                          Assessed by: {assessment.assessorName} ({assessment.assessorRole})
-                        </p>
+                        <div className="font-bold text-gray-900 mb-1">
+                          Assessment #{dailyAssessments.length - index}
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          {new Date(assessment.assessmentDate).toLocaleDateString()} at {new Date(assessment.assessmentDate).toLocaleTimeString()}
+                        </div>
+                        <div className="text-xs text-gray-600 mt-1">
+                          By: {assessment.assessorName} ({assessment.assessorRole})
+                        </div>
                       </div>
-                      <span
-                        className={`px-4 py-2 rounded-full font-semibold ${
-                          assessment.generalCondition === "Improving"
-                            ? "bg-green-100 text-green-700"
-                            : assessment.generalCondition === "Stable"
-                            ? "bg-blue-100 text-blue-700"
-                            : assessment.generalCondition === "Deteriorating"
-                            ? "bg-orange-100 text-orange-700"
-                            : "bg-red-100 text-red-700"
-                        }`}
-                      >
-                        {assessment.generalCondition}
-                      </span>
+                      <div className="text-right">
+                        <div className="text-xs text-gray-600 font-semibold">Condition</div>
+                        <div className="font-bold text-sm">{assessment.generalCondition}</div>
+                      </div>
                     </div>
 
-                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                      {assessment.vitalSigns?.bloodPressure && (
-                        <div className="bg-blue-50 rounded-lg p-3">
-                          <p className="text-xs text-blue-600 font-semibold mb-1">Blood Pressure</p>
-                          <p className="text-lg font-bold text-blue-900">{assessment.vitalSigns.bloodPressure}</p>
-                        </div>
-                      )}
-                      {assessment.vitalSigns?.heartRate && (
-                        <div className="bg-red-50 rounded-lg p-3">
-                          <p className="text-xs text-red-600 font-semibold mb-1">Heart Rate</p>
-                          <p className="text-lg font-bold text-red-900">{assessment.vitalSigns.heartRate} bpm</p>
-                        </div>
-                      )}
-                      {assessment.vitalSigns?.temperature && (
-                        <div className="bg-orange-50 rounded-lg p-3">
-                          <p className="text-xs text-orange-600 font-semibold mb-1">Temperature</p>
-                          <p className="text-lg font-bold text-orange-900">{assessment.vitalSigns.temperature}°C</p>
-                        </div>
-                      )}
-                      {assessment.vitalSigns?.oxygenSaturation && (
-                        <div className="bg-green-50 rounded-lg p-3">
-                          <p className="text-xs text-green-600 font-semibold mb-1">SpO2</p>
-                          <p className="text-lg font-bold text-green-900">{assessment.vitalSigns.oxygenSaturation}%</p>
-                        </div>
-                      )}
-                    </div>
+                    {(assessment.vitalSigns?.bloodPressure || assessment.vitalSigns?.heartRate || assessment.vitalSigns?.temperature || assessment.vitalSigns?.oxygenSaturation) && (
+                      <div className="grid grid-cols-4 gap-2 mb-3 text-xs">
+                        {assessment.vitalSigns?.bloodPressure && (
+                          <div className="bg-white p-2 rounded border">
+                            <div className="text-gray-600 font-semibold">BP</div>
+                            <div className="font-bold">{assessment.vitalSigns.bloodPressure}</div>
+                          </div>
+                        )}
+                        {assessment.vitalSigns?.heartRate && (
+                          <div className="bg-white p-2 rounded border">
+                            <div className="text-gray-600 font-semibold">HR</div>
+                            <div className="font-bold">{assessment.vitalSigns.heartRate} bpm</div>
+                          </div>
+                        )}
+                        {assessment.vitalSigns?.temperature && (
+                          <div className="bg-white p-2 rounded border">
+                            <div className="text-gray-600 font-semibold">Temp</div>
+                            <div className="font-bold">{assessment.vitalSigns.temperature}°C</div>
+                          </div>
+                        )}
+                        {assessment.vitalSigns?.oxygenSaturation && (
+                          <div className="bg-white p-2 rounded border">
+                            <div className="text-gray-600 font-semibold">SpO2</div>
+                            <div className="font-bold">{assessment.vitalSigns.oxygenSaturation}%</div>
+                          </div>
+                        )}
+                      </div>
+                    )}
 
-                    <div className="grid md:grid-cols-3 gap-4 mb-4">
-                      <div className="bg-gray-50 rounded-lg p-3">
-                        <p className="text-xs text-gray-600 font-semibold mb-1">Consciousness</p>
-                        <p className="text-sm font-bold text-gray-900">{assessment.consciousness}</p>
-                      </div>
-                      <div className="bg-gray-50 rounded-lg p-3">
-                        <p className="text-xs text-gray-600 font-semibold mb-1">Pain Level</p>
-                        <p className="text-sm font-bold text-gray-900">{assessment.painLevel}/10</p>
-                      </div>
-                      <div className="bg-gray-50 rounded-lg p-3">
-                        <p className="text-xs text-gray-600 font-semibold mb-1">Mobility</p>
-                        <p className="text-sm font-bold text-gray-900">{assessment.mobilityStatus}</p>
-                      </div>
+                    <div className="grid grid-cols-3 gap-2 mb-3 text-xs">
+                      <div><span className="font-semibold">Consciousness:</span> {assessment.consciousness}</div>
+                      <div><span className="font-semibold">Pain:</span> {assessment.painLevel}/10</div>
+                      <div><span className="font-semibold">Mobility:</span> {assessment.mobilityStatus}</div>
                     </div>
 
                     {assessment.progressNotes && (
-                      <div className="bg-blue-50 rounded-lg p-4 mb-3">
-                        <p className="text-sm text-blue-600 font-semibold mb-2">Progress Notes</p>
-                        <p className="text-sm text-blue-900">{assessment.progressNotes}</p>
+                      <div className="mb-2">
+                        <div className="text-xs font-semibold text-gray-700 mb-1">Progress Notes:</div>
+                        <div className="text-sm bg-white p-2 rounded border">{assessment.progressNotes}</div>
                       </div>
                     )}
 
                     {assessment.treatmentResponse && (
-                      <div className="bg-green-50 rounded-lg p-4 mb-3">
-                        <p className="text-sm text-green-600 font-semibold mb-2">Treatment Response</p>
-                        <p className="text-sm text-green-900">{assessment.treatmentResponse}</p>
+                      <div className="mb-2">
+                        <div className="text-xs font-semibold text-gray-700 mb-1">Treatment Response:</div>
+                        <div className="text-sm bg-white p-2 rounded border">{assessment.treatmentResponse}</div>
                       </div>
                     )}
 
                     {assessment.planForNextDay && (
-                      <div className="bg-purple-50 rounded-lg p-4">
-                        <p className="text-sm text-purple-600 font-semibold mb-2">Plan for Next Day</p>
-                        <p className="text-sm text-purple-900">{assessment.planForNextDay}</p>
+                      <div>
+                        <div className="text-xs font-semibold text-gray-700 mb-1">Plan for Next Day:</div>
+                        <div className="text-sm bg-white p-2 rounded border">{assessment.planForNextDay}</div>
                       </div>
                     )}
                   </div>
                 ))}
               </div>
+              </div>
             </div>
           )}
 
           {treatmentPlans && treatmentPlans.length > 0 && (
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-6 page-break">
-              <div className="flex items-center gap-3 mb-6">
-                <ClipboardList className="w-8 h-8 text-blue-600" />
-                <h2 className="text-3xl font-bold text-gray-900">Treatment Plans</h2>
-                <span className="ml-2 px-3 py-1 bg-blue-100 text-blue-700 rounded-full font-semibold">
-                  {treatmentPlans.length} plans
-                </span>
+            <div className="medical-section mb-8 page-break">
+              <div className="section-header">
+                <h2 className="section-title">IV. TREATMENT PLANS ({treatmentPlans.length})</h2>
               </div>
+              <div className="section-content">
 
               <div className="space-y-6">
                 {treatmentPlans.map((plan) => (
@@ -412,18 +394,16 @@ function FullPatientRecordPage({ params }) {
                   </div>
                 ))}
               </div>
+              </div>
             </div>
           )}
 
           {medications && medications.length > 0 && (
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-6 page-break">
-              <div className="flex items-center gap-3 mb-6">
-                <Pill className="w-8 h-8 text-green-600" />
-                <h2 className="text-3xl font-bold text-gray-900">Medications</h2>
-                <span className="ml-2 px-3 py-1 bg-green-100 text-green-700 rounded-full font-semibold">
-                  {medications.length} medications
-                </span>
+            <div className="medical-section mb-8">
+              <div className="section-header">
+                <h2 className="section-title">V. MEDICATIONS ({medications.length})</h2>
               </div>
+              <div className="section-content">
 
               <div className="grid md:grid-cols-2 gap-4">
                 {medications.map((med) => (
@@ -448,18 +428,16 @@ function FullPatientRecordPage({ params }) {
                   </div>
                 ))}
               </div>
+              </div>
             </div>
           )}
 
           {procedures && procedures.length > 0 && (
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-6 page-break">
-              <div className="flex items-center gap-3 mb-6">
-                <Activity className="w-8 h-8 text-purple-600" />
-                <h2 className="text-3xl font-bold text-gray-900">Procedures</h2>
-                <span className="ml-2 px-3 py-1 bg-purple-100 text-purple-700 rounded-full font-semibold">
-                  {procedures.length} procedures
-                </span>
+            <div className="medical-section mb-8">
+              <div className="section-header">
+                <h2 className="section-title">VI. PROCEDURES ({procedures.length})</h2>
               </div>
+              <div className="section-content">
 
               <div className="space-y-4">
                 {procedures.map((proc) => (
@@ -493,18 +471,16 @@ function FullPatientRecordPage({ params }) {
                   </div>
                 ))}
               </div>
+              </div>
             </div>
           )}
 
           {vitals && vitals.length > 0 && (
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-6 page-break">
-              <div className="flex items-center gap-3 mb-6">
-                <Heart className="w-8 h-8 text-red-600" />
-                <h2 className="text-3xl font-bold text-gray-900">Vital Signs History</h2>
-                <span className="ml-2 px-3 py-1 bg-red-100 text-red-700 rounded-full font-semibold">
-                  {vitals.length} records
-                </span>
+            <div className="medical-section mb-8 page-break">
+              <div className="section-header">
+                <h2 className="section-title">VII. VITAL SIGNS HISTORY (Last 10)</h2>
               </div>
+              <div className="section-content">
 
               <div className="space-y-3">
                 {vitals.slice(0, 10).map((vital) => (
@@ -553,18 +529,16 @@ function FullPatientRecordPage({ params }) {
                   </div>
                 ))}
               </div>
+              </div>
             </div>
           )}
 
           {testOrders && testOrders.length > 0 && (
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-6 page-break">
-              <div className="flex items-center gap-3 mb-6">
-                <TestTube className="w-8 h-8 text-cyan-600" />
-                <h2 className="text-3xl font-bold text-gray-900">Laboratory Tests</h2>
-                <span className="ml-2 px-3 py-1 bg-cyan-100 text-cyan-700 rounded-full font-semibold">
-                  {testOrders.length} tests
-                </span>
+            <div className="medical-section mb-8">
+              <div className="section-header">
+                <h2 className="section-title">VIII. LABORATORY TEST ORDERS ({testOrders.length})</h2>
               </div>
+              <div className="section-content">
 
               <div className="space-y-4">
                 {testOrders.map((test) => (
@@ -592,18 +566,16 @@ function FullPatientRecordPage({ params }) {
                   </div>
                 ))}
               </div>
+              </div>
             </div>
           )}
 
           {testResults && testResults.length > 0 && (
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-6 page-break">
-              <div className="flex items-center gap-3 mb-6">
-                <CheckCircle className="w-8 h-8 text-green-600" />
-                <h2 className="text-3xl font-bold text-gray-900">Test Results</h2>
-                <span className="ml-2 px-3 py-1 bg-green-100 text-green-700 rounded-full font-semibold">
-                  {testResults.length} results
-                </span>
+            <div className="medical-section mb-8">
+              <div className="section-header">
+                <h2 className="section-title">IX. LABORATORY TEST RESULTS ({testResults.length})</h2>
               </div>
+              <div className="section-content">
 
               <div className="space-y-4">
                 {testResults.map((result) => (
@@ -635,15 +607,16 @@ function FullPatientRecordPage({ params }) {
                   </div>
                 ))}
               </div>
+              </div>
             </div>
           )}
 
           {dischargeSummary && (
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-6 page-break">
-              <div className="flex items-center gap-3 mb-6">
-                <FileText className="w-8 h-8 text-orange-600" />
-                <h2 className="text-3xl font-bold text-gray-900">Discharge Summary</h2>
+            <div className="medical-section mb-8 page-break">
+              <div className="section-header">
+                <h2 className="section-title">X. DISCHARGE SUMMARY</h2>
               </div>
+              <div className="section-content">
 
               <div className="space-y-4">
                 <div className="grid md:grid-cols-2 gap-4">
@@ -695,36 +668,203 @@ function FullPatientRecordPage({ params }) {
                   </div>
                 )}
               </div>
+              </div>
             </div>
           )}
 
-          <div className="print-footer text-center text-gray-600 text-sm mt-8 pt-6 border-t border-gray-200">
-            <p>End of Patient Medical Record</p>
-            <p>This document is confidential and contains sensitive medical information</p>
+          <div className="print-footer">
+            <div className="border-t-2 border-gray-300 pt-4 mt-12">
+              <div className="flex justify-between items-center text-xs text-gray-600">
+                <div>
+                  <p className="font-semibold">CONFIDENTIAL MEDICAL RECORD</p>
+                  <p>This document contains protected health information</p>
+                </div>
+                <div className="text-right">
+                  <p>Document ID: {patient.admissionNumber}</p>
+                  <p>Page Generated: {new Date().toLocaleDateString()}</p>
+                </div>
+              </div>
+              <div className="text-center mt-4 text-xs text-gray-500">
+                <p>This record is subject to medical confidentiality laws and regulations.</p>
+                <p>Unauthorized disclosure or use is strictly prohibited.</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       <style jsx global>{`
+        .medical-section {
+          background: white;
+          border: 1px solid #e5e7eb;
+          border-radius: 8px;
+          overflow: hidden;
+        }
+
+        .section-header {
+          background: linear-gradient(to right, #1e3a8a, #1e40af);
+          padding: 12px 20px;
+          border-bottom: 3px solid #1e40af;
+        }
+
+        .section-title {
+          font-size: 18px;
+          font-weight: 700;
+          color: white;
+          letter-spacing: 0.5px;
+          text-transform: uppercase;
+        }
+
+        .section-content {
+          padding: 20px;
+        }
+
+        .info-table {
+          width: 100%;
+          border-collapse: collapse;
+        }
+
+        .info-table td {
+          padding: 10px 12px;
+          border-bottom: 1px solid #e5e7eb;
+        }
+
+        .label-cell {
+          font-weight: 600;
+          color: #374151;
+          width: 20%;
+          background: #f9fafb;
+        }
+
+        .value-cell {
+          color: #111827;
+          width: 30%;
+        }
+
+        .clinical-note {
+          padding: 14px;
+          background: #f9fafb;
+          border-left: 4px solid #3b82f6;
+          border-radius: 4px;
+        }
+
+        .clinical-note.alert-box {
+          background: #fef2f2;
+          border-left-color: #dc2626;
+        }
+
+        .clinical-label {
+          font-size: 12px;
+          font-weight: 700;
+          color: #374151;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          margin-bottom: 6px;
+        }
+
+        .clinical-value {
+          font-size: 14px;
+          color: #111827;
+          line-height: 1.6;
+        }
+
+        .data-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 12px;
+          padding: 16px;
+          background: #f9fafb;
+          border-radius: 6px;
+        }
+
+        .data-item {
+          padding: 10px;
+          background: white;
+          border: 1px solid #e5e7eb;
+          border-radius: 4px;
+        }
+
+        .data-item-label {
+          font-size: 11px;
+          font-weight: 600;
+          color: #6b7280;
+          text-transform: uppercase;
+          margin-bottom: 4px;
+        }
+
+        .data-item-value {
+          font-size: 15px;
+          font-weight: 600;
+          color: #111827;
+        }
+
         @media print {
           body {
-            background: white;
+            background: white !important;
+            margin: 0;
+            padding: 0;
           }
+
           .no-print {
             display: none !important;
           }
+
           .page-break {
             page-break-before: always;
+            break-before: page;
           }
+
           .print-content {
             max-width: 100%;
-            padding: 20px;
+            padding: 30px 40px;
+            margin: 0;
           }
+
           .print-header {
             margin-bottom: 30px;
           }
+
           .print-footer {
-            margin-top: 30px;
+            margin-top: 40px;
+            page-break-inside: avoid;
+          }
+
+          .medical-section {
+            page-break-inside: avoid;
+            margin-bottom: 20px;
+            border: 1px solid #000;
+          }
+
+          .section-header {
+            background: #1e3a8a !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+
+          .section-title {
+            color: white !important;
+          }
+
+          .clinical-note.alert-box {
+            background: #fef2f2 !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+
+          .info-table td {
+            padding: 8px 10px;
+            font-size: 12px;
+          }
+
+          .label-cell {
+            background: #f3f4f6 !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+
+          @page {
+            margin: 1.5cm;
+            size: A4;
           }
         }
       `}</style>
