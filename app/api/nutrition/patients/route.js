@@ -36,15 +36,13 @@ export async function GET(req) {
       admittedPatients.map(async (admission) => {
         const latestMealPlan = await MealPlan.findOne({
           patientAdmissionId: admission._id,
-          admissionModel: "PatientAdmission",
           status: "Active"
         })
           .sort({ planDate: -1 })
           .lean();
 
         const latestAssessment = await NutritionalAssessment.findOne({
-          patientAdmissionId: admission._id,
-          admissionModel: "PatientAdmission"
+          patientAdmissionId: admission._id
         })
           .sort({ assessmentDate: -1 })
           .lean();
