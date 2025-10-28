@@ -53,8 +53,12 @@ function DieticianAssessmentsPage() {
   };
 
   const filteredAssessments = assessments.filter((assessment) => {
-    const patientName = assessment.patientId?.name || "";
-    return patientName.toLowerCase().includes(searchTerm.toLowerCase());
+    const firstName = assessment.patientId?.firstName || "";
+    const lastName = assessment.patientId?.lastName || "";
+    const fullName = `${firstName} ${lastName}`;
+    const admissionNumber = assessment.patientId?.admissionNumber || "";
+    return fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+           admissionNumber.toLowerCase().includes(searchTerm.toLowerCase());
   });
 
   if (loading) {
@@ -130,11 +134,11 @@ function DieticianAssessmentsPage() {
                     <div className="flex-1">
                       <div className="flex items-center gap-4 mb-3">
                         <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
-                          {assessment.patientId?.name?.[0] || "?"}
+                          {assessment.patientId?.firstName?.[0] || "?"}{assessment.patientId?.lastName?.[0] || ""}
                         </div>
                         <div>
                           <h3 className="text-lg font-bold text-gray-900">
-                            {assessment.patientId?.name || "Unknown Patient"}
+                            {assessment.patientId?.firstName} {assessment.patientId?.lastName} ({assessment.patientId?.admissionNumber})
                           </h3>
                           <div className="flex items-center gap-4 text-sm text-gray-600">
                             <div className="flex items-center gap-1">

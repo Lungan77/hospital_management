@@ -18,7 +18,7 @@ export async function POST(req) {
 
     const assessment = await NutritionalAssessment.create({
       ...data,
-      patientId: auth.session.user.id,
+      patientId: data.patientAdmissionId,
       assessedBy: auth.session.user.id
     });
 
@@ -54,7 +54,8 @@ export async function GET(req) {
 
     const assessments = await NutritionalAssessment.find(query)
       .populate("assessedBy", "name")
-      .populate("patientId", "name email")
+      .populate("patientId", "firstName lastName admissionNumber")
+      .populate("patientAdmissionId", "firstName lastName admissionNumber chiefComplaint")
       .sort({ assessmentDate: -1 })
       .lean();
 

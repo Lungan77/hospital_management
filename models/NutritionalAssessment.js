@@ -4,12 +4,12 @@ const nutritionalAssessmentSchema = new mongoose.Schema(
   {
     patientAdmissionId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Emergency",
+      ref: "PatientAdmission",
       required: true
     },
     patientId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "PatientAdmission",
       required: true
     },
     assessmentDate: {
