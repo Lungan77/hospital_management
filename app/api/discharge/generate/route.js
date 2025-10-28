@@ -1,30 +1,22 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import dbConnect from "@/lib/mongodb";
+import { connectDB } from "@/lib/mongodb";
 import DischargeSummary from "@/models/DischargeSummary";
-import Emergency from "@/models/Emergency";
+import PatientAdmission from "@/models/PatientAdmission";
 import AdmittedPatientTreatmentPlan from "@/models/AdmittedPatientTreatmentPlan";
+import { isAuthenticated } from "@/hoc/protectedRoute";
 
 export async function POST(req) {
+  const auth = await isAuthenticated(req, ["doctor"]);
+  if (auth.error) return Response.json({ error: auth.error }, { status: auth.status });
+
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    if (!["doctor"].includes(session.user.role)) {
-      return NextResponse.json({ error: "Access denied. Only doctors can generate discharge summaries" }, { status: 403 });
-    }
-
-    await dbConnect();
+    await connectDB();
 
     const data = await req.json();
     const { patientAdmissionId } = data;
 
-    const patient = await Emergency.findById(patientAdmissionId);
+    const patient = await PatientAdmission.findById(patientAdmissionId);
     if (!patient) {
-      return NextResponse.json({ error: "Patient not found" }, { status: 404 });
+      return Response.json({ error: "Patient not found" }, { status: 404 });
     }
 
     const treatmentPlan = await AdmittedPatientTreatmentPlan.findOne({
@@ -38,8 +30,8 @@ export async function POST(req) {
 
     const dischargeSummary = await DischargeSummary.create({
       ...data,
-      dischargedBy: session.user.id,
-      admissionDate: patient.admissionDate,
+      dischargedBy: auth.session.user.id,
+      admissionDate: patient.arrivalTime,
       lengthOfStay,
       reasonForAdmission: patient.chiefComplaint,
       chiefComplaint: patient.chiefComplaint,
@@ -54,12 +46,12 @@ export async function POST(req) {
       await treatmentPlan.save();
     }
 
-    return NextResponse.json({ dischargeSummary }, { status: 201 });
+    return Response.json({ dischargeSummary }, { status: 201 });
   } catch (error) {
     console.error("Error generating discharge summary:", error);
-    return NextResponse.json(
-      { error: "Failed to generate discharge summary" },
-      { status: 500 }
-    );
+    return Response.json({
+      error: "Failed to generate discharge summary",
+      details: error.message
+    }, { status: 500 });
   }
 }
