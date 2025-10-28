@@ -55,7 +55,7 @@ function FullPatientRecordPage({ params }) {
   };
 
   const handlePrint = useReactToPrint({
-    content: () => printRef.current,
+    contentRef: printRef,
     documentTitle: `Patient_Record_${record?.patient?.admissionNumber || patientId}`,
   });
 
