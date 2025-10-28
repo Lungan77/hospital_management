@@ -16,7 +16,8 @@ import {
   ClipboardList,
   FileText,
   Pill,
-  TrendingUp
+  TrendingUp,
+  Download
 } from "lucide-react";
 
 function NursePatientsPage() {
@@ -281,8 +282,16 @@ function NursePatientsPage() {
                       </button>
 
                       <button
+                        onClick={() => router.push(`/patient/full-record/${patient._id}`)}
+                        className="flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-colors"
+                      >
+                        <Download className="w-5 h-5" />
+                        Full Record
+                      </button>
+
+                      <button
                         onClick={() => router.push(`/nurse/vitals?patientId=${patient._id}`)}
-                        className="flex items-center justify-center gap-2 bg-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-purple-700 transition-colors"
+                        className="flex items-center justify-center gap-2 bg-cyan-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-cyan-700 transition-colors"
                       >
                         <Activity className="w-5 h-5" />
                         Record Vitals
