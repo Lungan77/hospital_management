@@ -204,15 +204,21 @@ function FullPatientRecordPage({ params }) {
               </div>
             )}
 
-            {patient.allergies && patient.allergies.length > 0 && (
+            {patient.allergies && (
               <div className="mt-4 p-6 bg-red-50 rounded-xl border-l-4 border-red-500">
                 <p className="text-sm text-red-600 font-semibold mb-2">Allergies</p>
                 <div className="flex flex-wrap gap-2">
-                  {patient.allergies.map((allergy, i) => (
-                    <span key={i} className="bg-red-200 text-red-800 px-3 py-1 rounded-full font-semibold">
-                      {allergy}
+                  {Array.isArray(patient.allergies) ? (
+                    patient.allergies.map((allergy, i) => (
+                      <span key={i} className="bg-red-200 text-red-800 px-3 py-1 rounded-full font-semibold">
+                        {allergy}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="bg-red-200 text-red-800 px-3 py-1 rounded-full font-semibold">
+                      {patient.allergies}
                     </span>
-                  ))}
+                  )}
                 </div>
               </div>
             )}
