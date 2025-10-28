@@ -777,4 +777,4 @@ function PatientCarePage({ params }) {
   );
 }
 
-export default withAuth(PatientCarePage, ["doctor", "nurse"]);
+export default withAuth(PatientCarePage, ["doctor", "nurse", "er", "receptionist", "admin"]);

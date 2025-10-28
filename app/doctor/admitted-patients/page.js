@@ -15,7 +15,8 @@ import {
   ChevronRight,
   FileText,
   Home,
-  Utensils
+  Utensils,
+  Stethoscope
 } from "lucide-react";
 
 function AdmittedPatients() {
@@ -332,8 +333,8 @@ function AdmittedPatients() {
                         }}
                         className="bg-gradient-to-r from-green-600 to-teal-600 text-white py-4 rounded-2xl font-bold text-lg hover:from-green-700 hover:to-teal-700 transition-all duration-200 shadow-lg hover:shadow-green-500/25 flex items-center justify-center gap-3"
                       >
-                        <Activity className="w-5 h-5" />
-                        Medications & Procedures
+                        <Stethoscope className="w-5 h-5" />
+                        Assess Patient
                       </button>
                       <button
                         onClick={(e) => {
