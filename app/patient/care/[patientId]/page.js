@@ -13,7 +13,8 @@ import {
   CheckCircle,
   Activity,
   User,
-  FileText
+  FileText,
+  Stethoscope
 } from "lucide-react";
 
 function PatientCarePage({ params }) {
@@ -260,12 +261,21 @@ function PatientCarePage({ params }) {
                 <p className="text-gray-600 text-xl mt-2">{patient.firstName} {patient.lastName}</p>
               </div>
             </div>
-            <button
-              onClick={() => router.push("/doctor/admitted-patients")}
-              className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-300 transition-colors"
-            >
-              Back
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={() => router.push(`/patient/daily-assessment/${patientId}`)}
+                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-xl font-bold hover:from-green-700 hover:to-teal-700 transition-colors shadow-lg"
+              >
+                <Stethoscope className="w-5 h-5" />
+                Daily Assessment
+              </button>
+              <button
+                onClick={() => router.back()}
+                className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-300 transition-colors"
+              >
+                Back
+              </button>
+            </div>
           </div>
 
           <div className="grid md:grid-cols-3 gap-4">

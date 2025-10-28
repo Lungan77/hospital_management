@@ -265,27 +265,27 @@ function NursePatientsPage() {
 
                     <div className="flex flex-col gap-3 lg:w-64">
                       <button
-                        onClick={() => router.push(`/patient/care/${patient._id}`)}
+                        onClick={() => router.push(`/patient/daily-assessment/${patient._id}`)}
                         className="flex items-center justify-center gap-2 bg-gradient-to-r from-green-600 to-teal-600 text-white px-6 py-4 rounded-xl font-bold hover:from-green-700 hover:to-teal-700 transition-all shadow-lg"
                       >
                         <Stethoscope className="w-5 h-5" />
-                        Assess Patient
+                        Daily Assessment
+                      </button>
+
+                      <button
+                        onClick={() => router.push(`/patient/care/${patient._id}`)}
+                        className="flex items-center justify-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors"
+                      >
+                        <FileText className="w-5 h-5" />
+                        Medications & Care
                       </button>
 
                       <button
                         onClick={() => router.push(`/nurse/vitals?patientId=${patient._id}`)}
-                        className="flex items-center justify-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors"
+                        className="flex items-center justify-center gap-2 bg-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-purple-700 transition-colors"
                       >
                         <Activity className="w-5 h-5" />
                         Record Vitals
-                      </button>
-
-                      <button
-                        onClick={() => router.push(`/clinical/data-capture?patientId=${patient._id}`)}
-                        className="flex items-center justify-center gap-2 bg-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-purple-700 transition-colors"
-                      >
-                        <ClipboardList className="w-5 h-5" />
-                        Clinical Data
                       </button>
                     </div>
                   </div>

@@ -325,23 +325,33 @@ function AdmittedPatients() {
                   )}
 
                   <div className="mt-6 pt-6 border-t border-gray-200">
-                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push(`/patient/daily-assessment/${patient._id}`);
+                        }}
+                        className="bg-gradient-to-r from-green-600 to-teal-600 text-white py-4 rounded-2xl font-bold text-lg hover:from-green-700 hover:to-teal-700 transition-all duration-200 shadow-lg hover:shadow-green-500/25 flex items-center justify-center gap-3"
+                      >
+                        <Stethoscope className="w-5 h-5" />
+                        Daily Assessment
+                      </button>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           router.push(`/patient/care/${patient._id}`);
                         }}
-                        className="bg-gradient-to-r from-green-600 to-teal-600 text-white py-4 rounded-2xl font-bold text-lg hover:from-green-700 hover:to-teal-700 transition-all duration-200 shadow-lg hover:shadow-green-500/25 flex items-center justify-center gap-3"
+                        className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 rounded-2xl font-bold text-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-blue-500/25 flex items-center justify-center gap-3"
                       >
-                        <Stethoscope className="w-5 h-5" />
-                        Assess Patient
+                        <Activity className="w-5 h-5" />
+                        Care & Meds
                       </button>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           router.push(`/doctor/treatment-plan/${patient._id}`);
                         }}
-                        className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-4 rounded-2xl font-bold text-lg hover:from-blue-700 hover:to-cyan-700 transition-all duration-200 shadow-lg hover:shadow-blue-500/25 flex items-center justify-center gap-3"
+                        className="bg-gradient-to-r from-cyan-600 to-blue-600 text-white py-4 rounded-2xl font-bold text-lg hover:from-cyan-700 hover:to-blue-700 transition-all duration-200 shadow-lg hover:shadow-cyan-500/25 flex items-center justify-center gap-3"
                       >
                         <FileText className="w-5 h-5" />
                         Treatment Plan
