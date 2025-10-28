@@ -18,7 +18,7 @@ export async function POST(req) {
 
     const assessment = await NutritionalAssessment.create({
       ...data,
-      admissionModel: "PatientAdmission",
+      patientId: admission.patientId || auth.session.user.id,
       assessedBy: auth.session.user.id
     });
 
