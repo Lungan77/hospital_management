@@ -1,5 +1,6 @@
 import { connectDB } from "@/lib/mongodb";
 import Emergency from "@/models/Emergency";
+import PatientAdmission from "@/models/PatientAdmission";
 import { isAuthenticated } from "@/hoc/protectedRoute";
 
 export async function GET(req, { params }) {
@@ -10,21 +11,31 @@ export async function GET(req, { params }) {
     await connectDB();
     const { patientId } = await params;
 
-    const patient = await Emergency.findById(patientId)
+    let patient = await Emergency.findById(patientId)
       .populate("ambulanceId", "callSign vehicleNumber")
       .populate("dispatcherId", "firstName lastName")
       .populate("erAssessment.assessedBy", "firstName lastName")
       .populate("handover.receivingStaff", "firstName lastName")
       .populate("handover.verifiedBy", "firstName lastName");
 
+    if (patient) {
+      const patientData = patient.toObject();
+      if (patientData.erAssessment) {
+        patientData.assessment = patientData.erAssessment;
+      }
+      return Response.json({ patient: patientData }, { status: 200 });
+    }
+
+    patient = await PatientAdmission.findById(patientId)
+      .populate("assignedDoctor", "firstName lastName email")
+      .populate("assignedNurse", "firstName lastName email");
+
     if (!patient) {
       return Response.json({ error: "Patient not found" }, { status: 404 });
     }
 
     const patientData = patient.toObject();
-    if (patientData.erAssessment) {
-      patientData.assessment = patientData.erAssessment;
-    }
+    patientData.patientId = patientData.admissionNumber;
 
     return Response.json({ patient: patientData }, { status: 200 });
   } catch (error) {
