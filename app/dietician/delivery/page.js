@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import withAuth from "@/hoc/withAuth";
+import toast from "react-hot-toast";
 import {
   Clock,
   CheckCircle,
@@ -9,13 +10,24 @@ import {
   Utensils,
   Calendar,
   User,
-  TrendingUp
+  TrendingUp,
+  Search,
+  Filter,
+  RefreshCw,
+  Package,
+  Bell,
+  ChevronDown
 } from "lucide-react";
 
 function MealDeliveryPage() {
   const router = useRouter();
   const [mealPlans, setMealPlans] = useState([]);
+  const [filteredPlans, setFilteredPlans] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [delivering, setDelivering] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [expandedPlan, setExpandedPlan] = useState(null);
   const [stats, setStats] = useState({
     totalPending: 0,
     totalDelivered: 0,
@@ -24,7 +36,13 @@ function MealDeliveryPage() {
 
   useEffect(() => {
     fetchMealPlans();
+    const interval = setInterval(fetchMealPlans, 60000);
+    return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    filterAndSearchPlans();
+  }, [mealPlans, searchTerm, filterStatus]);
 
   const fetchMealPlans = async () => {
     try {
@@ -62,6 +80,61 @@ function MealDeliveryPage() {
     const rate = total > 0 ? ((totalDelivered / total) * 100).toFixed(1) : 0;
 
     setStats({ totalPending, totalDelivered, deliveryRate: rate });
+  };
+
+  const filterAndSearchPlans = () => {
+    let filtered = [...mealPlans];
+
+    if (searchTerm) {
+      filtered = filtered.filter(
+        (plan) =>
+          plan.patientName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          plan.admissionNumber?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    if (filterStatus !== "all") {
+      filtered = filtered.filter((plan) => {
+        const hasPending =
+          !plan.meals.breakfast?.delivered ||
+          !plan.meals.lunch?.delivered ||
+          !plan.meals.dinner?.delivered;
+        const hasDelivered =
+          plan.meals.breakfast?.delivered ||
+          plan.meals.lunch?.delivered ||
+          plan.meals.dinner?.delivered;
+
+        if (filterStatus === "pending") return hasPending;
+        if (filterStatus === "delivered") return hasDelivered && !hasPending;
+        return true;
+      });
+    }
+
+    setFilteredPlans(filtered);
+  };
+
+  const handleDeliverMeal = async (mealPlanId, mealType) => {
+    setDelivering(`${mealPlanId}-${mealType}`);
+    try {
+      const res = await fetch("/api/meal-plans/deliver", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mealPlanId, mealType }),
+      });
+
+      if (res.ok) {
+        toast.success(`${mealType.charAt(0).toUpperCase() + mealType.slice(1)} marked as delivered!`);
+        await fetchMealPlans();
+      } else {
+        const data = await res.json();
+        toast.error(data.error || "Failed to mark as delivered");
+      }
+    } catch (error) {
+      console.error("Error delivering meal:", error);
+      toast.error("Failed to mark as delivered");
+    } finally {
+      setDelivering(null);
+    }
   };
 
   const getMealStatus = (meal) => {
@@ -152,22 +225,57 @@ function MealDeliveryPage() {
         </div>
 
         <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <h2 className="text-2xl font-bold text-gray-900">Today&apos;s Meal Plans</h2>
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <Calendar className="w-4 h-4" />
-              <span>{new Date().toLocaleDateString()}</span>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="relative flex-1 md:flex-initial md:min-w-[300px]">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search by name or admission number..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+
+              <div className="relative">
+                <select
+                  value={filterStatus}
+                  onChange={(e) => setFilterStatus(e.target.value)}
+                  className="appearance-none pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 bg-white cursor-pointer"
+                >
+                  <option value="all">All Status</option>
+                  <option value="pending">Pending</option>
+                  <option value="delivered">Delivered</option>
+                </select>
+                <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+              </div>
+
+              <button
+                onClick={fetchMealPlans}
+                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Refresh
+              </button>
             </div>
           </div>
 
-          {mealPlans.length === 0 ? (
+          {filteredPlans.length === 0 ? (
             <div className="text-center py-12">
               <Utensils className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-600">No active meal plans for today</p>
+              <p className="text-gray-600">
+                {mealPlans.length === 0
+                  ? "No active meal plans for today"
+                  : "No meal plans match your search or filter"}
+              </p>
             </div>
           ) : (
             <div className="space-y-6">
-              {mealPlans.map((plan) => (
+              {filteredPlans.map((plan) => (
                 <div
                   key={plan._id}
                   className="border border-gray-200 rounded-xl p-5 hover:shadow-md transition-all"
@@ -206,17 +314,38 @@ function MealDeliveryPage() {
                         </p>
                       )}
                       {plan.meals.breakfast?.items && (
-                        <ul className="text-sm text-gray-700 space-y-1">
+                        <ul className="text-sm text-gray-700 space-y-1 mb-3">
                           {plan.meals.breakfast.items.map((item, idx) => (
                             <li key={idx}>• {item}</li>
                           ))}
                         </ul>
                       )}
-                      {plan.meals.breakfast?.delivered && plan.meals.breakfast.deliveredBy && (
-                        <p className="text-xs text-green-600 mt-2">
+                      {plan.meals.breakfast?.delivered ? (
+                        <div className="text-xs text-green-600 mt-3">
                           <User className="w-3 h-3 inline mr-1" />
                           By: {plan.meals.breakfast.deliveredBy}
-                        </p>
+                          <br />
+                          <Clock className="w-3 h-3 inline mr-1 mt-1" />
+                          {new Date(plan.meals.breakfast.deliveredAt).toLocaleTimeString()}
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => handleDeliverMeal(plan._id, "breakfast")}
+                          disabled={delivering === `${plan._id}-breakfast`}
+                          className="w-full mt-3 flex items-center justify-center gap-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-semibold"
+                        >
+                          {delivering === `${plan._id}-breakfast` ? (
+                            <>
+                              <RefreshCw className="w-4 h-4 animate-spin" />
+                              Delivering...
+                            </>
+                          ) : (
+                            <>
+                              <Package className="w-4 h-4" />
+                              Mark Delivered
+                            </>
+                          )}
+                        </button>
                       )}
                     </div>
 
@@ -239,17 +368,38 @@ function MealDeliveryPage() {
                         </p>
                       )}
                       {plan.meals.lunch?.items && (
-                        <ul className="text-sm text-gray-700 space-y-1">
+                        <ul className="text-sm text-gray-700 space-y-1 mb-3">
                           {plan.meals.lunch.items.map((item, idx) => (
                             <li key={idx}>• {item}</li>
                           ))}
                         </ul>
                       )}
-                      {plan.meals.lunch?.delivered && plan.meals.lunch.deliveredBy && (
-                        <p className="text-xs text-green-600 mt-2">
+                      {plan.meals.lunch?.delivered ? (
+                        <div className="text-xs text-green-600 mt-3">
                           <User className="w-3 h-3 inline mr-1" />
                           By: {plan.meals.lunch.deliveredBy}
-                        </p>
+                          <br />
+                          <Clock className="w-3 h-3 inline mr-1 mt-1" />
+                          {new Date(plan.meals.lunch.deliveredAt).toLocaleTimeString()}
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => handleDeliverMeal(plan._id, "lunch")}
+                          disabled={delivering === `${plan._id}-lunch`}
+                          className="w-full mt-3 flex items-center justify-center gap-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-semibold"
+                        >
+                          {delivering === `${plan._id}-lunch` ? (
+                            <>
+                              <RefreshCw className="w-4 h-4 animate-spin" />
+                              Delivering...
+                            </>
+                          ) : (
+                            <>
+                              <Package className="w-4 h-4" />
+                              Mark Delivered
+                            </>
+                          )}
+                        </button>
                       )}
                     </div>
 
@@ -272,17 +422,38 @@ function MealDeliveryPage() {
                         </p>
                       )}
                       {plan.meals.dinner?.items && (
-                        <ul className="text-sm text-gray-700 space-y-1">
+                        <ul className="text-sm text-gray-700 space-y-1 mb-3">
                           {plan.meals.dinner.items.map((item, idx) => (
                             <li key={idx}>• {item}</li>
                           ))}
                         </ul>
                       )}
-                      {plan.meals.dinner?.delivered && plan.meals.dinner.deliveredBy && (
-                        <p className="text-xs text-green-600 mt-2">
+                      {plan.meals.dinner?.delivered ? (
+                        <div className="text-xs text-green-600 mt-3">
                           <User className="w-3 h-3 inline mr-1" />
                           By: {plan.meals.dinner.deliveredBy}
-                        </p>
+                          <br />
+                          <Clock className="w-3 h-3 inline mr-1 mt-1" />
+                          {new Date(plan.meals.dinner.deliveredAt).toLocaleTimeString()}
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => handleDeliverMeal(plan._id, "dinner")}
+                          disabled={delivering === `${plan._id}-dinner`}
+                          className="w-full mt-3 flex items-center justify-center gap-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-semibold"
+                        >
+                          {delivering === `${plan._id}-dinner` ? (
+                            <>
+                              <RefreshCw className="w-4 h-4 animate-spin" />
+                              Delivering...
+                            </>
+                          ) : (
+                            <>
+                              <Package className="w-4 h-4" />
+                              Mark Delivered
+                            </>
+                          )}
+                        </button>
                       )}
                     </div>
                   </div>
