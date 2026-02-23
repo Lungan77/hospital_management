@@ -1,41 +1,23 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import withAuth from "@/hoc/withAuth";
-import { User, Mail, Phone, IdCard, Lock, Eye, EyeOff, UserPlus, Stethoscope, Building2 } from "lucide-react";
+import { User, Mail, Phone, IdCard, Lock, Eye, EyeOff, UserPlus, Stethoscope } from "lucide-react";
 
 function AddUser() {
   const [name, setName] = useState("");
   const [title, setTitle] = useState("Title");
   const [email, setEmail] = useState("");
   const [idNumber, setidNumber] = useState("");
-  const [password, setPassword] = useState("");
+  const [password, setPassword] = useState(""); 
   const [confirmPassword, setConfirmPassword] = useState("");
   const [gender, setGender] = useState("Gender");
   const [phone, setPhone] = useState("");
   const [role, setRole] = useState("Role");
-  const [hospital, setHospital] = useState("");
-  const [hospitals, setHospitals] = useState([]);
   const [message, setMessage] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    fetchHospitals();
-  }, []);
-
-  const fetchHospitals = async () => {
-    try {
-      const response = await fetch('/api/hospitals?status=active');
-      const data = await response.json();
-      if (response.ok) {
-        setHospitals(data.hospitals);
-      }
-    } catch (error) {
-      console.error('Failed to fetch hospitals:', error);
-    }
-  };
 
   const handleCreateUser = async (e) => {
     e.preventDefault();
@@ -48,15 +30,10 @@ function AddUser() {
       return;
     }
 
-    const payload = { name, title, email, idNumber, password, phone, gender, role };
-    if (role !== 'admin' && hospital) {
-      payload.hospital = hospital;
-    }
-
     const res = await fetch("/api/admin/add-user", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ name, title, email, idNumber, password, phone, gender, role }),
     });
 
     const data = await res.json();
@@ -74,7 +51,6 @@ function AddUser() {
       setGender("Gender");
       setPhone("");
       setRole("Role");
-      setHospital("");
     } else {
       setMessage(data.error || "An error occurred");
     }
@@ -249,8 +225,8 @@ function AddUser() {
                   <Stethoscope className="w-6 h-6 text-blue-600" />
                   Role & Security
                 </h3>
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                  <div>
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+                  <div className="sm:col-span-3">
                     <label className="block text-sm font-semibold text-gray-700 mb-2">User Role</label>
                     <select
                       className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
@@ -274,31 +250,6 @@ function AddUser() {
                       <option value="dietician">Dietician</option>
                     </select>
                   </div>
-
-                  {role !== 'admin' && role !== 'Role' && (
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Hospital/Clinic</label>
-                      <div className="relative">
-                        <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                        <select
-                          className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
-                          value={hospital}
-                          onChange={(e) => setHospital(e.target.value)}
-                          required
-                        >
-                          <option value="">Select Hospital/Clinic</option>
-                          {hospitals.map((h) => (
-                            <option key={h._id} value={h._id}>
-                              {h.name} ({h.type})
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 mt-6">
 
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">Password</label>

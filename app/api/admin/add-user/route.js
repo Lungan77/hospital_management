@@ -8,7 +8,7 @@ export async function POST(req) {
   if (auth.error) return Response.json({ error: auth.error }, { status: auth.status });
 
   try {
-    const { name, title, email, idNumber, password, phone, gender, role, hospital } = await req.json();
+    const { name, title, email, idNumber, password, phone, gender, role } = await req.json();
     await connectDB();
 
     const existingUser = await User.findOne({ email });
@@ -40,21 +40,8 @@ export async function POST(req) {
       );
     }
 
-    if (role !== 'admin' && !hospital) {
-      return new Response(
-        JSON.stringify({ error: "Hospital is required for non-admin users" }),
-        { status: 400 }
-      );
-    }
-
     const hashedPassword = await bcrypt.hash(password || "Password01", 10);
-    const userData = { name, title, email, idNumber, password: hashedPassword, phone, gender, role };
-
-    if (role !== 'admin' && hospital) {
-      userData.hospital = hospital;
-    }
-
-    const newUser = await User.create(userData);
+    const newUser = await User.create({ name, title, email, idNumber, password: hashedPassword, phone, gender, role });
     
     return new Response(
       JSON.stringify({ message: "User created successfully", user: newUser }),
