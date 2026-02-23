@@ -3,11 +3,11 @@ import mongoose from "mongoose";
 const UserSchema = new mongoose.Schema(
   {
     name: { type: String, required: true }, // Full Name
-    title: { 
-      type: String, 
+    title: {
+      type: String,
       enum: ["Dr", "Mr", "Miss", "Mrs", "Prof", "None"], // Added "None"
-      required: true, 
-      default: "None" 
+      required: true,
+      default: "None"
     }, // Title Enum
     email: { type: String, unique: true, required: true },
     idNumber: { type: String, required: true },
@@ -18,7 +18,8 @@ const UserSchema = new mongoose.Schema(
       enum: ["admin", "doctor", "nurse", "receptionist", "patient", "labtech", "dispatcher", "driver", "paramedic", "er", "ward_manager", "housekeeper", "dietician"],
       required: true
     },
-    password: { type: String, required: true }, 
+    password: { type: String, required: true },
+    isActive: { type: Boolean, default: true },
   },
   { timestamps: true }
 );

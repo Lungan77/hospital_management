@@ -1,13 +1,16 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Users, Plus, Search, Filter, UserCheck, UserX, Mail, Phone, Edit, Trash2, Shield, Star, Activity } from "lucide-react";
+import { Users, Plus, Search, Filter, UserCheck, UserX, Mail, Phone, Edit, Trash2, Shield, Star, Activity, X, Save } from "lucide-react";
+import toast from "react-hot-toast";
 
 export default function UsersTable() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
+  const [editingUser, setEditingUser] = useState(null);
+  const [editForm, setEditForm] = useState({});
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -56,6 +59,67 @@ export default function UsersTable() {
       dispatcher: "bg-red-100 text-red-700 border-red-200"
     };
     return colors[role] || "bg-gray-100 text-gray-700 border-gray-200";
+  };
+
+  const handleEdit = (user) => {
+    setEditingUser(user._id);
+    setEditForm({
+      name: user.name,
+      title: user.title,
+      email: user.email,
+      phone: user.phone,
+      gender: user.gender,
+      role: user.role
+    });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingUser(null);
+    setEditForm({});
+  };
+
+  const handleUpdateUser = async (userId) => {
+    try {
+      const res = await fetch("/api/users", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, ...editForm })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        toast.success("User updated successfully");
+        setUsers(users.map(u => u._id === userId ? data.user : u));
+        setEditingUser(null);
+        setEditForm({});
+      } else {
+        toast.error(data.error || "Failed to update user");
+      }
+    } catch (error) {
+      toast.error("Error updating user");
+    }
+  };
+
+  const handleToggleStatus = async (userId, currentStatus) => {
+    try {
+      const res = await fetch("/api/users", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, isActive: !currentStatus })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        toast.success(data.message);
+        setUsers(users.map(u => u._id === userId ? data.user : u));
+      } else {
+        toast.error(data.error || "Failed to update user status");
+      }
+    } catch (error) {
+      toast.error("Error updating user status");
+    }
   };
 
   if (loading) {
@@ -152,66 +216,188 @@ export default function UsersTable() {
         ) : (
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {filteredUsers.map((user) => (
-              <div key={user._id} className="bg-white rounded-3xl shadow-xl border border-gray-100 p-8 hover:shadow-2xl transition-all duration-300 hover:transform hover:scale-105 group">
-                <div className="flex items-start justify-between mb-6">
-                  <div className="flex items-center gap-4">
-                    <div className={`w-16 h-16 bg-gradient-to-br ${getRoleColor(user.role)} rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg group-hover:scale-110 transition-transform`}>
-                      {user.name.charAt(0).toUpperCase()}
+              <div key={user._id} className={`bg-white rounded-3xl shadow-xl border ${user.isActive ? 'border-gray-100' : 'border-red-200 bg-red-50/30'} p-8 hover:shadow-2xl transition-all duration-300 group`}>
+                {editingUser === user._id ? (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-bold text-gray-900 text-xl">Edit User</h3>
+                      <button
+                        onClick={handleCancelEdit}
+                        className="text-gray-400 hover:text-gray-600"
+                      >
+                        <X className="w-6 h-6" />
+                      </button>
                     </div>
+
                     <div>
-                      <h3 className="font-bold text-gray-900 text-xl">{user.title} {user.name}</h3>
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold border ${getRoleBadgeColor(user.role)} mt-2`}>
-                        <Shield className="w-3 h-3 mr-1" />
-                        {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
-                      </span>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
+                      <select
+                        value={editForm.title}
+                        onChange={(e) => setEditForm({...editForm, title: e.target.value})}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="None">None</option>
+                        <option value="Dr">Dr</option>
+                        <option value="Mr">Mr</option>
+                        <option value="Miss">Miss</option>
+                        <option value="Mrs">Mrs</option>
+                        <option value="Prof">Prof</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
+                      <input
+                        type="text"
+                        value={editForm.name}
+                        onChange={(e) => setEditForm({...editForm, name: e.target.value})}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                      <input
+                        type="email"
+                        value={editForm.email}
+                        onChange={(e) => setEditForm({...editForm, email: e.target.value})}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+                      <input
+                        type="text"
+                        value={editForm.phone}
+                        onChange={(e) => setEditForm({...editForm, phone: e.target.value})}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+                      <select
+                        value={editForm.gender}
+                        onChange={(e) => setEditForm({...editForm, gender: e.target.value})}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
+                      <select
+                        value={editForm.role}
+                        onChange={(e) => setEditForm({...editForm, role: e.target.value})}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="doctor">Doctor</option>
+                        <option value="nurse">Nurse</option>
+                        <option value="receptionist">Receptionist</option>
+                        <option value="patient">Patient</option>
+                        <option value="labtech">Lab Technician</option>
+                        <option value="dispatcher">Dispatcher</option>
+                        <option value="driver">Driver</option>
+                        <option value="paramedic">Paramedic</option>
+                        <option value="er">ER Staff</option>
+                        <option value="ward_manager">Ward Manager</option>
+                        <option value="housekeeper">Housekeeper</option>
+                        <option value="dietician">Dietician</option>
+                      </select>
+                    </div>
+
+                    <div className="flex gap-3 pt-4">
+                      <button
+                        onClick={() => handleUpdateUser(user._id)}
+                        className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 px-4 rounded-xl text-sm font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-200 flex items-center justify-center gap-2"
+                      >
+                        <Save className="w-4 h-4" />
+                        Save Changes
+                      </button>
+                      <button
+                        onClick={handleCancelEdit}
+                        className="flex-1 bg-gray-100 text-gray-700 py-3 px-4 rounded-xl text-sm font-semibold hover:bg-gray-200 transition-all duration-200"
+                      >
+                        Cancel
+                      </button>
                     </div>
                   </div>
-                  <UserCheck className="w-6 h-6 text-green-500" />
-                </div>
+                ) : (
+                  <>
+                    <div className="flex items-start justify-between mb-6">
+                      <div className="flex items-center gap-4">
+                        <div className={`w-16 h-16 bg-gradient-to-br ${getRoleColor(user.role)} rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg group-hover:scale-110 transition-transform`}>
+                          {user.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-gray-900 text-xl">{user.title} {user.name}</h3>
+                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold border ${getRoleBadgeColor(user.role)} mt-2`}>
+                            <Shield className="w-3 h-3 mr-1" />
+                            {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                          </span>
+                        </div>
+                      </div>
+                      {user.isActive ? (
+                        <UserCheck className="w-6 h-6 text-green-500" />
+                      ) : (
+                        <UserX className="w-6 h-6 text-red-500" />
+                      )}
+                    </div>
 
-                <div className="space-y-4 mb-6">
-                  <div className="flex items-center gap-3 text-gray-600 p-3 bg-gray-50 rounded-xl">
-                    <Mail className="w-5 h-5 text-blue-500" />
-                    <span className="text-sm truncate flex-1">{user.email}</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-gray-600 p-3 bg-gray-50 rounded-xl">
-                    <Phone className="w-5 h-5 text-green-500" />
-                    <span className="text-sm">{user.phone || "Not provided"}</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-gray-600 p-3 bg-gray-50 rounded-xl">
-                    <UserCheck className="w-5 h-5 text-purple-500" />
-                    <span className="text-sm">{user.gender || "Not specified"}</span>
-                  </div>
-                </div>
+                    {!user.isActive && (
+                      <div className="mb-4 p-3 bg-red-100 border border-red-200 rounded-lg">
+                        <p className="text-sm font-semibold text-red-700 text-center">Account Deactivated</p>
+                      </div>
+                    )}
 
-                {/* User Stats */}
-                <div className="grid grid-cols-3 gap-3 mb-6">
-                  <div className="text-center p-3 bg-blue-50 rounded-xl">
-                    <div className="text-lg font-bold text-blue-600">4.9</div>
-                    <div className="text-xs text-blue-600">Rating</div>
-                  </div>
-                  <div className="text-center p-3 bg-green-50 rounded-xl">
-                    <div className="text-lg font-bold text-green-600">98%</div>
-                    <div className="text-xs text-green-600">Active</div>
-                  </div>
-                  <div className="text-center p-3 bg-purple-50 rounded-xl">
-                    <div className="text-lg font-bold text-purple-600">24</div>
-                    <div className="text-xs text-purple-600">Tasks</div>
-                  </div>
-                </div>
+                    <div className="space-y-4 mb-6">
+                      <div className="flex items-center gap-3 text-gray-600 p-3 bg-gray-50 rounded-xl">
+                        <Mail className="w-5 h-5 text-blue-500" />
+                        <span className="text-sm truncate flex-1">{user.email}</span>
+                      </div>
+                      <div className="flex items-center gap-3 text-gray-600 p-3 bg-gray-50 rounded-xl">
+                        <Phone className="w-5 h-5 text-green-500" />
+                        <span className="text-sm">{user.phone || "Not provided"}</span>
+                      </div>
+                      <div className="flex items-center gap-3 text-gray-600 p-3 bg-gray-50 rounded-xl">
+                        <UserCheck className="w-5 h-5 text-purple-500" />
+                        <span className="text-sm">{user.gender || "Not specified"}</span>
+                      </div>
+                    </div>
 
-                <div className="pt-6 border-t border-gray-100">
-                  <div className="flex gap-3">
-                    <button className="flex-1 bg-blue-50 text-blue-600 py-3 px-4 rounded-xl text-sm font-semibold hover:bg-blue-100 transition-all duration-200 flex items-center justify-center gap-2">
-                      <Edit className="w-4 h-4" />
-                      Edit
-                    </button>
-                    <button className="flex-1 bg-red-50 text-red-600 py-3 px-4 rounded-xl text-sm font-semibold hover:bg-red-100 transition-all duration-200 flex items-center justify-center gap-2">
-                      <Trash2 className="w-4 h-4" />
-                      Remove
-                    </button>
-                  </div>
-                </div>
+                    <div className="pt-6 border-t border-gray-100">
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => handleEdit(user)}
+                          className="flex-1 bg-blue-50 text-blue-600 py-3 px-4 rounded-xl text-sm font-semibold hover:bg-blue-100 transition-all duration-200 flex items-center justify-center gap-2"
+                        >
+                          <Edit className="w-4 h-4" />
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleToggleStatus(user._id, user.isActive)}
+                          className={`flex-1 ${user.isActive ? 'bg-red-50 text-red-600 hover:bg-red-100' : 'bg-green-50 text-green-600 hover:bg-green-100'} py-3 px-4 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2`}
+                        >
+                          {user.isActive ? (
+                            <>
+                              <UserX className="w-4 h-4" />
+                              Deactivate
+                            </>
+                          ) : (
+                            <>
+                              <UserCheck className="w-4 h-4" />
+                              Activate
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             ))}
           </div>

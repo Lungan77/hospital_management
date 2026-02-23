@@ -20,6 +20,10 @@ export const authOptions = {
         const isValid = await bcrypt.compare(credentials.password, user.password);
         if (!isValid) return null;
 
+        if (!user.isActive) {
+          throw new Error("Your account has been deactivated. Please contact the administrator.");
+        }
+
         // Return the user object with the id as a string
         return { id: user._id.toString(), name: user.name, email: user.email, role: user.role };
       },
