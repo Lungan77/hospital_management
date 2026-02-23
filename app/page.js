@@ -99,95 +99,95 @@ export default function Home() {
       </a>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50 min-h-screen flex items-center">
+      <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50 h-screen flex items-center">
         <div className="absolute inset-0 opacity-5">
           <div className="absolute inset-0" style={{
             backgroundImage: 'radial-gradient(circle at 1px 1px, rgb(59 130 246 / 0.3) 1px, transparent 0)',
             backgroundSize: '40px 40px'
           }}></div>
         </div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-24 w-full">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-            <div className="space-y-6 sm:space-y-8 text-center lg:text-left">
-              <div className="space-y-4 sm:space-y-6">
+            <div className="space-y-6 lg:space-y-8 text-center lg:text-left">
+              <div className="space-y-3 lg:space-y-5">
                 <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-xs sm:text-sm font-medium">
                   <Award className="w-3 h-3 sm:w-4 sm:h-4" />
                   Best Healthcare Platform 2024
                 </div>
-                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-gray-900 leading-tight">
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-bold text-gray-900 leading-tight">
                   Modern Healthcare
                   <span className="block mt-2 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
                     Management System
                   </span>
                 </h1>
-                <p className="text-base sm:text-lg lg:text-xl text-gray-600 leading-relaxed max-w-2xl mx-auto lg:mx-0">
+                <p className="text-base sm:text-lg lg:text-lg text-gray-600 leading-relaxed max-w-2xl mx-auto lg:mx-0">
                   Streamline your healthcare operations with our comprehensive management platform designed for modern medical facilities. Empower your team with cutting-edge technology.
                 </p>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start">
-                <Link href="/register" className="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl font-semibold text-base sm:text-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg hover:shadow-blue-500/30 transform hover:scale-105">
+              <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
+                <Link href="/register" className="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl font-semibold text-base hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg hover:shadow-blue-500/30 transform hover:scale-105">
                   Get Started Free
                   <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                 </Link>
-                <Link href="/login" className="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-4 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold text-base sm:text-lg hover:border-blue-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
+                <Link href="/login" className="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold text-base hover:border-blue-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
                   Sign In
                 </Link>
               </div>
 
-              <div className="pt-4 sm:pt-6">
-                <Link href="/emergency/report" className="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl font-semibold text-base sm:text-lg hover:from-red-700 hover:to-red-800 transition-all duration-200 shadow-lg hover:shadow-red-500/30 transform hover:scale-105 w-full sm:w-auto">
+              <div>
+                <Link href="/emergency/report" className="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl font-semibold text-base hover:from-red-700 hover:to-red-800 transition-all duration-200 shadow-lg hover:shadow-red-500/30 transform hover:scale-105 w-full sm:w-auto">
                   <Zap className="w-4 h-4 sm:w-5 sm:h-5" />
                   Report Emergency
                   <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                 </Link>
               </div>
 
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 pt-6 sm:pt-8">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 {stats.map((stat, index) => (
-                  <div key={index} className="bg-white rounded-xl p-3 sm:p-4 shadow-md border border-gray-100 hover:shadow-lg transition-shadow">
-                    <div className="flex justify-center mb-2 text-blue-600">
+                  <div key={index} className="bg-white rounded-xl p-3 shadow-md border border-gray-100 hover:shadow-lg transition-shadow">
+                    <div className="flex justify-center mb-1 text-blue-600">
                       {stat.icon}
                     </div>
-                    <div className="text-xl sm:text-2xl font-bold text-gray-900 text-center">{stat.number}</div>
-                    <div className="text-xs sm:text-sm text-gray-600 text-center">{stat.label}</div>
+                    <div className="text-lg sm:text-xl font-bold text-gray-900 text-center">{stat.number}</div>
+                    <div className="text-xs text-gray-600 text-center">{stat.label}</div>
                   </div>
                 ))}
               </div>
             </div>
 
             <div className="relative mt-8 lg:mt-0">
-              <div className="relative z-10 bg-white rounded-2xl shadow-2xl p-6 sm:p-8 border border-gray-100">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center">
-                    <Stethoscope className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+              <div className="relative z-10 bg-white rounded-2xl shadow-2xl p-5 lg:p-6 border border-gray-100">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center">
+                    <Stethoscope className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-gray-900 text-sm sm:text-base">HealthCare Dashboard</h3>
-                    <p className="text-xs sm:text-sm text-gray-600">Real-time overview</p>
+                    <h3 className="font-bold text-gray-900 text-sm">HealthCare Dashboard</h3>
+                    <p className="text-xs text-gray-600">Real-time overview</p>
                   </div>
                 </div>
-                <div className="space-y-3 sm:space-y-4">
-                  <div className="flex items-center justify-between p-3 sm:p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-100">
-                    <span className="text-xs sm:text-sm font-medium text-green-800">Appointments Today</span>
-                    <span className="text-lg sm:text-2xl font-bold text-green-600">24</span>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-100">
+                    <span className="text-xs font-medium text-green-800">Appointments Today</span>
+                    <span className="text-xl font-bold text-green-600">24</span>
                   </div>
-                  <div className="flex items-center justify-between p-3 sm:p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border border-blue-100">
-                    <span className="text-xs sm:text-sm font-medium text-blue-800">Active Patients</span>
-                    <span className="text-lg sm:text-2xl font-bold text-blue-600">156</span>
+                  <div className="flex items-center justify-between p-3 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border border-blue-100">
+                    <span className="text-xs font-medium text-blue-800">Active Patients</span>
+                    <span className="text-xl font-bold text-blue-600">156</span>
                   </div>
-                  <div className="flex items-center justify-between p-3 sm:p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-100">
-                    <span className="text-xs sm:text-sm font-medium text-purple-800">Lab Results</span>
-                    <span className="text-lg sm:text-2xl font-bold text-purple-600">12</span>
+                  <div className="flex items-center justify-between p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-100">
+                    <span className="text-xs font-medium text-purple-800">Lab Results</span>
+                    <span className="text-xl font-bold text-purple-600">12</span>
                   </div>
-                  <div className="flex items-center justify-between p-3 sm:p-4 bg-gradient-to-r from-orange-50 to-red-50 rounded-lg border border-orange-100">
-                    <span className="text-xs sm:text-sm font-medium text-orange-800">Staff Online</span>
-                    <span className="text-lg sm:text-2xl font-bold text-orange-600">48</span>
+                  <div className="flex items-center justify-between p-3 bg-gradient-to-r from-orange-50 to-red-50 rounded-lg border border-orange-100">
+                    <span className="text-xs font-medium text-orange-800">Staff Online</span>
+                    <span className="text-xl font-bold text-orange-600">48</span>
                   </div>
                 </div>
               </div>
-              <div className="absolute -top-4 -right-4 w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full blur-2xl opacity-60 animate-pulse"></div>
-              <div className="absolute -bottom-4 -left-4 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-blue-400 to-cyan-400 rounded-full blur-2xl opacity-60 animate-pulse"></div>
+              <div className="absolute -top-4 -right-4 w-20 h-20 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full blur-2xl opacity-60 animate-pulse"></div>
+              <div className="absolute -bottom-4 -left-4 w-24 h-24 bg-gradient-to-br from-blue-400 to-cyan-400 rounded-full blur-2xl opacity-60 animate-pulse"></div>
             </div>
           </div>
         </div>
