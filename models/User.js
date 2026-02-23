@@ -20,6 +20,13 @@ const UserSchema = new mongoose.Schema(
     },
     password: { type: String, required: true },
     isActive: { type: Boolean, default: true },
+    hospital: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Hospital',
+      required: function() {
+        return this.role !== 'admin';
+      }
+    },
   },
   { timestamps: true }
 );
